@@ -1,0 +1,78 @@
+#function DemoLinRegCUDA4()
+
+
+    # note that this linear regression code is not the fastest way to do this since it is wasteful in terms of storage. We would need to code an operation Ax+bea*b where A,x,b are CudaArrays and beta is a Float64. This would mean we can then avoid the separate A*x (which stores this on the graph) and then Ax-y. Hence we can cut the storage significantly this way.
+
+    #include("setup.jl")
+
+    StartCode()
+    Input=ADnode()
+    Output=ADnode()
+    W1=ADnode()
+    Activation1=ADAX(W1,Layer1)
+    Layer=ADrectlin(AX)
+    rAXmY=ADxmy(rAX,Y)
+    loss=ADmeanSquare(rAXmY)
+
+    net=network() # defines the graph
+
+    # instantiate parameter nodes and inputs:
+    D=2; M=2; N=2
+    AA=rand(D,M); XX=rand(M,N); YY=rand(D,N);
+
+    @gpu CUDArt.init([0])
+    if GPU
+        net.value[A.index]=CUDArt.CudaArray(AA)
+        net.value[X.index]=CUDArt.CudaArray(XX)
+        net.value[Y.index]=CUDArt.CudaArray(YY)
+    else
+        net.value[A.index]=AA
+        net.value[X.index]=XX
+        net.value[Y.index]=YY
+    end
+
+    #net=compile(net;debug=true) # compile and preallocate memory
+    net=compile(net) # compile and preallocate memory
+
+    ntrials=5
+    tic()
+    for i=1:ntrials
+        ADforward!(net;exclude=[],debug=false,AllocateMemory=false)
+        ADbackward!(net;debug=false,Reset=true)
+    end
+    @gpu CUDArt.device_synchronize()
+    meanAD=toc()/ntrials
+
+    println(net.value[end])
+
+   if true
+    println("standard CPU approach :")
+    tmp=rectlin(AA*XX)-YY;
+    g=2*AA'*( ((AA*XX).>0).*tmp)/length(YY);
+    f=sum(tmp.^2)/length(YY);
+    tic();
+    for i=1:ntrials
+        tmp=rectlin(AA*XX)-YY;
+        g=2*AA'*( ((AA*XX).>0).*tmp)/length(YY);
+        f=sum(tmp.^2)/length(YY);
+    end
+    meanStand=toc()/ntrials
+
+    println("Average time taken for AD = $meanAD")
+    println("Average time taken for standard approach = $meanStand")
+
+    if GPU
+        ADgrad=to_host(net.gradient[ParsToUpdate(net)...])
+    else
+        ADgrad=net.gradient[ParsToUpdate(net)...]
+    end
+    println("Difference between standard and AD gradient = $(mean(abs(g-ADgrad)))")
+    println("standard time / AD time = $(meanStand/meanAD)")
+
+   end
+    @cpu gradcheck(net;showgrad=true) # use a small number of datapoints and small network to check the gradient, otherwise this will be very slow
+
+#    @gpu CUDArt.close([0])
+
+#end
+

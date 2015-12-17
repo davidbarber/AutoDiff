@@ -1,0 +1,9 @@
+I think one way to do development is to keep a separate folder (project A) in which all development is done. This will include all kinds of additional files. In another folder (project B) we place the files we want to make public. When we want we can then merge project A into project B (which will only update the existing files in project B, not copying all files)
+
+
+If you want to merge project-a into project-b:
+
+cd path/to/project-b
+git remote add project-a path/to/project-a
+git fetch project-a
+git merge project-a/master # or whichever branch you want to merge
