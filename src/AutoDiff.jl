@@ -10,10 +10,10 @@ push!(LOAD_PATH,pwd())
 #
 #push!(LOAD_PATH, joinpath(pwd(), "Demos"))
 
-
-include("initfile.jl")
 include("gpumacros.jl")
 export @gpu, @cpu
+
+include("initfile.jl")
 
 @cpu println("Using CPU")
 #@gpu println("Compiling kernels...")

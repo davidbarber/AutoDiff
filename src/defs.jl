@@ -70,7 +70,7 @@ Inplace=Dict() # Inplace version of function
 
 
 #TODO:
-#
+# sqrt, power fn, trig functions,
 # diagm(A)+
 # diag(A) for both CPU and GPU (note that diagm(A) is implemented for both GPU and CPU)
 # A/s where s is a 1x1 array and A is an array
