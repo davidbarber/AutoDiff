@@ -9,8 +9,8 @@ useproc("GPU") # GPU about 4 times faster than CPU
 using MAT
 
 Ntrain=60000
-BatchSize=200
-TrainingIts=50000 # number of Nesterov updates
+BatchSize=100
+TrainingIts=100000 # number of Nesterov updates
 include("loadmnist.jl")
 images,label=loadmnist()
 r=randperm(size(images,2))
@@ -20,7 +20,7 @@ tol=0.000001
 data[data.>(1-tol)]=1-tol
 data[data.<tol]=tol
 
-H=[784 500 250 100 30 100 250 500 784] # number of units in each layer
+H=[784 1000 500 250 30 250 500 1000 784] # number of units in each layer
 #H=[784 50 30 50 784] # number of units in each layer
 
 L=length(H) # number of hidden layers
@@ -71,7 +71,7 @@ velo=NesterovInit(net)
 minibatchstart=1 # starting datapoint for the minibatch
 #ForwardPassList!(net,ExcludeNodes=[ypred])
 for iter=1:TrainingIts
-    LearningRate=10/(1+iter/10)
+    LearningRate=0.1/(1+iter/1000)
     minibatchstart,minibatch=GetBatch(minibatchstart,BatchSize,Ntrain)
     net.value[ytrain]=cArray(PROC,data[:,minibatch]) # select batch of data
     #net.value[ytrain]=cArray(data[:,minibatch]) # select batch of data
