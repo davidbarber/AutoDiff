@@ -4,7 +4,7 @@ Fsigmoid_inplace(value,aux,x)=copy!(value,sigmoid(x))
 
 Dsigmoid(derivativeIDX,f_c,faux_c,grad_c,grad_n,x)=axpy!(1.0,grad_c.*f_c.*(1.-f_c),grad_n)
 
-if GPU 
+if PROC=="GPU" 
     function Fsigmoid(x::CudaArray)
         tmp=copy(x)
         sigmoid!(x,tmp)

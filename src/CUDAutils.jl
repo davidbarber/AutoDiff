@@ -1,5 +1,5 @@
-if GPU
-
+if PROC=="GPU"
+    
     import Base.sum!
     function sum!(A::CudaArray,ind::Int,beta::Float64,out::CudaArray)
         if ind==1
@@ -14,100 +14,59 @@ if GPU
             error("sum!(A::CudaArray,ind,beta,out) only defined for ind=1 or 2")
         end
     end
-export sum!
+    export sum!
 
-
-function ArrayToCudaArray!(nodes,net)
-    nds=union(nodes)
-    for n in nds
-        net.value[n]=CudaArray(net.value[n])
-    end
-end
-export ArrayToCudaArray!
-
-import Base.convert
-function convert(net::network,gpucpu::ASCIIString)
-
-    if (net.gpu & (gpucpu=="GPU")) | (!net.gpu & (gpucpu=="CPU"))
-        return net
-    else
-        netout=deepcopy(net)
-        nds=net.validnodes
-        if gpucpu=="GPU"
-        netout.gpu=true
-            for n in nds
-                netout.value[n]=CudaArray(net.value[n])
-                netout.gradient[n]=CudaArray(net.gradient[n])
-                if isdefined(net.auxvalue,n)
-                    if  ~isa(net.auxvalue[n],Void) && ~isempty(net.auxvalue[n])
-                    netout.auxvalue[n]=CudaArray(net.auxvalue[n])
-                    end
-                end
-
-            end
+    
+    function ArrayToCudaArray!(nodes,net)
+        nds=union(nodes)
+        for n in nds
+            net.value[n]=CudaArray(net.value[n])
         end
-        if gpucpu=="CPU"
-            netout.gpu=false
-            for n in nds
-                netout.value[n]=to_host(net.value[n])
-                netout.gradient[n]=to_host(net.gradient[n])
-                if isdefined(net.auxvalue,n)
-                    if  isa(net.auxvalue[n],CudaArray)
-                        netout.auxvalue[n]=to_host(net.auxvalue[n])
-                    end
-                end
-            end
-        end
-        return netout
     end
-end
-
-export convert
-
-end
-
-
-if GPU
+    
+    export ArrayToCudaArray!
+    
     scalval(x::CudaArray)=sqrt(CUBLAS.dot(x,x))
     export scalval
-end
 
-if GPU
     import CUDArt.to_host
     to_host(A::Array)=A
     export to_host
-end
 
-if GPU
     import Base.println
     println(A::CudaArray)=println(to_host(A))
     export println
 end
 
 function cArray(eltype,sz::Tuple)
-    if GPU
+    global PROC
+    if PROC=="GPU"
         return CudaArray(eltype,sz)
     else
         return zeros(eltype,sz)
     end
 end
+
 function cArray(sz::Tuple)
-    if GPU
+    global PROC
+    if PROC=="GPU"
         return CudaArray(Float64,sz)
     else
         return Array(Float64,sz)
     end
 end
+
 function cArray(A::Array)
-    if GPU
+    global PROC
+    if PROC=="GPU"
         return CudaArray(A)
     else
         return A
     end
 end
 
-function cArray(gpu,A::Array)
-    if gpu==GPU
+function cArray(proc::ASCIIString,A::Array)
+    if proc=="GPU"
         return CudaArray(A)
     else
         return A

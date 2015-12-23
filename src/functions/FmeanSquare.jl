@@ -19,7 +19,7 @@ end
 DmeanSquare(derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)=axpy!(2.0/(length(x)*length(x[derivativeIDX])),grad_c.*x[derivativeIDX],grad_n)
 
 
-if GPU
+if PROC=="GPU"
     function FmeanSquare(x::CudaArray...)
         tmp=CudaArray(zeros(1))
         for i in 1:length(x)

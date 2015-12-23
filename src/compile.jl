@@ -53,7 +53,7 @@ function compile(net;debug=false,gpu=false)
     net.gpu=gpu
 
 
-    ADforward!(net; exclude=[],debug=debug,AllocateMemory=true)
+    ADforward!(net;debug=debug,AllocateMemory=true)
     if debug;  println("Done forward pass compilation:");  end
 
     # backward compilation:

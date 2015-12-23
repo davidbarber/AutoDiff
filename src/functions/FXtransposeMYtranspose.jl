@@ -24,7 +24,7 @@ end
 
 
 
-if GPU
+if PROC=="GPU"
 
     function FXtransposeMYtranspose_inplace(value,auxvalue,x::CudaArray,y::CudaArray)
         if size(x)==(1,1)

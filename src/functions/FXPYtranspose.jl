@@ -25,7 +25,7 @@ function DXPYtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
     end
 end
 
-if GPU
+if PROC=="GPU"
 
 FXPYtranspose_inplace(value,auxvalue,x::CudaArray,y::CudaArray)=FXtransposePY_inplace(value,auxvalue,y,x)
 

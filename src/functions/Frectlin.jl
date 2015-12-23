@@ -6,7 +6,7 @@ Frectlin_inplace(value,auxvalue,x::Array{Float64,2})=copy!(value,max(x,0))
 
 Drectlin(derivativeIDX,f_c,faux_c,grad_c,grad_n,x)=axpy!(1.0,grad_c.*(x.>0),grad_n)
 
-if GPU # TODO
+if PROC=="GPU" # TODO
     Frectlin(x::CudaArray)=(rectlin(x),[])
     Frectlin_inplace(value,aux,x::CudaArray)=rectlin!(x,value)
 

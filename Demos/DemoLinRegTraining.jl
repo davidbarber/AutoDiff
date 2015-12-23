@@ -1,20 +1,23 @@
 # Linear Regression with L1 penalty
+PlotResults=true
+
+useproc("GPU") # GPU is significantly faster for larger systems
+#useproc("CPU")
 
 StartCode()
 X=ADnode()
 w=ADvariable()
 Y=ADnode()
-loss=meanSquareLoss(elu(X*w),Y)+0.1*meanAbs(w)
+loss=meanSquareLoss(X*w,Y)+0.1*meanAbs(w)
 net=EndCode() # defines the graph
 
 # instantiate parameter nodes and inputs:
 
-D=20 # dimension of weight vector
-N=300 # number of datapoints
+D=1000 # dimension of weight vector
+N=5000 # number of datapoints
 truew=randn(D,1).*(rand(D,1).>0.8)
 net.value[w]=truew
 net.value[X]=randn(N,D)
-#net.value[Y]=cArray(randn(N,1))
 net.value[Y]=net.value[X]*net.value[w] # make a realisable problem
 net.value[w]=randn(D,1) # start with a random w
 
@@ -22,9 +25,10 @@ net=compile(net) # compile and preallocate memory
 
 @gpu CUDArt.init([0]) # let the user do device management
 @gpu net=convert(net,"GPU")
-gradcheck(net)
+#gradcheck(net)
 
 # Training:
+println("Training: using $(net.gpu==true? "GPU" : "CPU") ")
 ParsToUpdate=Parameters(net)
 nupdates=500
 LearningRate=0.1
@@ -46,6 +50,10 @@ end
 println("\ntrue weights   ",round(100*truew')/100)
 println("learned weights",round(100*extract(net.value[w])')/100)
 
+if PlotResults
+    figure(1);plot(truew);title("true weights")
+    figure(2);plot(extract(net.value[w])); title("learned weights")
+end
 
 
 

@@ -24,7 +24,7 @@ end
 
 import Base.mean
 
-if GPU
+if PROC=="GPU"
 
     function mean(A::CudaArray)
         return flatten(Float64,CUBLAS.gemv('T',1./length(A),flatten(Float64,A),CudaArray(ones(length(A)))))

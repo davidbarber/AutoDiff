@@ -1,6 +1,5 @@
-function ADforward!(net;returnf=false,exclude=Array(Int,0),debug=false,AllocateMemory=false)
+function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
 #=   calculate the value and auxiliary values of a net function
-    exclude is a collection of nodes to leave out of the forward pass calculation -- any descendents of these nodes are also automatically excluded
 =#
     # (c) David Barber, University College London 2015
 

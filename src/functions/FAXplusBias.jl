@@ -18,7 +18,7 @@ function DAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
 end
 
 
-if GPU
+if PROC=="GPU"
 #    function FAXplusBias(A::CudaArray,X::CudaArray,b::CudaArray)
 #        ons=CudaArray(Float64,(1,size(X,2))); fill!(ons,1.0);        
 #        #return (Fxpy(FAX(A,X)[1],FAX(b,ons)[1])[1],nothing)

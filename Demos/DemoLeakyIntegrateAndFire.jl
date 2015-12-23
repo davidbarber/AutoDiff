@@ -2,6 +2,9 @@
 # David Barber UCL 2015
 # Uses the dbAutoDiff Julia package
 
+PlotResults=true
+useproc("CPU") # CPU is faster than GPU for this demo
+
 T=100 # number of timesteps
 a=Array(ADnode,T)
 p=Array(ADnode,T)
@@ -36,7 +39,7 @@ for t=1:T
     net.value[v[t]]=0.99*(rand(N,1).>0.85)+0.001 # bound slighty away from 0/1 so that no NAN occur
 end
 
-net=compile(net;debug=true) # compile and preallocate memory
+net=compile(net) # compile and preallocate memory
 
 @gpu CUDArt.init([0])
 @gpu net=convert(net,"GPU")
@@ -44,7 +47,8 @@ net=compile(net;debug=true) # compile and preallocate memory
 
 
 # Training:
-nupdates=20
+println("Training: using $(net.gpu==true? "GPU" : "CPU") ")
+nupdates=1000
 parstoupdate=Parameters(net)
 error=Array(Float64,0)
     velo=NesterovInit(net) # Nesterov velocity
@@ -53,7 +57,7 @@ error=Array(Float64,0)
     ADforward!(net)
     ADbackward!(net)
     push!(error,extract(net.value[net.FunctionNode])[1])
-    println("iteration $i: training loss = $(error[i])")
+    printover("iteration $i: training loss = $(error[i])")
     for par in parstoupdate
         #GradientDescentUpdate!(net.value[par],net.gradient[par],LearningRate)
         NesterovGradientDescentUpdate!(net.value[par],net.gradient[par],velo[par],LearningRate,i/500)
@@ -74,7 +78,9 @@ for t=1:T
     actpot[:,t]=net.value[a[t]]
 end
 
-figure(); imshow(trainvalue, interpolation="none"); title("training firings v_i(t)")
-figure(); imshow(testprob, interpolation="none"); title("test firing probability p_i(t)")
-figure(); imshow(actpot, interpolation="none"); title("test membrane potential a_i(t)")
-figure(); plot(error); title("training loss against iteration")
+if PlotResults
+    figure(); imshow(trainvalue, interpolation="none"); title("training firings v_i(t)")
+    figure(); imshow(testprob, interpolation="none"); title("test firing probability p_i(t)")
+    figure(); imshow(actpot, interpolation="none"); title("test membrane potential a_i(t)")
+    figure(); plot(error); title("training loss against iteration")
+end

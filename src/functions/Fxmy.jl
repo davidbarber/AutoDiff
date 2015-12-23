@@ -50,7 +50,7 @@ function Dxmy(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
     end
 end
 
-if GPU
+if PROC=="GPU"
 function Fxmy(x::CudaArray,y::CudaArray)
         if size(x)==(1,1)
             tmp=CudaArray(Float64,size(y))

@@ -19,7 +19,7 @@ function DrectlinAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
     end
 end
 
-if GPU    
+if PROC=="GPU"    
     function FrectlinAXplusBias(A::CudaArray,X::CudaArray,b::CudaArray)       
         return(rectlin(FAXplusBias(A,X,b)[1]),FAXplusBias(A,X,b)[1])
         # TODO: FIX THIS UNNECESSARY DOUBLE COMPUTATION

@@ -24,7 +24,7 @@ function Dtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,X::Array)
 end
 
 
-if GPU
+if PROC=="GPU"
     function Ftranspose_inplace(value::CudaArray,auxvalue,X::CudaArray)        
         tmp=CudaArray(Float64,size(X))
         CUBLAS.geam!('T','N',1.0,X,0.0,tmp,value) # value=X'                

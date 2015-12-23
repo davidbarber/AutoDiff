@@ -4,7 +4,9 @@
 # To make the CPU better performing, I think one would need to call c code that does inplace computation of Hadamard products. Essentially this is what is happending in the GPU code.
 
 #FsigmoidAXplusBias(A,X,b)=(1./(1+exp(-(A*X+b*ones(1,size(X,2))))),nothing)
-FsigmoidAXplusBias(A,X,b)=(1./(1+exp(-(A*X+b*ones(1,size(X,2))))),(zeros(size(A,1),size(X,2)),[])) # allocate memory for inplace gradients
+
+#TODO: don't need aux to be a tuple since we only use aux[1] 
+FsigmoidAXplusBias(A,X,b)=(1./(1+exp(-(A*X+b*ones(1,size(X,2))))),(zeros(size(A,1),size(X,2)),nothing)) # allocate memory for inplace gradients
 
 FsigmoidAXplusBias_inplace(value,aux,A,X,b)=copy!(value,1./(1+exp(-(A*X+b*ones(1,size(X,2))))))
 
@@ -26,7 +28,7 @@ function DsigmoidAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
 end
 
 
-if GPU
+if PROC=="GPU"
     function FsigmoidAXplusBias(A::CudaArray,X::CudaArray,b::CudaArray)
         return(sigmoid(FAXplusBias(A,X,b)[1]),nothing)
     end

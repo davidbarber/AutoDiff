@@ -1,0 +1,190 @@
+	.version 1.4
+	.target sm_10, map_f64_to_f32
+	// compiled with /usr/lib/nvidia-cuda-toolkit/lib//be
+	// nvopencc 4.1 built on 2013-07-17
+
+	//-----------------------------------------------------------
+	// Compiling /tmp/tmpxft_00002628_00000000-9_stanh.cpp3.i (/tmp/ccBI#.8O0s5g)
+	//-----------------------------------------------------------
+
+	//-----------------------------------------------------------
+	// Options:
+	//-----------------------------------------------------------
+	//  Target:ptx, ISA:sm_10, Endian:little, Pointer Size:64
+	//  -O3	(Optimization level)
+	//  -g0	(Debug level)
+	//  -m2	(Report advisories)
+	//-----------------------------------------------------------
+
+	.file	1	"<command-line>"
+	.file	2	"/usr/include/stdc-predef.h"
+	.file	3	"/tmp/tmpxft_00002628_00000000-8_stanh.cudafe2.gpu"
+	.file	4	"/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h"
+	.file	5	"/usr/include/crt/device_runtime.h"
+	.file	6	"/usr/include/host_defines.h"
+	.file	7	"/usr/include/builtin_types.h"
+	.file	8	"/usr/include/device_types.h"
+	.file	9	"/usr/include/driver_types.h"
+	.file	10	"/usr/include/surface_types.h"
+	.file	11	"/usr/include/texture_types.h"
+	.file	12	"/usr/include/vector_types.h"
+	.file	13	"/usr/include/device_launch_parameters.h"
+	.file	14	"/usr/include/crt/storage_class.h"
+	.file	15	"stanh.cu"
+	.file	16	"/usr/include/common_functions.h"
+	.file	17	"/usr/include/math_functions.h"
+	.file	18	"/usr/include/math_constants.h"
+	.file	19	"/usr/include/device_functions.h"
+	.file	20	"/usr/include/sm_11_atomic_functions.h"
+	.file	21	"/usr/include/sm_12_atomic_functions.h"
+	.file	22	"/usr/include/sm_13_double_functions.h"
+	.file	23	"/usr/include/sm_20_atomic_functions.h"
+	.file	24	"/usr/include/sm_32_atomic_functions.h"
+	.file	25	"/usr/include/sm_35_atomic_functions.h"
+	.file	26	"/usr/include/sm_20_intrinsics.h"
+	.file	27	"/usr/include/sm_30_intrinsics.h"
+	.file	28	"/usr/include/sm_32_intrinsics.h"
+	.file	29	"/usr/include/sm_35_intrinsics.h"
+	.file	30	"/usr/include/surface_functions.h"
+	.file	31	"/usr/include/texture_fetch_functions.h"
+	.file	32	"/usr/include/texture_indirect_functions.h"
+	.file	33	"/usr/include/surface_indirect_functions.h"
+	.file	34	"/usr/include/math_functions_dbl_ptx1.h"
+
+
+	.entry stanh (
+		.param .s32 __cudaparm_stanh_lengthA,
+		.param .f64 __cudaparm_stanh_alpha,
+		.param .u64 __cudaparm_stanh_a,
+		.param .u64 __cudaparm_stanh_b)
+	{
+	.reg .u16 %rh<4>;
+	.reg .u32 %r<10>;
+	.reg .u64 %rd<8>;
+	.reg .f32 %f<71>;
+	.reg .f64 %fd<7>;
+	.reg .pred %p<6>;
+	.loc	15	3	0
+$LDWbegin_stanh:
+	mov.u16 	%rh1, %ctaid.x;
+	mov.u16 	%rh2, %ntid.x;
+	mul.wide.u16 	%r1, %rh1, %rh2;
+	cvt.u32.u16 	%r2, %tid.x;
+	add.u32 	%r3, %r2, %r1;
+	ld.param.s32 	%r4, [__cudaparm_stanh_lengthA];
+	setp.le.s32 	%p1, %r4, %r3;
+	@%p1 bra 	$Lt_0_3330;
+	.loc	15	8	0
+	cvt.s64.s32 	%rd1, %r3;
+	mul.wide.s32 	%rd2, %r3, 8;
+	ld.param.u64 	%rd3, [__cudaparm_stanh_a];
+	add.u64 	%rd4, %rd3, %rd2;
+	ld.global.f64 	%fd1, [%rd4+0];
+	.loc	34	263	0
+	abs.f64 	%fd2, %fd1;
+	cvt.rn.f32.f64 	%f1, %fd1;
+	cvt.rn.f32.f64 	%f2, %fd2;
+	mov.f32 	%f3, 0f3f0ccccd;     	// 0.55
+	setp.ge.f32 	%p2, %f2, %f3;
+	@!%p2 bra 	$Lt_0_4098;
+	.loc	17	8936	0
+	add.f32 	%f4, %f2, %f2;
+	mov.f32 	%f5, 0f3fb8aa3b;     	// 1.4427
+	mul.f32 	%f6, %f4, %f5;
+	cvt.rzi.f32.f32 	%f7, %f6;
+	mov.f32 	%f8, %f7;
+	mov.f32 	%f9, 0fbf317200;     	// -0.693146
+	mov.f32 	%f10, %f9;
+	mov.f32 	%f11, %f4;
+	mad.f32 %f12, %f8, %f10, %f11;
+	mov.f32 	%f13, %f12;
+	mov.f32 	%f14, %f7;
+	mov.f32 	%f15, 0fb5bfbe8e;    	// -1.42861e-06
+	mov.f32 	%f16, %f15;
+	mov.f32 	%f17, %f13;
+	mad.f32 %f18, %f14, %f16, %f17;
+	mov.f32 	%f19, %f18;
+	.loc	17	8965	0
+	mov.f32 	%f20, 0f3fb8aa3b;    	// 1.4427
+	mul.f32 	%f21, %f19, %f20;
+	mov.f32 	%f22, %f21;
+	ex2.approx.ftz.f32 %f23,%f22;
+	mov.f32 	%f24, %f23;
+	.loc	17	8936	0
+	mov.f32 	%f25, %f24;
+	ex2.approx.f32 	%f26, %f7;
+	mov.f32 	%f27, %f26;
+	mov.f32 	%f28, 0f3f800000;    	// 1
+	mov.f32 	%f29, %f28;
+	mad.f32 %f30, %f25, %f27, %f29;
+	mov.f32 	%f31, %f30;
+	.loc	17	8944	0
+	mov.f32 	%f32, %f31;
+	rcp.approx.ftz.f32 %f33,%f32;
+	mov.f32 	%f34, %f33;
+	.loc	17	8936	0
+	mov.f32 	%f35, %f34;
+	mov.f32 	%f36, 0fc0000000;    	// -2
+	mov.f32 	%f37, %f36;
+	mov.f32 	%f38, 0f3f800000;    	// 1
+	mov.f32 	%f39, %f38;
+	mad.f32 %f40, %f35, %f37, %f39;
+	mov.f32 	%f41, %f40;
+	.loc	17	9804	0
+	mov.f32 	%f42, 0f3f800000;    	// 1
+	mov.f32 	%f43, 0f42b00000;    	// 88
+	setp.ge.f32 	%p3, %f2, %f43;
+	selp.f32 	%f44, %f42, %f41, %p3;
+	mov.b32 	%r5, %f44;
+	mov.b32 	%r6, %f1;
+	and.b32 	%r7, %r6, -2147483648;
+	or.b32 	%r8, %r5, %r7;
+	mov.b32 	%f45, %r8;
+	bra.uni 	$Lt_0_3842;
+$Lt_0_4098:
+	.loc	17	8936	0
+	mul.f32 	%f46, %f1, %f1;
+	mov.f32 	%f47, 0f3c86a81b;    	// 0.0164376
+	mov.f32 	%f48, %f47;
+	mov.f32 	%f49, %f46;
+	mov.f32 	%f50, 0fbd57be66;    	// -0.0526718
+	mov.f32 	%f51, %f50;
+	mad.f32 %f52, %f48, %f49, %f51;
+	mov.f32 	%f41, %f52;
+	mov.f32 	%f53, %f41;
+	mov.f32 	%f54, %f46;
+	mov.f32 	%f55, 0f3e08677b;    	// 0.133207
+	mov.f32 	%f56, %f55;
+	mad.f32 %f57, %f53, %f54, %f56;
+	mov.f32 	%f41, %f57;
+	mov.f32 	%f58, %f41;
+	mov.f32 	%f59, %f46;
+	mov.f32 	%f60, 0fbeaaaa29;    	// -0.333329
+	mov.f32 	%f61, %f60;
+	mad.f32 %f62, %f58, %f59, %f61;
+	mov.f32 	%f41, %f62;
+	mul.f32 	%f63, %f46, %f41;
+	mov.f32 	%f64, %f63;
+	mov.f32 	%f65, %f1;
+	mov.f32 	%f66, %f1;
+	mad.f32 %f67, %f64, %f65, %f66;
+	mov.f32 	%f41, %f67;
+	.loc	17	9807	0
+	add.f32 	%f68, %f1, %f1;
+	mov.f32 	%f69, 0f00000000;    	// 0
+	setp.eq.f32 	%p4, %f1, %f69;
+	selp.f32 	%f45, %f68, %f41, %p4;
+$Lt_0_3842:
+	.loc	15	8	0
+	cvt.f64.f32 	%fd3, %f45;
+	ld.param.f64 	%fd4, [__cudaparm_stanh_alpha];
+	mul.f64 	%fd5, %fd3, %fd4;
+	ld.param.u64 	%rd5, [__cudaparm_stanh_b];
+	add.u64 	%rd6, %rd5, %rd2;
+	st.global.f64 	[%rd6+0], %fd5;
+$Lt_0_3330:
+	.loc	15	10	0
+	exit;
+$LDWend_stanh:
+	} // stanh
+

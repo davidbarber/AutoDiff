@@ -20,7 +20,7 @@ function DstanhAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
     end
 end
 
-if GPU    
+if PROC=="GPU"    
     function FstanhAXplusBias(A::CudaArray,X::CudaArray,b::CudaArray)       
         tmp=FAXplusBias(A,X,b)[1]
         stanh!(sf,tmp,tmp)

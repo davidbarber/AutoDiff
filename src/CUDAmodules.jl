@@ -1,4 +1,6 @@
-md=CuModule("vcopyshift.ptx",false)
+DIR=pwd()*"/cuda_kernels/"
+
+md=CuModule(DIR*"vcopyshift.ptx",false)
 vcopyshift_kernel=CuFunction(md,"vcopyshift")
 function copyinto!(out::CudaArray,A::CudaArray,location::Int)
     nblocks=round(Int,ceil(length(A)/1024))
@@ -6,7 +8,7 @@ function copyinto!(out::CudaArray,A::CudaArray,location::Int)
 end
 export copyinto!
 
-md=CuModule("vcopyfrom.ptx",false)
+md=CuModule(DIR*"vcopyfrom.ptx",false)
 vcopyfrom_kernel=CuFunction(md,"vcopyfrom")
 function copyfrom!(out::CudaArray,A::CudaArray,location::Int)
     nblocks=round(Int,ceil(length(out)/1024))
@@ -14,7 +16,7 @@ function copyfrom!(out::CudaArray,A::CudaArray,location::Int)
     end
 export copyfrom!
 
-md=CuModule("vcopyfrom_update.ptx",false)
+md=CuModule(DIR*"vcopyfrom_update.ptx",false)
 vcopyfrom_update_kernel=CuFunction(md,"vcopyfrom_update")
 function copyfrom_update!(out::CudaArray,A::CudaArray,location::Int)
     nblocks=round(Int,ceil(length(out)/1024))
@@ -22,7 +24,7 @@ function copyfrom_update!(out::CudaArray,A::CudaArray,location::Int)
 end
 export copyfrom_update!
 
-md=CuModule("vsign.ptx",false)
+md=CuModule(DIR*"vsign.ptx",false)
 vsign_kernel=CuFunction(md,"vsign")
 function vsign!(A::CudaArray,out::CudaArray)
     nblocks=round(Int,ceil(length(out)/1024))
@@ -30,7 +32,7 @@ function vsign!(A::CudaArray,out::CudaArray)
 end
     export vsign!
 
-md=CuModule("gfill.ptx",false)
+md=CuModule(DIR*"gfill.ptx",false)
 gfill_kernel=CuFunction(md,"gfill")
 function gfill!(out::CudaArray,fillval::CudaArray)
     nblocks=round(Int,ceil(length(out)/1024))
@@ -38,7 +40,7 @@ function gfill!(out::CudaArray,fillval::CudaArray)
 end
 export gfill!
 
-md=CuModule("tx1mx.ptx",false)
+md=CuModule(DIR*"tx1mx.ptx",false)
 tx1mx_kernel=CuFunction(md,"tx1mx")
 function tx1mx!(t::CudaArray,x::CudaArray,out::CudaArray)
     nblocks=round(Int,ceil(length(x)/1024))
@@ -46,7 +48,7 @@ function tx1mx!(t::CudaArray,x::CudaArray,out::CudaArray)
 end
 export tx1mx!
 
-md=CuModule("Dstanh.ptx",false)
+md=CuModule(DIR*"Dstanh.ptx",false)
 Dstanh_kernel=CuFunction(md,"Dstanh")
 function Dstanh!(sf,grad_c::CudaArray,f_c::CudaArray,grad_n::CudaArray)
     nblocks=round(Int,ceil(length(f_c)/1024))
@@ -54,7 +56,7 @@ function Dstanh!(sf,grad_c::CudaArray,f_c::CudaArray,grad_n::CudaArray)
     end
 export Dstanh!
 
-md=CuModule("DmeanSquareLoss.ptx",false)
+md=CuModule(DIR*"DmeanSquareLoss.ptx",false)
 DmeanSquareLoss_kernel=CuFunction(md,"DmeanSquareLoss")
 function DmeanSquareLoss!(grad_c::CudaArray,x::CudaArray,y::CudaArray,grad_n::CudaArray)
     nblocks=round(Int,ceil(length(x)/1024))
@@ -62,7 +64,7 @@ function DmeanSquareLoss!(grad_c::CudaArray,x::CudaArray,y::CudaArray,grad_n::Cu
 end
 export DmeanSquareLoss!
 
-md=CuModule("stanh.ptx",false)
+md=CuModule(DIR*"stanh.ptx",false)
 stanh_kernel=CuFunction(md,"stanh")
 function stanh!(sf,A::CudaArray,B::CudaArray)
     nblocks=round(Int,ceil(length(A)/1024))
@@ -70,7 +72,7 @@ function stanh!(sf,A::CudaArray,B::CudaArray)
 end
 export stanh!
 
-md=CuModule("binaryentropy.ptx",false)
+md=CuModule(DIR*"binaryentropy.ptx",false)
 binaryentropy_kernel=CuFunction(md,"binaryentropy")
 function binaryentropy(X::CudaArray,Y::CudaArray)
     tmp=CudaArray(Float64,size(X))
@@ -82,7 +84,7 @@ function binaryentropy(X::CudaArray,Y::CudaArray)
 end
 export binaryentropy
 
-md=CuModule("binaryentropyXsigmoidY.ptx",false)
+md=CuModule(DIR*"binaryentropyXsigmoidY.ptx",false)
 binaryentropyXsigmoidY_kernel=CuFunction(md,"binaryentropyXsigmoidY")
 function binaryentropyXsigmoidY(X::CudaArray,Y::CudaArray)
     tmp=CudaArray(Float64,size(X))
@@ -98,12 +100,12 @@ function binaryentropyXsigmoidY!(X::CudaArray,Y::CudaArray,out)
     tmp=CudaArray(Float64,size(X))
     nblocks=round(Int,ceil(length(X)/1024))
     launch(binaryentropyXsigmoidY_kernel,nblocks,1024,(length(X),X,Y,tmp))
-    out=mean(tmp)
+    copy!(out,mean(tmp))
     free(tmp)
 end
 export binaryentropyXsigmoidY!
 
-md=CuModule("DXbinaryentropy.ptx",false)
+md=CuModule(DIR*"DXbinaryentropy.ptx",false)
 DXbinaryentropy_kernel=CuFunction(md,"DXbinaryentropy")
 function DXbinaryentropy!(X::CudaArray,Y::CudaArray,T::CudaArray,Out::CudaArray)
     tmp=CudaArray(Float64,size(X))
@@ -112,7 +114,7 @@ function DXbinaryentropy!(X::CudaArray,Y::CudaArray,T::CudaArray,Out::CudaArray)
 end
 export DXbinaryentropy!
 
-md=CuModule("DYbinaryentropy.ptx",false)
+md=CuModule(DIR*"DYbinaryentropy.ptx",false)
 DYbinaryentropy_kernel=CuFunction(md,"DYbinaryentropy")
 function DYbinaryentropy!(X::CudaArray,Y::CudaArray,T::CudaArray,Out::CudaArray)
     tmp=CudaArray(Float64,size(X))
@@ -121,7 +123,7 @@ function DYbinaryentropy!(X::CudaArray,Y::CudaArray,T::CudaArray,Out::CudaArray)
 end
 export DYbinaryentropy!
 
-md=CuModule("DXbinaryentropyXsigmoidY.ptx",false)
+md=CuModule(DIR*"DXbinaryentropyXsigmoidY.ptx",false)
 DXbinaryentropyXsigmoidY_kernel=CuFunction(md,"DXbinaryentropyXsigmoidY")
 function DXbinaryentropyXsigmoidY!(X::CudaArray,Y::CudaArray,T::CudaArray,Out::CudaArray)
     tmp=CudaArray(Float64,size(X))
@@ -130,7 +132,7 @@ function DXbinaryentropyXsigmoidY!(X::CudaArray,Y::CudaArray,T::CudaArray,Out::C
 end
 export DXbinaryentropyXsigmoidY!
 
-md=CuModule("DYbinaryentropyXsigmoidY.ptx",false)
+md=CuModule(DIR*"DYbinaryentropyXsigmoidY.ptx",false)
 DYbinaryentropyXsigmoidY_kernel=CuFunction(md,"DYbinaryentropyXsigmoidY")
 function DYbinaryentropyXsigmoidY!(X::CudaArray,Y::CudaArray,T::CudaArray,Out::CudaArray)
     tmp=CudaArray(Float64,size(X))
@@ -139,7 +141,7 @@ function DYbinaryentropyXsigmoidY!(X::CudaArray,Y::CudaArray,T::CudaArray,Out::C
 end
 export DYbinaryentropyXsigmoidY!
 
-md=CuModule("sigmoid.ptx",false)
+md=CuModule(DIR*"sigmoid.ptx",false)
 sigmoid_kernel=CuFunction(md,"sigmoid")
 function sigmoid(A::CudaArray)
     out=CudaArray(Float64,size(A))
@@ -155,7 +157,7 @@ function sigmoid!(A::CudaArray,out::CudaArray)
 end
 export sigmoid!
 
-md=CuModule("vsquare.ptx",false)
+md=CuModule(DIR*"vsquare.ptx",false)
 vsquarekernel=CuFunction(md,"vsquare")
 function vsquare(A::CudaArray)
     out=zeros(A)
@@ -168,7 +170,7 @@ function vsquareout!(A::CudaArray,Out::CudaArray)
 end
 
 import Base.exp
-md=CuModule("exp.ptx",false)
+md=CuModule(DIR*"exp.ptx",false)
 kernel_exp=CuFunction(md,"expkernel")
 function exp!(A::CudaArray,B::CudaArray)
     nblocks=round(Int,ceil(length(A)/1024))
@@ -184,7 +186,7 @@ end
 export exp,exp!
 
 import Base.log
-md=CuModule("log.ptx",false)
+md=CuModule(DIR*"log.ptx",false)
 kernel_log=CuFunction(md,"logkernel")
 function log!(A::CudaArray,B::CudaArray)
     nblocks=round(Int,ceil(length(A)/1024))
@@ -199,7 +201,7 @@ function log(A::CudaArray)
 end
 export log,log!
 
-md=CuModule("rectlin.ptx",false)
+md=CuModule(DIR*"rectlin.ptx",false)
 kernel_rectlin=CuFunction(md,"rectlin")
 function rectlin!(A::CudaArray,B::CudaArray)
     nblocks=round(Int,ceil(length(A)/1024))
@@ -215,7 +217,7 @@ end
 export rectlin
 
 # A.*(B.>0):
-md=CuModule("A_emult_Bg0.ptx",false)
+md=CuModule(DIR*"A_emult_Bg0.ptx",false)
 kernel_A_emult_Bg0=CuFunction(md,"A_emult_Bg0")
 function A_emult_Bg0!(A::CudaArray,B::CudaArray,C::CudaArray)
     nblocks=round(Int,ceil(length(A)/1024))
@@ -223,7 +225,7 @@ function A_emult_Bg0!(A::CudaArray,B::CudaArray,C::CudaArray)
 end
 export A_emult_Bg0!
 
-md=CuModule("alphaaxpy.ptx",false)
+md=CuModule(DIR*"alphaaxpy.ptx",false)
 alphaaxpy=CuFunction(md,"alphaaxpy")
 
 function alphaaxpy!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
@@ -232,7 +234,7 @@ function alphaaxpy!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
 end
 export alphaaxpy!
 
-md=CuModule("alphaax.ptx",false)
+md=CuModule(DIR*"alphaax.ptx",false)
 alphaax=CuFunction(md,"alphaax")
 function alphaax!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
     nblocks=round(Int,ceil(length(B)/1024))
@@ -240,7 +242,7 @@ function alphaax!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
 end
 export alphaax!
 
-md=CuModule("gaxpy.ptx",false)
+md=CuModule(DIR*"gaxpy.ptx",false)
 gaxpy=CuFunction(md,"gaxpy")
 function gaxpy!(alpha::CudaArray,B::CudaArray,C::CudaArray)
     nblocks=round(Int,ceil(length(B)/1024))
@@ -255,7 +257,7 @@ export axpy!
 
 # NB: I've defined this differently from the Base.scale! -- here scale!(a,X) scales X by factor a and overwrites X. This is unfortunate, but I defined this according to the convention that overwrite functions overwrite their last argument.
 import Base.scale!
-md=CuModule("gscale.ptx",false)
+md=CuModule(DIR*"gscale.ptx",false)
 kernel_gscale=CuFunction(md,"gscale")
 function scale!(alpha::CudaArray,B::CudaArray)
     nblocks=round(Int,ceil(length(B)/1024))
@@ -263,7 +265,7 @@ function scale!(alpha::CudaArray,B::CudaArray)
 end
 export scale!
 
-md=CuModule("diag.ptx",false)
+md=CuModule(DIR*"diag.ptx",false)
 diag_kernel=CuFunction(md,"diag_kernel")
 function diag!(A::CudaArray,B::CudaArray)
     nblocks=round(Int,ceil(length(B)/1024))
@@ -271,7 +273,7 @@ function diag!(A::CudaArray,B::CudaArray)
 end
 export diag!
 
-md=CuModule("diagm.ptx",false)
+md=CuModule(DIR*"diagm.ptx",false)
 diagm_kernel=CuFunction(md,"diagm_kernel")
 function diagm!(A::CudaArray,B::CudaArray)
     nblocks=round(Int,ceil(length(A)/1024))
@@ -281,7 +283,7 @@ end
 export diagm!
 
 
-md=CuModule("gax.ptx",false)
+md=CuModule(DIR*"gax.ptx",false)
 gax=CuFunction(md,"gax")
 function gax!(alpha::CudaArray,B::CudaArray,C::CudaArray)
     nblocks=round(Int,ceil(length(B)/1024))
@@ -289,7 +291,7 @@ function gax!(alpha::CudaArray,B::CudaArray,C::CudaArray)
 end
 export gax!
 
-md=CuModule("ax.ptx",false)
+md=CuModule(DIR*"ax.ptx",false)
 ax=CuFunction(md,"ax")
 function ax!(alpha::Float64,B::CudaArray,C::CudaArray)
        nblocks=round(Int,ceil(length(B)/1024))
@@ -297,7 +299,7 @@ function ax!(alpha::Float64,B::CudaArray,C::CudaArray)
 end
 export ax!
 
-md=CuModule("vmultbang.ptx",false)
+md=CuModule(DIR*"vmultbang.ptx",false)
 vmultbangkernel=CuFunction(md,"vmultbang")
 function vmult!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
     nblocks=round(Int,ceil(length(B)/1024))
@@ -305,7 +307,7 @@ function vmult!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
 end
 export vmult!
 
-md=CuModule("vdivbang.ptx",false)
+md=CuModule(DIR*"vdivbang.ptx",false)
 vdivbangkernel=CuFunction(md,"vdivbang")
 function vdiv!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
     nblocks=round(Int,ceil(length(B)/1024))
@@ -313,21 +315,21 @@ function vdiv!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
 end
 export vdiv!
 
-md=CuModule("vmultbangupdate.ptx",false)
+md=CuModule(DIR*"vmultbangupdate.ptx",false)
 vmultbangupdate_kernel=CuFunction(md,"vmultbangupdate")
 function vmultupdate!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
         nblocks=round(Int,ceil(length(B)/1024))
     launch(vmultbangupdate_kernel,nblocks,1024,(length(A),alpha,A,B,C))
 end
 
-md=CuModule("vdivbangupdate.ptx",false)
+md=CuModule(DIR*"vdivbangupdate.ptx",false)
 vdivbangupdate_kernel=CuFunction(md,"vdivbangupdate")
 function vdivupdate!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray)
     nblocks=round(Int,ceil(length(B)/1024))
     launch(vdivbangupdate_kernel,nblocks,1024,(length(A),alpha,A,B,C))
 end
 
-md=CuModule("vAoverBupdate.ptx",false)
+md=CuModule(DIR*"vAoverBupdate.ptx",false)
 vAoverBupdate_kernel=CuFunction(md,"vAoverBupdate")
 function vAoverBupdate!(alpha::Float64,A::CudaArray,B::CudaArray,C::CudaArray,D::CudaArray)
     nblocks=round(Int,ceil(length(B)/1024))

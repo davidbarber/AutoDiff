@@ -21,7 +21,7 @@ function DKLsoftmax(derivativeIDX,f_c,faux_c,grad_c,grad_n,p::Array{Float64,2},x
     end
 end
 
-if GPU
+if PROC=="GPU"
  
     function FKLsoftmax(p::CudaArray,x::CudaArray)
         tmp=CudaArray(Float64,size(x))

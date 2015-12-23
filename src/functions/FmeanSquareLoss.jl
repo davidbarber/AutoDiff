@@ -20,7 +20,7 @@ function DmeanSquareLoss(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Arra
     end
 end
 
-if GPU
+if PROC=="GPU"
 
     function FmeanSquareLoss(x::CudaArray,y::CudaArray)
         tmp=copy(x)

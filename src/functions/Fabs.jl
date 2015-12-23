@@ -13,7 +13,7 @@ function Dabs(derivativeIDX,f_c,faux_c,grad_c,grad_n,x)
     axpy!(1.0,sign(x).*grad_c,grad_n)
 end
 
-if 1==0 # TODO
+if 1==0 # TODO GPU
 
     function uuabs(A::CudaArray)
         return CudaArray(CUBLAS.asum(A)/length(A)*ones(1,1))

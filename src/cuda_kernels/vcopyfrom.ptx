@@ -1,0 +1,94 @@
+	.version 1.4
+	.target sm_10, map_f64_to_f32
+	// compiled with /usr/lib/nvidia-cuda-toolkit/lib//be
+	// nvopencc 4.1 built on 2013-07-17
+
+	//-----------------------------------------------------------
+	// Compiling /tmp/tmpxft_0000254f_00000000-9_vcopyfrom.cpp3.i (/tmp/ccBI#.2sSEnj)
+	//-----------------------------------------------------------
+
+	//-----------------------------------------------------------
+	// Options:
+	//-----------------------------------------------------------
+	//  Target:ptx, ISA:sm_10, Endian:little, Pointer Size:64
+	//  -O3	(Optimization level)
+	//  -g0	(Debug level)
+	//  -m2	(Report advisories)
+	//-----------------------------------------------------------
+
+	.file	1	"<command-line>"
+	.file	2	"/usr/include/stdc-predef.h"
+	.file	3	"/tmp/tmpxft_0000254f_00000000-8_vcopyfrom.cudafe2.gpu"
+	.file	4	"/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h"
+	.file	5	"/usr/include/crt/device_runtime.h"
+	.file	6	"/usr/include/host_defines.h"
+	.file	7	"/usr/include/builtin_types.h"
+	.file	8	"/usr/include/device_types.h"
+	.file	9	"/usr/include/driver_types.h"
+	.file	10	"/usr/include/surface_types.h"
+	.file	11	"/usr/include/texture_types.h"
+	.file	12	"/usr/include/vector_types.h"
+	.file	13	"/usr/include/device_launch_parameters.h"
+	.file	14	"/usr/include/crt/storage_class.h"
+	.file	15	"vcopyfrom.cu"
+	.file	16	"/usr/include/common_functions.h"
+	.file	17	"/usr/include/math_functions.h"
+	.file	18	"/usr/include/math_constants.h"
+	.file	19	"/usr/include/device_functions.h"
+	.file	20	"/usr/include/sm_11_atomic_functions.h"
+	.file	21	"/usr/include/sm_12_atomic_functions.h"
+	.file	22	"/usr/include/sm_13_double_functions.h"
+	.file	23	"/usr/include/sm_20_atomic_functions.h"
+	.file	24	"/usr/include/sm_32_atomic_functions.h"
+	.file	25	"/usr/include/sm_35_atomic_functions.h"
+	.file	26	"/usr/include/sm_20_intrinsics.h"
+	.file	27	"/usr/include/sm_30_intrinsics.h"
+	.file	28	"/usr/include/sm_32_intrinsics.h"
+	.file	29	"/usr/include/sm_35_intrinsics.h"
+	.file	30	"/usr/include/surface_functions.h"
+	.file	31	"/usr/include/texture_fetch_functions.h"
+	.file	32	"/usr/include/texture_indirect_functions.h"
+	.file	33	"/usr/include/surface_indirect_functions.h"
+	.file	34	"/usr/include/math_functions_dbl_ptx1.h"
+
+
+	.entry vcopyfrom (
+		.param .s32 __cudaparm_vcopyfrom_n,
+		.param .s32 __cudaparm_vcopyfrom_shift,
+		.param .u64 __cudaparm_vcopyfrom_a,
+		.param .u64 __cudaparm_vcopyfrom_b)
+	{
+	.reg .u16 %rh<4>;
+	.reg .u32 %r<8>;
+	.reg .u64 %rd<10>;
+	.reg .f64 %fd<3>;
+	.reg .pred %p<3>;
+	.loc	15	3	0
+$LDWbegin_vcopyfrom:
+	mov.u16 	%rh1, %ctaid.x;
+	mov.u16 	%rh2, %ntid.x;
+	mul.wide.u16 	%r1, %rh1, %rh2;
+	cvt.u32.u16 	%r2, %tid.x;
+	add.u32 	%r3, %r2, %r1;
+	ld.param.s32 	%r4, [__cudaparm_vcopyfrom_n];
+	setp.le.s32 	%p1, %r4, %r3;
+	@%p1 bra 	$Lt_0_1026;
+	.loc	15	8	0
+	ld.param.u64 	%rd1, [__cudaparm_vcopyfrom_a];
+	ld.param.s32 	%r5, [__cudaparm_vcopyfrom_shift];
+	add.s32 	%r6, %r5, %r3;
+	cvt.s64.s32 	%rd2, %r6;
+	mul.wide.s32 	%rd3, %r6, 8;
+	add.u64 	%rd4, %rd1, %rd3;
+	ld.global.f64 	%fd1, [%rd4+0];
+	ld.param.u64 	%rd5, [__cudaparm_vcopyfrom_b];
+	cvt.s64.s32 	%rd6, %r3;
+	mul.wide.s32 	%rd7, %r3, 8;
+	add.u64 	%rd8, %rd5, %rd7;
+	st.global.f64 	[%rd8+0], %fd1;
+$Lt_0_1026:
+	.loc	15	10	0
+	exit;
+$LDWend_vcopyfrom:
+	} // vcopyfrom
+

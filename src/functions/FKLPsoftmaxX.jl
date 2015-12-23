@@ -17,7 +17,7 @@ function DKLsoftmax(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array{Float64,2})
     end
 end
 
-if GPU
+if PROC=="GPU"
 end
 
 

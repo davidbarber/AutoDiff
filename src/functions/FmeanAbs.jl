@@ -22,7 +22,7 @@ function DmeanAbs(derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)
 
 end
 
-if GPU
+if PROC=="GPU"
 
     function meanAbs(A::CudaArray)
         return CudaArray(CUBLAS.asum(A)/length(A)*ones(1,1))

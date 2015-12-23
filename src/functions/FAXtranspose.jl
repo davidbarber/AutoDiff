@@ -40,7 +40,7 @@ function DAXtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
     end
 end
 
-if GPU
+if PROC=="GPU"
 #    function FAXtranspose(A::CudaArray,X::CudaArray)
 #        if size(A)==(1,1)
 #            tmp=CudaArray(Float64,size(X)); gfill!(tmp,A)

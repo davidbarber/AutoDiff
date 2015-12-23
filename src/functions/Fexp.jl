@@ -9,7 +9,7 @@ function Dexp(derivativeIDX,f_c,faux_c,grad_c,grad_n,x)
 end
 
 
-if GPU
+if PROC=="GPU"
 
     function Fexp(x::CudaArray)
         tmp=CudaArray(Float64,size(x))

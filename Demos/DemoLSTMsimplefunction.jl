@@ -1,5 +1,9 @@
-function DemoLSTMsimplefunction(PlotResults=true)
+#function DemoLSTMsimplefunction(PlotResults=true)
 
+PlotResults=true
+
+useproc("GPU")
+    
 # Simple memory problem using an LSTM style memory:
 # If either of the first two inputs in x[t] is 1, then output to y[t] the previous memory m[t-1] and update the memory m[t] to store x[t]
 # This can be achieved using a simple LSTM style approach.
@@ -17,7 +21,7 @@ function LSTM(t)
     beta[t]=sigmoidAXplusBias(Wout,x[t],Bout)
     yout[t]=beta[t]*m[t-1]
 end
-
+    
 T=400
 m=Array(ADnode,T)
 alpha=Array(ADnode,T)
@@ -39,8 +43,8 @@ y[1]=ADnode()
 beta[1]=sigmoid(Wout*x[1])
 for t=2:T
     LSTM(t)
-    loss[t]=meanSquareLoss(yout[t],y[t])
-    #loss[t]=BinaryKullbackLeiblerLoss(y[t],yout[t])
+    #loss[t]=meanSquareLoss(yout[t],y[t])
+    loss[t]=BinaryKullbackLeiblerLoss(y[t],yout[t])
 end
 totalloss=mean(loss[2:T])
 net=EndCode() # defines the graph
@@ -72,9 +76,11 @@ end
 net=compile(net) # compile and preallocate memory
 #gradcheck(net;showgrad=true) # only use a small network to check the gradient, otherwise this will take a long time
 
-
+@gpu CUDArt.init([0])
+@gpu net=convert(net,"GPU")    # CPU is significantly faster
 
 # Training:
+println("Training: using $(net.gpu==true? "GPU" : "CPU") ")
 nupdates=1000
 ParsToUpdate=Parameters(net)
 error=Array(Float64,0)
@@ -83,9 +89,8 @@ error=Array(Float64,0)
     LearningRate=5.5
     ADforward!(net)
     ADbackward!(net)
-    push!(error,extract(net.value[net.FunctionNode])[1])
+    push!(error,to_host(net.value[net.FunctionNode])[1])
     printover("iteration $i: training loss = $(error[i])")
-#        print '{0}\r'.format(x),
     for par in ParsToUpdate
         #GradientDescentUpdate!(net.value[par],net.gradient[par],LearningRate)
         NesterovGradientDescentUpdate!(net.value[par],net.gradient[par],v[par],LearningRate,i/500)
@@ -95,8 +100,8 @@ end
 if PlotResults==true
     yy=zeros(X,T); yyout=zeros(X,T); xx=zeros(X,T)
     for t=2:T
-        yy[:,t]=net.value[y[t]]; yyout[:,t]=net.value[yout[t]]
-        xx[:,t]=net.value[x[t]];
+        yy[:,t]=to_host(net.value[y[t]]); yyout[:,t]=to_host(net.value[yout[t]])
+        xx[:,t]=to_host(net.value[x[t]])
     end
 
     fig,ax=PyPlot.subplots(3,1,sharex=true)
@@ -111,4 +116,4 @@ if PlotResults==true
     figure(); plot(error); title("training loss")
 end
 
-end
+#end

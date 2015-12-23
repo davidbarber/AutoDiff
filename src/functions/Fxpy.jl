@@ -42,7 +42,7 @@ function Dxpy(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
     end
 end
 
-if GPU
+if PROC=="GPU"
 
     function Fxpy(x::CudaArray,y::CudaArray)
         if size(x)==(1,1)
@@ -91,7 +91,7 @@ import Base.+
 
 
 
-if GPU
+if PROC=="GPU"
     function +(A::CudaArray,B::CudaArray)
 #        tmp=CudaArray(zeros(size(A))); copy!(tmp,A); axpy!(1.0,B,tmp);
 #        return tmp

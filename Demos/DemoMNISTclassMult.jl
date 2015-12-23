@@ -3,7 +3,7 @@ using MAT
 Ntrain=60000
 Ntest=10000
 BatchSize=500
-TrainingIts=500 # number of Nesterov updates
+TrainingIts=10000 # number of Nesterov updates
 include("loadmnist.jl")
 images,label=loadmnist()
 label=convert(Array{Int,2},label)
@@ -33,8 +33,8 @@ for i=2:L-1
     w[i]=ADvariable()
     #h[i]=sigmoid(w[i]*h[i-1])
 #   h[i]=abs(w[i]*h[i-1])
-    h[i]=abs(w[i]*h[i-1])+1.5*w[i]*h[i-1]
-    #h[i]=rectlin(w[i]*h[i-1])
+#    h[i]=abs(w[i]*h[i-1])+1.5*w[i]*h[i-1]
+    h[i]=rectlin(w[i]*h[i-1])
     
 end
 w[L]=ADvariable()
@@ -50,28 +50,35 @@ for i=2:L
 end
 
 net=compile(net) # compile the DAG and preallocate memory
+@gpu CUDArt.init([0]) # let the user do device management
+@gpu net=convert(net,"GPU")
 
-println("Training:")
+
+println("Training: using $(net.gpu==true? "GPU" : "CPU") ")
+starttime=time()
 error=Array(Float64,0)
 ParsToUpdate=Parameters(net)
-meangrad=zeros(TrainingIts)
-meanv=zeros(TrainingIts)
 velo=NesterovInit(net)
 minibatchstart=1 # starting datapoint for the minibatch
 for iter=1:TrainingIts
     LearningRate=0.1/(1+iter/500)
     minibatchstart,minibatch=GetBatch(minibatchstart,BatchSize,Ntrain)
-    net.value[x]=traindata[:,minibatch] # select batch of data
-    net.value[class]=trainclass[:,minibatch] # select batch of data
+    net.value[x]=cArray(traindata[:,minibatch]) # select batch of data
+    net.value[class]=cArray(trainclass[:,minibatch]) # select batch of data
     ADforward!(net)
     ADbackward!(net)
     push!(error,extract(net.value[net.FunctionNode])[1])
-    println("iteration $iter: training loss = $(error[iter])")
+    printover("iteration $iter: training loss = $(error[iter])")
     for par in ParsToUpdate
             #GradientDescentUpdate!(net.value[par],net.gradient[par],LearningRate)
         NesterovGradientDescentUpdate!(net.value[par],net.gradient[par],velo[par],LearningRate,iter)
     end
 end
+endtime=time()
+println("Training took $(endtime-starttime) seconds")
+
+
+net=convert(net,"CPU")
 
 classpredtrain=argcolmax(softmax(net.value[h[L]]))
 classtrain=argcolmax(net.value[class])
@@ -86,6 +93,9 @@ ForwardPassList!(net,ExcludeNodes=[class])
 @gpu (net=convert(net,"CPU"); ADforward!(net,AllocateMemory=true); net=convert(net,"GPU")) # net computes the loss (which depends on the class), so ignore all nodes that depend on the class
 @cpu ADforward!(net,AllocateMemory=true)
 ADforward!(net) # net computes the loss (which depends on the class), so ignore all nodes that depend on the class
+
+net=convert(net,"CPU")
+
 classpredtrain=argcolmax(softmax(net.value[h[L]]))
 classtrain=argcolmax(trainclass)
 println("train accuracy = $(mean(classpredtrain.==classtrain))")
@@ -98,6 +108,9 @@ ForwardPassList!(net,ExcludeNodes=[loss])
 @gpu (net=convert(net,"CPU"); ADforward!(net,AllocateMemory=true); net=convert(net,"GPU")) # net computes the loss (which depends on the class), so ignore all nodes that depend on the class
 @cpu ADforward!(net,AllocateMemory=true)
 ADforward!(net) # net computes the loss (which depends on the class), so ignore all nodes that depend on the class
+
+
+net=convert(net,"CPU")
 classpredtest=argcolmax(softmax(net.value[h[L]]))
 classtest=argcolmax(testclass)
 println("test accuracy = $(mean(classpredtest.==classtest))")

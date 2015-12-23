@@ -12,7 +12,7 @@ end
 
 
 
-if GPU
+if PROC=="GPU"
     
     function Fsoftmax(X::CudaArray)
         expX=CudaArray(Float64,size(X))

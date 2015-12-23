@@ -21,7 +21,7 @@ end
 DsumSq(derivativeIDX,f_c,faux_c,grad_c,grad_n,x_n...)=axpy!(2.0,grad_c.*x_n[derivativeIDX],grad_n)
 
 
-if GPU
+if PROC=="GPU"
     function FsumSq(x::CudaArray...)
         tmp=CudaArray(zeros(1))
         for i in 1:length(x)

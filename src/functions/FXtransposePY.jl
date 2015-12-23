@@ -24,7 +24,7 @@ end
 
 
 
-if GPU
+if PROC=="GPU"
     function FXtransposePY_inplace(value::CudaArray,auxvalue,x::CudaArray,y::CudaArray)
         if size(x)==(1,1)
             gfill!(value,x); axpy!(1.0,y,value)

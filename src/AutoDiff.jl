@@ -11,7 +11,7 @@ push!(LOAD_PATH,pwd())
 #push!(LOAD_PATH, joinpath(pwd(), "Demos"))
 
 include("gpumacros.jl")
-export @gpu, @cpu
+#export @gpu, @cpu
 
 include("initfile.jl")
 
@@ -24,7 +24,7 @@ include("initfile.jl")
 @gpu using CUBLAS
 
 using Reexport
-if GPU; @reexport using CUDArt; end
+@gpu (@reexport using CUDArt)
 
 global nodecounter
 export nodecounter
@@ -186,17 +186,17 @@ type network
 
    function network()
     vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(Node(),NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,GPU)
+        return new(Node(),NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU")
     end
 
     function network(node)
         vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(node,NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,GPU)
+        return new(node,NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU")
     end
 
     function network(node,FunctionNode,value,auxvalue,gradient,anc,relevantchildren,forwardlist=nothing)
     vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(node,NodeCounter(),value,auxvalue,gradient,vn,anc,relevantchildren,forwardlist,nothing,GPU)
+        return new(node,NodeCounter(),value,auxvalue,gradient,vn,anc,relevantchildren,forwardlist,nothing,PROC=="GPU")
     end
 
 end
@@ -240,6 +240,8 @@ export ADvariable
 ADconst(constval)=ADnode(;returnderivative=false,isconst=true,constval=Float64(constval))
 export ADconst
 
+
+#export @gpu, @cpu
 
 end
 

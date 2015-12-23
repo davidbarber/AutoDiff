@@ -23,7 +23,7 @@ function DXtransposeMY(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
     end
 end
 
-if GPU
+if PROC=="GPU"
 
     function FXtransposeMY_inplace(value::CudaArray,auxvalue,x::CudaArray,y::CudaArray)
         if size(x)==(1,1)

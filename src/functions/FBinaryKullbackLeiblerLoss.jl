@@ -22,7 +22,7 @@ function DBinaryEntropyLoss(derivativeIDX,f_c,faux_c,grad_c,grad_n,x,y)
 end
 
 
-if GPU
+if PROC=="GPU"
     FBinaryEntropyLoss(x::CudaArray,y::CudaArray)=(binaryentropy(x,y),nothing)
     FBinaryEntropyLoss_inplace(value,aux,x::CudaArray,y::CudaArray)=copy!(value,binaryentropy(x,y))
 

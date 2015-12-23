@@ -3,7 +3,9 @@
 # If either of the first two inputs in x[t] is 1, then output to y[t] the previous memory m[t-1] and update the memory m[t] to store x[t]
 # This can be achieved using a simple LSTM style approach.
 
-PlotResults=false
+useproc("CPU")
+    
+PlotResults=true
 
 T=400
 m=Array(ADnode,T)
@@ -67,13 +69,13 @@ net=compile(net) # compile and preallocate memory
 @gpu CUDArt.init([0])
 @gpu net=convert(net,"GPU")
 
-
 #gradcheck(net;showgrad=true) # use a small number of datapoints and small network to check the gradient, otherwise
 
 
 # Training:
+println("Training: using $(net.gpu==true? "GPU" : "CPU") ")
 ParsToUpdate=Parameters(net)
-nupdates=100
+nupdates=1000
 error=Array(Float64,0)
     velo=NesterovInit(net) # Nesterov velocity
     for i=1:nupdates

@@ -14,7 +14,7 @@ function Dhcat(derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)
 end
 
 
-if GPU
+if PROC=="GPU"
 
     function Fhcat_inplace(value::CudaArray,auxvalue,x::CudaArray...) # inplace
         totallength=1

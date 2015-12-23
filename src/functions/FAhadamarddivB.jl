@@ -14,7 +14,7 @@ function DAhadamarddivB(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,B)
     end
 end
 
-if GPU    
+if PROC=="GPU"    
     function FAhadamarddivB(A::CudaArray,B::CudaArray)
         tmp=CudaArray(Float64,size(A))
         vdiv!(1.0,A,B,tmp)

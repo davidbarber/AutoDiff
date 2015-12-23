@@ -41,7 +41,7 @@ function DAX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
 end
 
 
-if GPU
+if PROC=="GPU"
     gemm!(T1::Char,T2::Char,alpha::Float64,A::CudaArray,B::CudaArray,beta::Float64,C::CudaArray)=CUBLAS.gemm!(T1,T2,alpha,A,B,beta,C)
     export gemm!
     # TODO: make functions that mirror BLAS generality

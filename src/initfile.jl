@@ -1,1 +1,1 @@
-GPU=false
+global PROC; PROC="GPU"

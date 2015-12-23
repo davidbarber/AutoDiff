@@ -40,7 +40,7 @@ function DAmultdiagX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
     end
 end
 
-if GPU
+if PROC=="GPU"
     function FAmultdiagX_inplace(value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
         if size(A)==(1,1)
             diagm!(X,value)

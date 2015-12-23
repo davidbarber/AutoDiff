@@ -1,3 +1,5 @@
+global PROC
+
 push!(LOAD_PATH,pwd())
 #push!(LOAD_PATH, joinpath(pwd(), "src"))
 
@@ -7,4 +9,5 @@ map(d -> push!(LOAD_PATH, joinpath(pwd(), "./", d)),
 
 #push!(LOAD_PATH, joinpath(pwd(), "Demos"))
 
-include("usegpu.jl");
+#include("usegpu.jl")
+include("useproc.jl")

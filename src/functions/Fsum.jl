@@ -26,7 +26,7 @@ end
 import Base.sum
 
 
-if GPU
+if PROC=="GPU"
 
     function sum(A::CudaArray)
         return flatten(Float64,CUBLAS.gemv('T',1.,flatten(Float64,A),CudaArray(ones(length(A)))))

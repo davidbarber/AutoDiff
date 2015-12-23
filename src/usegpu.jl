@@ -1,6 +1,8 @@
 function usegpu(gpu::Bool)
 global GPU=gpu
-f=open("initfile.jl","w")
+global CPU=~gpu
+    
+    f=open(ADDIR*"/src/initfile.jl","w")
     if gpu==true
         write(f,"GPU=true\n")
     else

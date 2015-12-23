@@ -1,6 +1,57 @@
 void(x)=()
 
 
+import Base.convert
+function convert(net::network,gpucpu::ASCIIString)
+    
+    #if (net.gpu & (gpucpu=="GPU")) | (!net.gpu & (gpucpu=="CPU"))
+    #    return net
+    #else
+    #netout=deepcopy(net)
+    netout=deepcopy(net)
+    nds=net.validnodes
+    if gpucpu=="GPU"
+        netout.gpu=true
+        for n in nds
+            netout.value[n]=CudaArray(net.value[n])
+            netout.gradient[n]=CudaArray(net.gradient[n])
+            if isdefined(net.auxvalue,n)
+                if isa(net.auxvalue[n],Tuple)
+                    tmp=Array(Any,length(net.auxvalue[n]))
+                    for i=1:length(net.auxvalue[n]) # can be a tuple, so iterate over elements
+                        tmp[i]=nothing
+                        if  ~isa(net.auxvalue[n][i],Void) && ~isempty(net.auxvalue[n][i])
+                            tmp[i]=CudaArray(net.auxvalue[n][i])
+                        end
+                    end
+                    netout.auxvalue[n]=tuple(tmp...)
+                else
+                    if  ~isa(net.auxvalue[n],Void) && ~isempty(net.auxvalue[n])
+                        netout.auxvalue[n]=CudaArray(net.auxvalue[n])
+                    end
+                end
+            end
+        end
+    end
+    if gpucpu=="CPU"
+        netout.gpu=false
+        for n in nds
+            netout.value[n]=to_host(net.value[n])
+            netout.gradient[n]=to_host(net.gradient[n])
+            if isdefined(net.auxvalue,n)
+                if  isa(net.auxvalue[n],CudaArray)
+                    netout.auxvalue[n]=to_host(net.auxvalue[n])
+                end
+            end
+        end
+    end
+    return netout
+#end
+end
+export convert
+
+
+
 import Base.copy!
 @gpu copy!(gB::CudaArray,gA::CudaArray)=CUBLAS.blascopy!(length(gA),gA,1,gB,1)
 export copy!
@@ -32,7 +83,7 @@ export axpy
 
 #@gpu using CUDArt, CUBLAS
 
-if GPU
+if PROC=="GPU"
     import Base.LinAlg.BLAS.scale!
     scale!(s,g::CudaArray)=CUBLAS.scal!(length(g),s,g,1)
     export scale!
@@ -51,7 +102,7 @@ sigma(x)=1./(1.+exp(-x))
 export sigma
 
 
-if GPU
+if PROC=="GPU"
     function extract(A::CudaArray)
     return to_host(A)
     end
