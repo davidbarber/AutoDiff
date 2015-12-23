@@ -1,5 +1,7 @@
 DIR=pwd()*"/cuda_kernels/"
 
+println("loading CUDA kernels from $DIR")
+
 md=CuModule(DIR*"vcopyshift.ptx",false)
 vcopyshift_kernel=CuFunction(md,"vcopyshift")
 function copyinto!(out::CudaArray,A::CudaArray,location::Int)
@@ -30,7 +32,26 @@ function vsign!(A::CudaArray,out::CudaArray)
     nblocks=round(Int,ceil(length(out)/1024))
     launch(vsign_kernel,nblocks,1024,(length(out),A,out))
 end
-    export vsign!
+export vsign!
+
+md=CuModule(DIR*"xsigny_update.ptx",false)
+xsigny_update_kernel=CuFunction(md,"xsigny_update")
+function xsigny_update!(X::CudaArray,Y::CudaArray,out::CudaArray)
+    nblocks=round(Int,ceil(length(out)/1024))
+    launch(xsigny_update_kernel,nblocks,1024,(length(out),X,Y,out))
+end
+export xsigny_update!
+
+
+md=CuModule(DIR*"vabs.ptx",false)
+vabs_kernel=CuFunction(md,"vabs")
+function abs!(A::CudaArray,out::CudaArray)
+    nblocks=round(Int,ceil(length(out)/1024))
+    launch(vabs_kernel,nblocks,1024,(length(out),A,out))
+end
+export abs!
+
+
 
 md=CuModule(DIR*"gfill.ptx",false)
 gfill_kernel=CuFunction(md,"gfill")
@@ -208,6 +229,17 @@ function rectlin!(A::CudaArray,B::CudaArray)
     launch(kernel_rectlin,nblocks,1024,(length(A),A,B))
 end
 export rectlin!
+
+
+
+md=CuModule(DIR*"kinklin.ptx",false)
+kernel_kinklin=CuFunction(md,"kinklin")
+function kinklin!(A::CudaArray,B::CudaArray)
+    nblocks=round(Int,ceil(length(A)/1024))
+    launch(kernel_kinklin,nblocks,1024,(length(A),0.25,A,B))
+end
+export kinklin!
+
 
 function rectlin(A::CudaArray)
     out=CudaArray(Float64,size(A))

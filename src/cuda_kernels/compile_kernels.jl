@@ -31,14 +31,17 @@ kernels=["vcopyshift",
          "vdivbang",
          "vmultbangupdate",
          "vdivbangupdate",
-         "vAoverBupdate"
+         "vAoverBupdate",
+         "vabs",
+         "xsigny_update",
+         "kinklin"
          ]
 
-cd("./cuda_kernels")
+#cd("./cuda_kernels")
 for k in kernels
-    #s="./cuda_kernels/"*k*".cu"
     s=k*".cu"
     println(s)
 #    run(`nvcc -arch sm_30 -use_fast_math -ptx $s`) # Jetson TK1
     run(`nvcc -use_fast_math -ptx $s`) # Titan GTX
 end
+#cd("../")

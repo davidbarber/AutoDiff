@@ -9,8 +9,8 @@ useproc("GPU") # GPU about 4 times faster than CPU
 using MAT
 
 Ntrain=60000
-BatchSize=100
-TrainingIts=100000 # number of Nesterov updates
+BatchSize=200
+TrainingIts=10000 # number of Nesterov updates
 include("loadmnist.jl")
 images,label=loadmnist()
 r=randperm(size(images,2))
@@ -21,7 +21,6 @@ data[data.>(1-tol)]=1-tol
 data[data.<tol]=tol
 
 H=[784 1000 500 250 30 250 500 1000 784] # number of units in each layer
-#H=[784 50 30 50 784] # number of units in each layer
 
 L=length(H) # number of hidden layers
 # node indices:
@@ -34,11 +33,10 @@ ytrain=h[1]=ADnode()
 for layer=2:L-1
     w[layer]=ADvariable()
     bias[layer]=ADvariable()
-    #h[layer]=absAXplusBias(w[layer],h[layer-1],bias[layer])
-    h[layer]=rectlinAXplusBias(w[layer],h[layer-1],bias[layer])
-#    h[layer]=abs(w[layer]*h[layer-1])
-#    h[layer]=rectlin(w[layer]*h[layer-1])
-#    h[layer]=elu(w[layer]*h[layer-1])
+    h[layer]=kinklinAXplusBias(w[layer],h[layer-1],bias[layer])
+#    h[layer]=absAXplusBias(w[layer],h[layer-1],bias[layer])
+#    h[layer]=rectlinAXplusBias(w[layer],h[layer-1],bias[layer])
+#    h[layer]=abs(w[layer]*h[layer-1])+1.5*w[layer]*h[layer-1]
 end
 w[L]=ADvariable()
 bias[L]=ADvariable()
@@ -49,11 +47,11 @@ loss=BinaryKullbackLeiblerLossXsigmoidY(ytrain,h[L])
 net=EndCode()
 
 #instantiate root node values:
-net.value[h[1].index]=data[:,1:BatchSize]
+net.value[h[1]]=data[:,1:BatchSize]
 
 for i=2:L
     net.value[w[i]]=.5*sign(randn(H[i],H[i-1]))/sqrt(H[i-1])
-    net.value[bias[i]]=.5*sign(randn(H[i],1))
+    net.value[bias[i]]=.005*sign(randn(H[i],1))+0.1
 end
 initvalue=deepcopy(net.value[w[L]])
 
@@ -68,10 +66,11 @@ tstart=time()
 error=Array(Float64,0)
 ParsToUpdate=Parameters(net)
 velo=NesterovInit(net)
+#avgrad=GradientDescentMomentumInit(net); Momentum=0.5
 minibatchstart=1 # starting datapoint for the minibatch
 #ForwardPassList!(net,ExcludeNodes=[ypred])
 for iter=1:TrainingIts
-    LearningRate=0.1/(1+iter/1000)
+    LearningRate=0.2/(1+iter/5000)
     minibatchstart,minibatch=GetBatch(minibatchstart,BatchSize,Ntrain)
     net.value[ytrain]=cArray(PROC,data[:,minibatch]) # select batch of data
     #net.value[ytrain]=cArray(data[:,minibatch]) # select batch of data
@@ -81,6 +80,7 @@ for iter=1:TrainingIts
     printover("iteration $iter: training loss = $(error[iter]) : meanSqLoss = $(784*to_host(net.value[meanSqloss]))")
     for par in ParsToUpdate
         #GradientDescentUpdate!(net.value[par],net.gradient[par],LearningRate)
+        #GradientDescentMomentumUpdate!(net.value[par],net.gradient[par],avgrad[par],Momentum,LearningRate)
         NesterovGradientDescentUpdate!(net.value[par],net.gradient[par],velo[par],LearningRate,iter)
     end
 end
@@ -89,8 +89,6 @@ println("\nTraining took $(tend-tstart) seconds\n")
 
 if PlotResults
     net=convert(net,"CPU") # to make analysis easier
-    ForwardPassList!(net)
-    ADforward!(net)  # ypred node only needed for prediction, not training error
     figure(1)
     plot(error); title("training loss")
     figure(2)

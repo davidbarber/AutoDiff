@@ -109,7 +109,10 @@ f=[
    "Fvcat", "Fhcat",
    "Fdiagm", "FdiagAmultX", "FAmultdiagX",
    "FabsAXplusBias",
-   "Felu"
+   "Felu",
+   "Fabs",
+   "Fkinklin",
+   "FkinklinAXplusBias"
    ]
 
 for fn in f

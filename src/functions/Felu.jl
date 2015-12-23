@@ -1,4 +1,4 @@
-# f(x)=elu(x)
+# f(x)=elu(x)=x*[x>0] + (exp(x)-1)*[x<0]
 
 alpha=1.0
 function Felu(x)
@@ -34,41 +34,12 @@ function Delu(derivativeIDX,f_c,faux_c,grad_c,grad_n,x)
     axpy!(1.0,tmp.*grad_c,grad_n)    
 end
 
-if 1==0 # TODO
+if 1==0 # TODO GPU version
 
-    function uuelu(A::CudaArray)
-        return CudaArray(CUBLAS.asum(A)/length(A)*ones(1,1))
-    end
-    export meanElu
-
-    function meanElu!(A::CudaArray,Out::CudaArray)
-        copy!(Out,meanElu(A))
-    end
-    export meanElu!
-
-
-    function FmeanElu(x::CudaArray...)
-        tmp=CudaArray(zeros(1,1))
-        for i in 1:length(x)
-            axpy!(1.0/length(x),meanElu(x[i]),tmp)
-        end
-        return (tmp,nothing)
+    function Felu_inplace(value::CudaArray,auxvalue,x::CudaArray...) # inplace
     end
 
-
-    function FmeanElu_inplace(value::CudaArray,auxvalue,x::CudaArray...) # inplace
-        fill!(value,0.0)
-        for i in 1:length(x)
-            axpy!(1.0/length(x),meanElu(x[i]),value)
-        end
-    end
-
-
-    function DmeanElu(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
-        tmp=CudaArray(Float64,size(grad_n))
-        vsign!(x[derivativeIDX],tmp)
-        alphaaxpy!(1.0/(length(x)*length(x[derivativeIDX])),grad_c,tmp,grad_n)
-        free(tmp)
+    function Delu(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
     end
 
 end

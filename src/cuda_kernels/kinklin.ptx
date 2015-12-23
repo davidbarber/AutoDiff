@@ -4,7 +4,7 @@
 	// nvopencc 4.1 built on 2013-07-17
 
 	//-----------------------------------------------------------
-	// Compiling /tmp/tmpxft_00005e4c_00000000-9_vcopyfrom_update.cpp3.i (/tmp/ccBI#.l38xDl)
+	// Compiling /tmp/tmpxft_0000626a_00000000-9_kinklin.cpp3.i (/tmp/ccBI#.WXLaTo)
 	//-----------------------------------------------------------
 
 	//-----------------------------------------------------------
@@ -18,7 +18,7 @@
 
 	.file	1	"<command-line>"
 	.file	2	"/usr/include/stdc-predef.h"
-	.file	3	"/tmp/tmpxft_00005e4c_00000000-8_vcopyfrom_update.cudafe2.gpu"
+	.file	3	"/tmp/tmpxft_0000626a_00000000-8_kinklin.cudafe2.gpu"
 	.file	4	"/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h"
 	.file	5	"/usr/include/crt/device_runtime.h"
 	.file	6	"/usr/include/host_defines.h"
@@ -30,7 +30,7 @@
 	.file	12	"/usr/include/vector_types.h"
 	.file	13	"/usr/include/device_launch_parameters.h"
 	.file	14	"/usr/include/crt/storage_class.h"
-	.file	15	"vcopyfrom_update.cu"
+	.file	15	"kinklin.cu"
 	.file	16	"/usr/include/common_functions.h"
 	.file	17	"/usr/include/math_functions.h"
 	.file	18	"/usr/include/math_constants.h"
@@ -52,45 +52,49 @@
 	.file	34	"/usr/include/math_functions_dbl_ptx1.h"
 
 
-	.entry vcopyfrom_update (
-		.param .s32 __cudaparm_vcopyfrom_update_n,
-		.param .s32 __cudaparm_vcopyfrom_update_shift,
-		.param .u64 __cudaparm_vcopyfrom_update_a,
-		.param .u64 __cudaparm_vcopyfrom_update_b)
+	.entry kinklin (
+		.param .s32 __cudaparm_kinklin_n,
+		.param .f64 __cudaparm_kinklin_gamma,
+		.param .u64 __cudaparm_kinklin_a,
+		.param .u64 __cudaparm_kinklin_b)
 	{
 	.reg .u16 %rh<4>;
-	.reg .u32 %r<8>;
-	.reg .u64 %rd<10>;
-	.reg .f64 %fd<5>;
-	.reg .pred %p<3>;
+	.reg .u32 %r<6>;
+	.reg .u64 %rd<8>;
+	.reg .f64 %fd<6>;
+	.reg .pred %p<4>;
 	.loc	15	3	0
-$LDWbegin_vcopyfrom_update:
+$LDWbegin_kinklin:
 	mov.u16 	%rh1, %ctaid.x;
 	mov.u16 	%rh2, %ntid.x;
 	mul.wide.u16 	%r1, %rh1, %rh2;
 	cvt.u32.u16 	%r2, %tid.x;
 	add.u32 	%r3, %r2, %r1;
-	ld.param.s32 	%r4, [__cudaparm_vcopyfrom_update_n];
+	ld.param.s32 	%r4, [__cudaparm_kinklin_n];
 	setp.le.s32 	%p1, %r4, %r3;
-	@%p1 bra 	$Lt_0_1026;
-	.loc	15	8	0
-	ld.param.u64 	%rd1, [__cudaparm_vcopyfrom_update_b];
-	cvt.s64.s32 	%rd2, %r3;
-	mul.wide.s32 	%rd3, %r3, 8;
-	add.u64 	%rd4, %rd1, %rd3;
-	ld.global.f64 	%fd1, [%rd4+0];
-	ld.param.u64 	%rd5, [__cudaparm_vcopyfrom_update_a];
-	ld.param.s32 	%r5, [__cudaparm_vcopyfrom_update_shift];
-	add.s32 	%r6, %r5, %r3;
-	cvt.s64.s32 	%rd6, %r6;
-	mul.wide.s32 	%rd7, %r6, 8;
-	add.u64 	%rd8, %rd5, %rd7;
-	ld.global.f64 	%fd2, [%rd8+0];
-	add.f64 	%fd3, %fd1, %fd2;
-	st.global.f64 	[%rd4+0], %fd3;
-$Lt_0_1026:
-	.loc	15	10	0
+	@%p1 bra 	$Lt_0_1794;
+	cvt.s64.s32 	%rd1, %r3;
+	mul.wide.s32 	%rd2, %r3, 8;
+	ld.param.u64 	%rd3, [__cudaparm_kinklin_b];
+	add.u64 	%rd4, %rd3, %rd2;
+	ld.param.u64 	%rd5, [__cudaparm_kinklin_a];
+	add.u64 	%rd6, %rd5, %rd2;
+	ld.global.f64 	%fd1, [%rd6+0];
+	mov.f64 	%fd2, 0d0000000000000000;	// 0
+	setp.gt.f64 	%p2, %fd1, %fd2;
+	@!%p2 bra 	$Lt_0_2562;
+	.loc	15	9	0
+	st.global.f64 	[%rd4+0], %fd1;
+	bra.uni 	$Lt_0_2306;
+$Lt_0_2562:
+	.loc	15	11	0
+	ld.param.f64 	%fd3, [__cudaparm_kinklin_gamma];
+	mul.f64 	%fd4, %fd3, %fd1;
+	st.global.f64 	[%rd4+0], %fd4;
+$Lt_0_2306:
+$Lt_0_1794:
+	.loc	15	13	0
 	exit;
-$LDWend_vcopyfrom_update:
-	} // vcopyfrom_update
+$LDWend_kinklin:
+	} // kinklin
 

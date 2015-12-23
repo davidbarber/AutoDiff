@@ -4,7 +4,7 @@
 	// nvopencc 4.1 built on 2013-07-17
 
 	//-----------------------------------------------------------
-	// Compiling /tmp/tmpxft_000027df_00000000-9_alphaax.cpp3.i (/tmp/ccBI#.SwixdY)
+	// Compiling /tmp/tmpxft_000060b8_00000000-9_alphaax.cpp3.i (/tmp/ccBI#.CR1olP)
 	//-----------------------------------------------------------
 
 	//-----------------------------------------------------------
@@ -18,7 +18,7 @@
 
 	.file	1	"<command-line>"
 	.file	2	"/usr/include/stdc-predef.h"
-	.file	3	"/tmp/tmpxft_000027df_00000000-8_alphaax.cudafe2.gpu"
+	.file	3	"/tmp/tmpxft_000060b8_00000000-8_alphaax.cudafe2.gpu"
 	.file	4	"/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h"
 	.file	5	"/usr/include/crt/device_runtime.h"
 	.file	6	"/usr/include/host_defines.h"

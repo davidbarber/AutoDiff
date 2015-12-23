@@ -31,10 +31,31 @@ end
 export GradientDescentUpdate!
 
 
+# Gradient Descent with Momentum:
+
+function GradientDescentMomentumUpdate!(x,grad,avgrad,Momentum,LearningRate)
+    # avgrad_new=alpha*avgrad_old +(1-alpha)*avgrad
+    # xnew=x-LearningRate*avgrad
+    # where alpha=Momentum
+    scale!(Momentum,avgrad)
+    axpy!(1-Momentum,grad,avgrad)
+    axpy!(-LearningRate,avgrad,x)
+end
+export GradientDescentMomentumUpdate!
+
+
+function GradientDescentMomentumInit(net)
+    avgrad=Array(Any,length(net.node)) 
+    for par in Parameters(net)
+        avgrad[par]=cArray(net.gpu,zeros(size(net.value[par]))) # initial average gradient
+    end
+    return avgrad
+end
+export GradientDescentMomentumInit
+
 
 
 # Nesterov Accelerated Gradient Descent:
-
 
 function NesterovInit(net)
     velo=Array(Any,length(net.node)) # needed for Nesterov
