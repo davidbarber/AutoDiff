@@ -12,13 +12,12 @@ julia> include("compile_kernels.jl")
 This only needs to be done once. I've only tested this on a Jetson TK1 and Titan GTX . You may need to modify the nvcc options in the file compile_kernels.jl for your architecture.
 
 
-
 To run the demos (see the Demos folder):
 start julia and then from within julia type:
 
 julia> include("CPUstart.jl") # for CPU 
 
-or 
+or, if you have an NVIDIA GPU 
 
 julia> include("GPUstart.jl") # for GPU		
 
@@ -26,7 +25,3 @@ then
 
 julia> cd("Demos")
 julia> include("DemoMNIST.jl")
-
-and similarly for the other demos.
-
-julia> usegpu(false) # or usegpu(true) to make GPU functionality available
