@@ -3,6 +3,13 @@ function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
 =#
     # (c) David Barber, University College London 2015
 
+    if AllocateMemory & net.gpu
+        TransformToGPU=true
+        net=convert(net,"CPU")
+    else
+        TransformToGPU=false
+    end
+    
     if debug; println("Get value:"); end
 
     if isempty(net.auxvalue)
@@ -29,6 +36,10 @@ function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
                 thisnode.f_inplace(net.value[i],net.auxvalue[i],net.value[thisnode.parents]...) ## in place
             end
         end
+    end
+
+    if TransformToGPU
+        net=convert(net,"GPU")
     end
 
     if returnf

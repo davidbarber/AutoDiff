@@ -1,5 +1,7 @@
 using MAT
 
+useproc("GPU")
+
 Ntrain=60000
 Ntest=10000
 BatchSize=500
@@ -90,25 +92,19 @@ println("Training:")
 net.value[x]=traindata
 ForwardPassList!(net,ExcludeNodes=[class])
 # ADforward! by default computes values inplace. If we change the input value dimensions (which happens here since there are a different number of test points to train points), we need to do an out-of-place forward pass in order to compute the shapes of the values on the graph. This only needs to be done once.
-@gpu (net=convert(net,"CPU"); ADforward!(net,AllocateMemory=true); net=convert(net,"GPU")) # net computes the loss (which depends on the class), so ignore all nodes that depend on the class
-@cpu ADforward!(net,AllocateMemory=true)
-ADforward!(net) # net computes the loss (which depends on the class), so ignore all nodes that depend on the class
+ADforward!(net,AllocateMemory=true)
 
-net=convert(net,"CPU")
+net=convert(net,"CPU") # to make analysis simpler
 
 classpredtrain=argcolmax(softmax(net.value[h[L]]))
 classtrain=argcolmax(trainclass)
 println("train accuracy = $(mean(classpredtrain.==classtrain))")
 
-
 println("Testing:")
 # evaluate the test predictions:
 net.value[x]=testdata
 ForwardPassList!(net,ExcludeNodes=[loss])
-@gpu (net=convert(net,"CPU"); ADforward!(net,AllocateMemory=true); net=convert(net,"GPU")) # net computes the loss (which depends on the class), so ignore all nodes that depend on the class
-@cpu ADforward!(net,AllocateMemory=true)
-ADforward!(net) # net computes the loss (which depends on the class), so ignore all nodes that depend on the class
-
+ADforward!(net,AllocateMemory=true) # need to reallocate memory since the shape of net.value[x] has changed
 
 net=convert(net,"CPU")
 classpredtest=argcolmax(softmax(net.value[h[L]]))

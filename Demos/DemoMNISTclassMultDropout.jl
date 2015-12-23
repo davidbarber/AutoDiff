@@ -6,7 +6,7 @@ useproc("GPU") # GPU is much faster than CPU
 Ntrain=60000
 Ntest=10000
 BatchSize=100
-TrainingIts=1000 # number of training iterations
+TrainingIts=5000 # number of training iterations
 include("loadmnist.jl")
 images,label=loadmnist()
 label=convert(Array{Int,2},label)
@@ -41,8 +41,6 @@ for i=2:L-1
     w[i]=ADvariable()
     bias[i]=ADvariable()
     h[i]=diagm(dropout[i])*rectlinAXplusBias(w[i],h[i-1],bias[i])
-    #h[i]=diagm(dropout[i])*abs(w[i]*h[i-1])
-    #h[i]=diagm(dropout[i])*(abs(w[i]*h[i-1])+1.5*w[i]*h[i-1])
 end
 w[L]=ADvariable()
 h[L]= w[L]*h[L-1]
@@ -119,9 +117,8 @@ println("Testing: using $(net.gpu==true? "GPU" : "CPU") ")
 net.value[x]=testdata
 ForwardPassList!(net,ExcludeNodes=[class])
 # ADforward! by default computes values inplace and does no additional memory allocation on the graph. If we change the input value dimensions (which happens here since there are a different number of test points to train points), we need to reallocatte memory based on the shapes of the new values on the graph. This only needs to be done once.
-ADforward!(net,AllocateMemory=true)
+ADforward!(net,AllocateMemory=true) # reallocate since shape of net.value[x] changed
 
-ADforward!(net)
 classpredtest=argcolmax(softmax(net.value[h[L]]))
 classtest=argcolmax(testclass)
 println("test accuracy = $(mean(classpredtest.==classtest))")
