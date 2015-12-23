@@ -4,7 +4,7 @@ StartCode()
 X=ADnode()
 w=ADvariable()
 Y=ADnode()
-loss=meanSquareLoss(X*w,Y)+0.1*meanAbs(w)
+loss=meanSquareLoss(elu(X*w),Y)+0.1*meanAbs(w)
 net=EndCode() # defines the graph
 
 # instantiate parameter nodes and inputs:
@@ -22,7 +22,7 @@ net=compile(net) # compile and preallocate memory
 
 @gpu CUDArt.init([0]) # let the user do device management
 @gpu net=convert(net,"GPU")
-#gradcheck(net)
+gradcheck(net)
 
 # Training:
 ParsToUpdate=Parameters(net)
@@ -33,7 +33,7 @@ velo=NesterovInit(net) # Nesterov velocity
 for i=1:nupdates
     ADforward!(net)
     ADbackward!(net)
-    push!(error,to_host(net.value[net.FunctionNode])[1])
+    push!(error,extract(net.value[net.FunctionNode])[1])
     printover("iteration $i: training loss = $(error[i])")
     for par in ParsToUpdate
         #GradientDescentUpdate!(net.value[par],net.gradient[par],LearningRate)

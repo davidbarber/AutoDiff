@@ -2,8 +2,8 @@ using MAT
 
 Ntrain=60000
 Ntest=10000
-BatchSize=100
-TrainingIts=10000 # number of Nesterov updates
+BatchSize=300
+TrainingIts=500 # number of Nesterov updates
 include("loadmnist.jl")
 images,label=loadmnist()
 label=convert(Array{Int,2},label)
@@ -19,7 +19,7 @@ trainclass=class[:,1:Ntrain]
 testclass=class[:,Ntrain+1:Ntrain+Ntest]
 
 # Construct the DAG function:
-H=[784 250 100 50 10] # number of units in each layer
+H=[784 1000 10] # number of units in each layer
 #H=[784 5000 10] # number of units in each layer
 L=length(H) # number of hidden layers
 # node indices:
@@ -38,7 +38,8 @@ for i=2:L-1
     w[i]=ADvariable()
     bias[i]=ADvariable()
     #h[i]=diagm(dropout[i])*rectlinAXplusBias(w[i],h[i-1],bias[i])
-    h[i]=diagm(dropout[i])*abs(w[i]*h[i-1])
+    #h[i]=diagm(dropout[i])*abs(w[i]*h[i-1])
+    h[i]=diagm(dropout[i])*(abs(w[i]*h[i-1])+1.5*w[i]*h[i-1])
 end
 w[L]=ADvariable()
 h[L]= w[L]*h[L-1]
@@ -64,7 +65,7 @@ net=compile(net) # compile the DAG and preallocate memory
 dropoutprob=zeros(L)
 dropoutprob[1]=0
 for i=2:L-1
-   # dropoutprob[i]=0.1
+    dropoutprob[i]=0.1
 end
 println("Training:")
 error=Array(Float64,0)

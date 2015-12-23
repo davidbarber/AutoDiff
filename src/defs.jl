@@ -108,11 +108,12 @@ f=[
    "FmeanAbs","Fabs",
    "Fvcat", "Fhcat",
    "Fdiagm", "FdiagAmultX", "FAmultdiagX",
-   "FabsAXplusBias"
+   "FabsAXplusBias",
+   "Felu"
    ]
 
 for fn in f
-    include("functions/"*fn*".jl");  #println(fn);
+    include("functions/"*fn*".jl");  println(fn);
 end
 
 include("TrainingAlgorithms.jl")

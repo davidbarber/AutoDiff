@@ -2,6 +2,8 @@
 # The method uses Nesterov's accelerated gradient, with minibatches
 # (c) David Barber, University College London 2015
 
+PlotReconstructions=false
+
 using MAT
 
 Ntrain=60000
@@ -29,10 +31,11 @@ ytrain=h[1]=ADnode()
 for layer=2:L-1
     w[layer]=ADvariable()
     bias[layer]=ADvariable()
-    h[layer]=absAXplusBias(w[layer],h[layer-1],bias[layer])
+    #h[layer]=absAXplusBias(w[layer],h[layer-1],bias[layer])
     #h[layer]=rectlinAXplusBias(w[layer],h[layer-1],bias[layer])
-    #h[layer]=abs(w[layer]*h[layer-1])
-    #h[layer]=rectlin(w[layer]*h[layer-1])
+    h[layer]=abs(w[layer]*h[layer-1])
+#    h[layer]=rectlin(w[layer]*h[layer-1])
+#    h[layer]=elu(w[layer]*h[layer-1])
 end
 w[L]=ADvariable()
 bias[L]=ADvariable()
@@ -71,7 +74,8 @@ for iter=1:TrainingIts
     end
 end
 
-using PyPlot
+if PlotReconstructions
+#using PyPlot
 figure(1)
     plot(error); title("training loss")
     figure(2)
@@ -80,5 +84,6 @@ figure(1)
         display(p)
         println("press key to continue")
         readline(STDIN)
+    end
     end
 
