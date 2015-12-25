@@ -52,4 +52,7 @@ function sumSq(n::ArrayADnode)
     return ADnode(FsumSq,n)
 end
 
+sumSquare=sumSq
+
 export sumSq
+export sumSquare

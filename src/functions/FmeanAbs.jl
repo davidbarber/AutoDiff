@@ -1,5 +1,7 @@
 # f(x)=mean(abs(x))
 
+#TODO sum(abs)
+
 function FmeanAbs(x...)
     tmp=0.0
     for i in 1:length(x)

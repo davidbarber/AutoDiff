@@ -1,5 +1,6 @@
 #f(p,x)=KL(p,softmax(x))
 
+#TODO: implement KL(q,p)
 
 function FKLsoftmax(p::Array{Float64,2},x::Array{Float64,2})
     logZ=log(sum(exp(x),1))
