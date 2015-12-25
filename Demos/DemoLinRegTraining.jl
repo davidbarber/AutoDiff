@@ -8,7 +8,7 @@ StartCode()
 X=ADnode()
 w=ADvariable()
 Y=ADnode()
-loss=meanSquareLoss(X*w,Y)+0.1*meanAbs(w)
+loss=meanSquareLoss(X*w,Y)+0.1*meanAbs(w)+0.05*meanSquare(w) # mixed regularisation term
 net=EndCode() # defines the graph
 
 # instantiate parameter nodes and inputs:
