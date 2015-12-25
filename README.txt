@@ -65,7 +65,7 @@ Now that we've defined a graph, we need to instantiate the root nodes in order t
 julia> net.value[A]=rand(2,2)
 julia> net.value[X]=rand(2,1)
 
-Since now A and X are defined (and they are the only nodes in the graph without parents), the value of the remaining nodes in the graph will inherit their values from their parents.
+Since now A and X are defined (and they are the only nodes in the graph without parents), the remaining nodes will inherit their values from their parents' values.
 
 Now that we've specified values for the root nodes, we can compile the graph which will (amongst other things) allocate memory on the graph and specify the values of all remaining nodes in the graph.
 
@@ -110,8 +110,7 @@ julia> net=convert(net,"CPU")
 The philosophy is to keep the coding minimal in the sense that all the AutoDiff package is doing is making available ADforward and ADbackward passes on either the CPU or GPU. The rest (in terms of device management) is up to the user. For this reason, the user still needs to call CUDArt.init([0]) to initialise the device. 
 
 
-
-
+------------------------------------------------------------------------
 
 Implemented Operations:
 
@@ -124,6 +123,7 @@ Elementary Matrix Operations:
 
 A*B
 A+B
+A.*B
 A.+B
 A./B
 A-B
@@ -136,9 +136,9 @@ A special case is that
 
 a*B
 
-works if a is a ScalarArray and computes the value a[1,1]*B. 
+works if a is a ScalarArray and computes the value a[1]*B. 
 
-a.*B also computes a[1,1]*B when a is a ScalarArray and B is an Array.
+a.*B also computes a[1]*B when a is a ScalarArray and B is an Array.
 
 The following are also defined efficently by calling (CU)BLAS routines without creating a node that stores diagonal matrices:
 
@@ -180,11 +180,6 @@ trans(A)
 computes a new node on the graph that contains the transpose of the matrix A. 
 
 Mathematically, trans(A)+B and A'+B are equivalent, but the latter is more efficient since it doesn't create a new graph node that contains the transpose of A.
-------------------------------------------------------------------------
-diagm(A)
-
-creates a digonal 
-
 ------------------------------------------------------------------------
 sum(A)
 

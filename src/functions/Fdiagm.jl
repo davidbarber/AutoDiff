@@ -5,6 +5,7 @@ import Base.diagm
 diagm(A::ADnode)=ADdiag(A)
 export diagm
 
+#TODO defined diagonalm to construct explicitly a node
 
 #ftranspose(A::ADnode)=ADnode(Ftranspose,A)
 #export ftranpose
