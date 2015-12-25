@@ -90,9 +90,9 @@ To do this on the GPU, we would do:
 
 julia> include("GPUstart.jl")
 julia> StartCode(); A=ADnode(); X=ADvariable(); out=sum(A*X); net=EndCode();
+julia> net.value[A]=rand(2,2)
+julia> net.value[X]=rand(2,1)
 julia> net=compile(net)
-julia> net.value[3]
-julia> net.value[out]
 julia> CUDArt.init([0])
 julia> net=convert(net,"GPU")
 julia> ADforward!(net)
@@ -106,6 +106,7 @@ julia> to_host(net.gradient[X])
 Or, if we wish, we can convert back to the CPU version
 
 julia> net=convert(net,"CPU")
+julia> net.gradient[X]
 
 The philosophy is to keep the coding minimal in the sense that all the AutoDiff package is doing is making available ADforward and ADbackward passes on either the CPU or GPU. The rest (in terms of device management) is up to the user. For this reason, the user still needs to call CUDArt.init([0]) to initialise the device. 
 
