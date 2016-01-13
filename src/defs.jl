@@ -112,7 +112,12 @@ f=[
    "Felu",
    "Fabs",
    "Fkinklin",
-   "FkinklinAXplusBias"
+   "FkinklinAXplusBias",
+   "FConvolution",
+   "FCUrectlin",
+   "FCUsoftmax",
+   "FActivation",
+   "FPooling"
    ]
 
 for fn in f

@@ -111,7 +111,7 @@ sizeInBytes = Csize_t[0]
 return sizeInBytes[1]
 end
 
-function cudnnConvolutionForward(handle::cudnnHandle_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CuPtr,filterDesc::cudnnFilterDescriptor_t,filterData::CuPtr,convDesc::cudnnConvolutionDescriptor_t,algo::Int,workSpace::CuPtr,workSpaceSizeInBytes::UInt,beta,DestDesc::cudnnTensorDescriptor_t,destData::CuPtr)
+function cudnnConvolutionForward(handle::cudnnHandle_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,filterDesc::cudnnFilterDescriptor_t,filterData::CudaPtr,convDesc::cudnnConvolutionDescriptor_t,algo::Int,workSpace::CudaPtr,workSpaceSizeInBytes::UInt,beta,DestDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
 @cudnncheck(:cudnnConvolutionForward,(cudnnHandle_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnFilterDescriptor_t,Ptr{Void},cudnnConvolutionDescriptor_t,Cint,Ptr{Void},Csize_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,alpha,srcDesc,srcData.p,filterDesc,filterData.p,convDesc,algo,workSpace.p,workSpaceSizeInBytes,beta,destDesc,destData)
 return destData
 end
@@ -161,7 +161,7 @@ end
 
 export cudnnConvolutionBwdDataAlgoPerf_t
 
-function cudnnConvolutionBackwardBias(handle::cudnnHandle_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CuPtr,beta,destDesc::cudnnTensorDescriptor_t,destData::CuPtr)
+function cudnnConvolutionBackwardBias(handle::cudnnHandle_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,beta,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
 @cudnncheck(:cudnnConvolutionBackwardBias,(cudnnHandle_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,alpha,srcDesc,srcData,beta,destDesc,destData)
 end
 
@@ -186,11 +186,11 @@ end
 
 
 # Add case check for old version
-function cudnnConvolutionBackwardFilter(handle::cudnnHandle_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CuPtr,diffDesc::cudnnTensorDescriptor_t,diffData::CuPtr,convDesc::cudnnConvolutionDescriptor_t,algo::Int,workspace::CuPtr,workspaceSizeInBytes::UInt,beta,gradDesc::cudnnFilterDescriptor_t,gradData::CuPtr)
+function cudnnConvolutionBackwardFilter(handle::cudnnHandle_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,diffDesc::cudnnTensorDescriptor_t,diffData::CudaPtr,convDesc::cudnnConvolutionDescriptor_t,algo::Int,workspace::CudaPtr,workspaceSizeInBytes::UInt,beta,gradDesc::cudnnFilterDescriptor_t,gradData::CudaPtr)
 @cudnncheck(:cudnnConvolutionBackwardFilter_v3,(cudnnHandle_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnConvolutionDescriptor_t,Cint,Ptr{Void},Csize_t,cudnnFilterDescriptor_t,Ptr{Void}),handle,alpha,srcDesc,srcData.p,diffDesc,diffData.p,convDesc,workspaceSizeInBytes,workspace.p,beta,gradDesc,gradData.p)
 end
 #Add case check for old version
-function cudnnConvolutionBackwardData(handle::cudnnHandle_t,alpha,filterDesc::cudnnFilterDescriptor_t,filterData::CuPtr,diffDesc::cudnnTensorDescriptor_t,diffData::CuPtr,convDesc::cudnnConvolutionDescriptor_t,algo::Int,workspace::CuPtr,workspaceSizeInBytes::UInt,beta,gradDesc::cudnnTensorDescriptor_t,gradData::CuPtr)
+function cudnnConvolutionBackwardData(handle::cudnnHandle_t,alpha,filterDesc::cudnnFilterDescriptor_t,filterData::CudaPtr,diffDesc::cudnnTensorDescriptor_t,diffData::CudaPtr,convDesc::cudnnConvolutionDescriptor_t,algo::Int,workspace::CudaPtr,workspaceSizeInBytes::UInt,beta,gradDesc::cudnnTensorDescriptor_t,gradData::CudaPtr)
 @cudnncheck(:cudnnConvolutionBackwardData_v3,(cudnnHandle_t,Ptr{Void},cudnnFilterDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnConvolutionDescriptor_t,Cint,Ptr{Void},Csize_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,alpha,filterDesc,filterData,diffDesc,diffData,convDesc,algo,workspace,workspaceSizeInBytes,beta,gradDesc,gradData)
 end
 

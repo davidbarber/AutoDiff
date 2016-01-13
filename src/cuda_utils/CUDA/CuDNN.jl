@@ -20,11 +20,9 @@
 #TODO:
 # 1. extend cudnncheck to handle more error exceptions 
 # 2. Now the wrapper only wrap up the CuDNN v3.0 might need to support elder version
-include("CUDA.jl")
-export CuDNN
-module CuDNN
 
-using CUDA
+
+using CUDArt
 using Compat
 # this only valid for Linux and Mac OS, may also need one for windows
 const libcudnn = Libdl.find_library(["libcudnn"], ["/usr/lib/", "/usr/local/cuda/lib"])
@@ -85,9 +83,10 @@ end
 
 #context pointer
 typealias cudaStream_t Ptr{Void} # hold Cuda Stream
-export cudaStrem_t
+export cudaStream_t
 typealias cudnnHandle_t Ptr{Void} # hold cuDNN library context
 export cudnnHandle_t
+
 function cudnnCreate()
 handle = cudnnHandle_t[0]
 @cudnncheck(:cudnnCreate, (Ptr{cudnnHandle_t},), handle)
@@ -146,4 +145,3 @@ include("Pooling.jl")
 include("Activation.jl")
 include("Rectifier.jl")
 
-end

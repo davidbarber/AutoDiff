@@ -59,7 +59,7 @@ end
 
 
 #WARN: alpha, beta should be float, but in CuDNN.h it is void
-function cudnnTransformTensor(handle::cudnnHandle_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CuPtr,beta,destDesc::cudnnTensorDescriptor_t,destData::CuPtr)
+function cudnnTransformTensor(handle::cudnnHandle_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,beta,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
 @cudnncheck(:cudnnTransformTensor,(cudnnHandle_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,alpha,srcDesc,srcData.p,beta,destDesc,destData.p)
 end
 
@@ -74,16 +74,16 @@ const CUDNN_ADD_FULL_TENSOR = 3
 #TODO: if the version is less than v3.0 replace cudnnAddTensor_v3 by cudnnAddTensor
 #TODO: add scaling_type(), to convert alpha, beta to scaling_type
 #WARN: alpha, beta should be float, but in CuDNN.h it is void
-function cudnnAddTensor(handle::cudnnHandle_t,alpha,biasDesc::cudnnTensorDescriptor_t,biasData::CuPtr,beta,srcDestDesc::cudnnTensorDescriptor_t,srcDestData::CuPtr)
+function cudnnAddTensor(handle::cudnnHandle_t,alpha,biasDesc::cudnnTensorDescriptor_t,biasData::CudaPtr,beta,srcDestDesc::cudnnTensorDescriptor_t,srcDestData::CudaPtr)
 @cudnncheck(:cudnnAddensor_v3,(cudnnHandle_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,alpha,biasDesc,biasData.p,beta,srcDestDesc,srcDestData.p)
 end
 
-function cudnnSetTensor(handle::cudnnHandle_t,srcDestDesc::cudnnTensorDescriptor_t,srcDestData::CuPtr,value)
+function cudnnSetTensor(handle::cudnnHandle_t,srcDestDesc::cudnnTensorDescriptor_t,srcDestData::CudaPtr,value)
 @cudnncheck(:cudnnSetTensor,(cudnnHandle_t,cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void}),handle,srcDestDesc,srcDestData.p,value)
 end
 
 
-function cudnnScaleTensor(handle::cudnnHandle_t,srcDestDesc::cudnnTensorDescriptor_t,srcDestData::CuPtr,alpha)
+function cudnnScaleTensor(handle::cudnnHandle_t,srcDestDesc::cudnnTensorDescriptor_t,srcDestData::CudaPtr,alpha)
 @cudnncheck(:cudnnScaleTensor,(cudnnHandle_t,cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void}),handle,srcDestDesc,srcDestData.p,alpha)
 end
 

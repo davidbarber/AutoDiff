@@ -62,10 +62,10 @@ end
 
 
 #WARN: alpha, beta should be float, but in CuDNN.h it is void
-function cudnnPoolingForward(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CuPtr,beta,destDesc::cudnnTensorDescriptor_t,destData::CuPtr)
+function cudnnPoolingForward(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,beta,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
 @cudnncheck(:cudnnPoolingForward,(cudnnHandle_t,cudnnPoolingDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,poolingDesc,alpha,srcDesc,srcData.p,beta,destDesc,destData.p)
 end
 
-function cudnnPoolingBackward(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CuPtr,srcDiff::cudnnTensorDescriptor_t,srcDiffData::CuPtr,destDesc::cudnnTensorDescriptor_t,destData::CuPtr,beta,destDiff::cudnnTensorDescriptor_t,destDiffData::CuPtr)
+function cudnnPoolingBackward(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,srcDiff::cudnnTensorDescriptor_t,srcDiffData::CudaPtr,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr,beta,destDiff::cudnnTensorDescriptor_t,destDiffData::CudaPtr)
 @cudnncheck(:cudnnPoolingBackward,(cudnnHandle_t,cudnnPoolingDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,poolingDesc,alpha,srcDesc,srcData.p,srcDiff,srcDiffData.p,destDesc,destdata.p,beta,destdiff,destDiffData.p)
 end
