@@ -20,13 +20,17 @@ function free(ctx::CuDNNContext)
 cudnnDestroyTensorDescriptor(ctx.srcTensorDesc)
 cudnnDestroyTensorDescriptor(ctx.dstTensorDesc)
 end
-
-function handle()
-return cudnnCreate()
+export free
+global handle 
+function createHandle()
+global handle 
+handle =  cudnnCreate()
 end
-
-function free(handle::cudnnHandle_t)
-cudnnDestroy(ctx.handle)
+export handle
+export createHandle
+function freehandle()
+global handle
+cudnnDestroy(handle)
 end
-
+export freehandle
 

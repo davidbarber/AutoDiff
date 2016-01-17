@@ -1,5 +1,5 @@
 #TODO CPU Version
-function FCUsoftmax(inputs::Array,t::TensorDesc)
+function FCUsoftmax(inputs::Array)
 
 
 
@@ -12,7 +12,7 @@ end
 
 
 #TODO missing handler
-function FCUsoftmax(handler::cudnnHandle_t,inputs::CudaArray,t::TensorDesc)
+function FCUsoftmax(handler::cudnnHandle_t,inputs::CudaArray)
 context = CuDNNContext(handler,0,eltype(inputs))
 out = softmaxForward(context,t.bancth,t.channel,t.height,t.width,inputs)
 
@@ -25,4 +25,4 @@ function DCUsoftmax()
 
 end
 
-CUsoftmax(i::ADnode,t::TensorDesc,)=ADnode(FCUsoftmax,[i t])
+CUsoftmax(i::ADnode)=ADnode(FCUsoftmax,[i])
