@@ -14,6 +14,7 @@ include("gpumacros.jl")
 #export @gpu, @cpu
 
 include("initfile.jl")
+include("cuda_utils/Node.jl")
 
 @cpu println("Using CPU")
 #@gpu println("Compiling kernels...")
