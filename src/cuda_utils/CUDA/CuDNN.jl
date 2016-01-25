@@ -42,34 +42,13 @@ const  CUDNN_STATUS_NOT_SUPPORTED    = 8
 const  CUDNN_STATUS_LICENSE_ERROR    = 9
 
 
-#CuDNN errors
-
-immutable CuDNNError <: Exception
-  code :: Int
-end
-#TODO: The error exception here is only the general summary, detail might be needed.
-const cudnnStatus_error = @compat(Dict(
-	CUDNN_STATUS_SUCCESS => "The operation complete successfully",
-	CUDNN_STATUS_NOT_INITIALIZED =>"The CuDNN library was not initialized",
-	CUDNN_STATUS_ALLOC_FAILED => "Resurce allocation failed, to correct: deallocate previous allocated memory as much as possible",
-	CUDNN_STATUS_BAD_PARAM =>"Incorrect value passed, to correct: ensure all the parameters being passed have valid values",
-	CUDNN_STATUS_ARCH_MISMATCH =>"Feature absent from the GPU device, to correct: to compile and run the application on device with compute capabilities greater than 3.0",
-	CUDNN_STATUS_MAPPING_ERROR => "An access to GPU memory space failed, to correct: unbind any previous bound textures",
-	CUDNN_STATUS_EXECUTION_FAILED =>"GPU program fail to execute, to correct:ccheck the hardware, an appropriate version of the friver, and the cuDNN library are coreectly installed",
-	CUDNN_STATUS_INTERNAL_ERROR =>"An internal cuDNN operation failed",
-	CUDNN_STATUS_NOT_SUPPORTED =>"The functionality requested is not presently supported by cuDNN",
-	CUDNN_STATUS_LICENSE_ERROR =>"The functionality requested requires license",
-	))
-
-import Base.show
-show(io::IO, error::CuDNNError) = print(io, cudnnStatus_error[error.code])
-
 macro cudnncheck(fv, argtypes, args...)
   f = eval(fv)
   quote
     _curet = ccall( ($(Meta.quot(f)), $libcudnn), Cint, $argtypes, $(args...)  )
     if round(Int, _curet) != CUDNN_STATUS_SUCCESS
-      throw(CuDNNError(round(Int, _curet)))
+    	error = bytestring(ccall((:cudnnGetErrorString, $libcudnn),Ptr{UInt8},(Int,),round(Int,_curet)))
+      	throw(error)
     end
   end
 end
@@ -80,6 +59,7 @@ version = ccall((:cudnnGetVersion,libcudnn),Csize_t,())
 println("CuDNN version : $version")
 return version
 end
+
 
 #context pointer
 typealias cudaStream_t Ptr{Void} # hold Cuda Stream

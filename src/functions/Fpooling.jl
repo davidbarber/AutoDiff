@@ -1,8 +1,8 @@
 #TODO CPU version 
-function FPooling(inputs::Array,t::TensorDesc)
+function FPooling(inputs::Array)
 
-
-
+println("CPU version under develop")
+return inputs,inputs
 end
 #TODO this is the CPU version
 function DPooling()
@@ -11,12 +11,20 @@ function DPooling()
 end
 
 
-function FPooling(handler::cudnnHandle_t,inputs::CudaArray)
-context = CuDNNContext(handler,0,eltype(inputs))
-poolingNode = poolingSetup(context,t.bancth,t.channel,t.height,t.width)
-out = forward(context,poolingNode,inputs)
-free(context)
-return out
+function FPooling(value::CudaArray,au::CudaArray,tensor::CudaTensor)
+const dims = 2
+windowDim = [2,2]
+padding = [0,0]
+stride = [2,2]
+poolingDesc = cudnnCreatePoolingDescriptor()
+cudnnSetPooling2dDescriptor(poolingDesc,0,2,2,0,0,2,2)
+(n,c,h,w)=cudnnGetPooling2dForwardOutputDim(poolingDesc,tensor.tensorDesc)
+dstDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(dstDesc,tensor.dataType,n,c,h,w)
+alpha = 1.0
+beta = 0.0
+cudnnPoolingForward(tensor.handle,poolingDesc,alpha,tensor.tensorDesc,tensor.data.ptr,beta,dstDesc,value.ptr)
+
 end
 
 function DPooling()
@@ -24,4 +32,7 @@ function DPooling()
 
 end
 
-Pooling(i::ADnode)=ADnode(FPooling,[i])
+Derivative[FPooling] = DPooling
+Inplace[FPooling]   = FPooling
+Pooling(i::ADTensor)=ADnode(FPooling,[i])
+export Pooling

@@ -86,10 +86,10 @@ type ADnode
             if returnderivative & !input
                 error("cannot return derivative for a node that has parents")
             end
-            if isa(parents,Array{ADnode})
+            if (isa(parents,Array{ADnode})||isa(parents,Array{ADTensor}))
                 parents=map(n->n.index,parents)
             end
-            if isa(parents,ADnode)
+            if (isa(parents,ADnode)||isa(parents,ADTensor))
                 parents=parents.index
             end
             thisnode=new(nodecounter,collect(parents),f,Inplace[f],Derivative[f],[0],takederivative,returnderivative,input,isconst,constval)
@@ -100,6 +100,7 @@ type ADnode
             return thisnode
         end
 end
+
 
 
 abstract ADdummy
@@ -148,9 +149,41 @@ type ADdiag<:ADdummy# Dummy diag node that can be used for code optimisation
 end
 export ADdiag
 
+type ADTensor
+index
+parents
+children
+input::Bool
+returnderivative::Bool
+isconst::Bool
+takederivative::Bool
+filter::Bool
+dims::Array{Int,1}
+stride::Array{Int,1}
+ADTensor(dims::Array{Int,1},filter::Bool) = begin
+                    
+                global nodecounter+=1
+                global node
+                if length(dims) != 4
+                error("Only support 4D tensor now")
+                end
+                stride = [dims[2]*dims[3]*dims[4],dims[3]*dims[4],dims[4],1]
+                #the calculation of stride is referred to mnistCuDNN.cpp
+                thisnode=new(nodecounter,[],[0],true,true,false,true,filter,dims,stride)
+            
+                if isempty(node)
+                node=Array(Any,0)
+                end
+                
+                push!(node,thisnode)
+                return thisnode
+            end
+end
 
-
-
+Tensor(dims=[]) = ADTensor(dims,false)
+export Tensor
+Filters(dims=[]) = ADTensor(dims,true)
+export Filters
 ArrayADnode=Array{ADnode}
 ADnodeOrArrayADnode=Union{ADnode,Array{ADnode}}
 export ADnodeOrArrayADnode, ArrayADnode
@@ -159,9 +192,17 @@ import Base.getindex
 getindex(x::Array,A::ADnode)=getindex(x,A.index)
 export getindex
 
+getindex(x::Array,A::ADTensor)=getindex(x,A.index)
+export getindex
+
 import Base.setindex!
 setindex!(x::Array,value,A::ADnode)=setindex!(x,value,A.index)
+export setidex!
+
+import Base.setindex!
+setindex!(x::Array,value,A::ADTensor)=setindex!(x,value,A.index)
 export setindex!
+
 
 function setindex!(x::Array,value::Float64,A::ADnode)
     tmp=cArray((1,1))
@@ -170,6 +211,13 @@ function setindex!(x::Array,value::Float64,A::ADnode)
 end
 export setindex!
 
+
+function setindex!(x::Array,value::Float64,A::ADTensor)
+    tmp=cArray((1,1))
+    fill!(tmp,value)
+    setindex!(x,tmp,A.index)
+end
+export setindex!
 
 type network
     #node::Array{ADnode,1}
@@ -184,15 +232,15 @@ type network
     ForwardPassList
     parentIDX
     gpu::Bool
-
+    handle
    function network()
     vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(Node(),NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU")
+        return new(Node(),NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU",nothing)
     end
 
     function network(node)
         vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(node,NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU")
+        return new(node,NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU",nothing)
     end
 
     function network(node,FunctionNode,value,auxvalue,gradient,anc,relevantchildren,forwardlist=nothing)

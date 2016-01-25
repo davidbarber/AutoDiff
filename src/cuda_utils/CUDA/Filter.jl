@@ -1,15 +1,16 @@
 # filter pointer
 typealias cudnnFilterDescriptor_t Ptr{Void} # hold the description of a filter dataset 
 export cudnnFilterDescriptor_t
+
+
 function cudnnCreateFilterDescriptor()
 filterDesc = cudnnFilterDescriptor_t[0]
 @cudnncheck(:cudnnCreateFilterDescriptor,(Ptr{cudnnFilterDescriptor_t},),filterDesc)
 return filterDesc[1]
 end
 
-function cudnnSetFilter4dDescriptor{T<:AbstractFloat}(filterDesc::cudnnFilterDescriptor_t,dataType::Type{T},k,c,h,w)
-dtype = cudnnDataTypeCheck(dataType)
-@cudnncheck(:cudnnSetFilter4dDescriptor,(cudnnFilterDescriptor_t,Cint,Cint,Cint,Cint,Cint),filterDesc,dtype,k,c,h,w)
+function cudnnSetFilter4dDescriptor(filterDesc::cudnnFilterDescriptor_t,dataType::Int,k,c,h,w)
+@cudnncheck(:cudnnSetFilter4dDescriptor,(cudnnFilterDescriptor_t,Cint,Cint,Cint,Cint,Cint),filterDesc,dataType,k,c,h,w)
 end
 
 function cudnnGetFilter4dDescriptor(filterDesc::cudnnFilterDescriptor_t)
@@ -19,8 +20,7 @@ c = Cint[0]
 h = Cint[0]
 w = Cint[0]
 @cudnncheck(:cudnnGetFilter4dDescriptor,(cudnnFilterDescriptor_t,Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint}),filterDesc,dataType,k,c,h,w)
-dtype = cudnnDataTypeConvert(dataType[1])
-return(filterDesc,dtype,(k[1],c[1],h[1],w[1]))
+return(filterDesc,(k[1],c[1],h[1],w[1]))
 end
 
 function cudnnSetFilterNdDescriptor{T<:AbstractFloat}(filterDesc::cudnnFilterDescriptor_t,dataType::T,nbDims::UInt,filterDimA::Array{UInt,1})

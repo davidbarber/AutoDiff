@@ -17,10 +17,13 @@ convDesc = cudnnConvolutionDescriptor_t[0]
 return convDesc[1]
 end
 
+
 function cudnnSetConvolution2dDescriptor(convDesc::cudnnConvolutionDescriptor_t,pad_h::Int,pad_w::Int,u::Int,v::Int,upscalex::Int,upscaley::Int,mode::Int)
 checkConvolutionMode(mode)
 @cudnncheck(:cudnnSetConvolution2dDescriptor,(cudnnConvolutionDescriptor_t,Cint,Cint,Cint,Cint,Cint,Cint,Cint),convDesc,pad_h,pad_w,u,v,upscalex,upscaley,mode)
 end
+
+
 
 function cudnnGetConvolution2dDescriptor(convDesc::cudnnConvolutionDescriptor_t)
 pad_h = Cint[0]
@@ -30,7 +33,7 @@ v = Cint[0]
 upscalex = Cint[0]
 upscaley = Cint[0]
 mode = Cint[0]
-@cudnncheck(:cudnnGetConvolution2dDescriptor,(convDesc::cudnnConvolutionDescriptor_t,Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint}),convDesc,pad_h,pad_w,u,v,upscalex,upscaley,mode)
+@cudnncheck(:cudnnGetConvolution2dDescriptor,(cudnnConvolutionDescriptor_t,Ref{Cint},Ref{Cint},Ref{Cint},Ref{Cint},Ref{Cint},Ref{Cint},Ref{Cint}),convDesc,pad_h,pad_w,u,v,upscalex,upscaley,mode)
 return (convDesc,(pad_h[1],pad_w[1]),(u[1],v[1]),(upscalex[1],upscaley[1]),mode[1])
 end
 
@@ -44,10 +47,8 @@ return (n[1],c[1],h[1],w[1])
 end
 
 #TODO: add the old version
-function cudnnSetConvolutionNdDescriptor{T<:AbstractFloat}(convDesc::cudnnConvolutionDescriptor_t,arrayLength::Int,PadA::Array{Int,1},filterStrideA::Array{Int,1},upscaleA::Array{Int,1},mode::Int,dataType::Type{T})
-checkConvolutionMode(Mode)
-dtype = cudnnDataTypeCheck(dataType)
-@cudnncheck(:cudnnSetConvolutionNdDescriptor_v3,(cudnnConvolutionDescriptor_t,Cint,Ptr{Cint},Ptr{Cint},Ptr{Cint},Cint,Cint),convDesc,arrayLength,padA,filterStrideA,mode,dtype)
+function cudnnSetConvolutionNdDescriptor(convDesc::cudnnConvolutionDescriptor_t,arrayLength::Int,PadA::Array{Int,1},filterStrideA::Array{Int,1},upscaleA::Array{Int,1},mode::Int,dataType::Int)
+@cudnncheck(:cudnnSetConvolutionNdDescriptor_v3,(cudnnConvolutionDescriptor_t,Cint,Ptr{Int},Ptr{Int},Ptr{Int},Cint,Cint),convDesc,arrayLength,PadA,filterStrideA,upscaleA,mode,dataType)
 end
 
 #TODO: add the old version
@@ -62,7 +63,7 @@ end
 
 function cudnnGetConvolutionNdForwardOutputDim(convDesc::cudnnConvolutionDescriptor_t,inputTensorDesc::cudnnTensorDescriptor_t,filterDesc::cudnnFilterDescriptor_t,nbDims::Int)
 tensorOutputDimA = Cint[nbDims]
-@cudnncheck(:cudnnGetConvolutionNdForwardOutputDim,(cudnnConvolutionDescriptor_t,cudnnTensorDescriptor_t,cudnnFilterDescriptor_t,Cint,Ptr{Cint}),convDesc,inputTensorDesc,filterDesc,nbDims,tensorOutputDimA)
+@cudnncheck(:cudnnGetConvolutionNdForwardOutputDim,(cudnnConvolutionDescriptor_t,cudnnTensorDescriptor_t,cudnnFilterDescriptor_t,Int,Ptr{Cint}),convDesc,inputTensorDesc,filterDesc,nbDims,tensorOutputDimA)
 return tensorOutputDimA
 end
 
@@ -99,21 +100,22 @@ perfResults = cudnnConvolutionFwdAlgoPerf_t[0]
 return (returnedAlgoCount[1],perfResults[1])
 end
 
-function cudnnGetConvolutionForwardAlgorithm(handle::cudnnHandle_t,srcDesc::cudnnTensorDescriptor_t,filterDesc::cudnnFilterDescriptor_t,convDesc::cudnnConvolutionDescriptor_t,destDesc::cudnnTensorDescriptor_t,preference::Int,memoryLimiteInBytes::UInt)
+function cudnnGetConvolutionForwardAlgorithm(handle::cudnnHandle_t,srcDesc::cudnnTensorDescriptor_t,filterDesc::cudnnFilterDescriptor_t,convDesc::cudnnConvolutionDescriptor_t,destDesc::cudnnTensorDescriptor_t,preference::Int,memoryLimiteInBytes::Int)
 algo = Cint[0]
 @cudnncheck(:cudnnGetConvolutionForwardAlgorithm,(cudnnHandle_t,cudnnTensorDescriptor_t,cudnnFilterDescriptor_t,cudnnConvolutionDescriptor_t,cudnnTensorDescriptor_t,Cint,Csize_t,Ptr{Cint}),handle,srcDesc,filterDesc,convDesc,destDesc,preference,memoryLimiteInBytes,algo)
 return algo[1]
 end
 
-function cudnnGetConvolutionForwardWorkspaceSize(handle::cudnnHandle_t,srcDesc::cudnnTensorDescriptor_t,filterDesc::cudnnFilterDescriptor_t,convDesc::cudnnConvolutionDescriptor_t,destDesc::cudnnTensorDescriptor_t,algo::Int)
+function cudnnGetConvolutionForwardWorkspaceSize(handle::cudnnHandle_t,srcDesc::cudnnTensorDescriptor_t,filterDesc::cudnnFilterDescriptor_t,convDesc::cudnnConvolutionDescriptor_t,destDesc::cudnnTensorDescriptor_t,algo::Cint)
 sizeInBytes = Csize_t[0]
-@cudnncheck(:cudnnGetConvolutionForwardWorkspacesize,(cudnnhandle_t,cudnnTensorDescriptor_t,cudnnFilterDescriptor_t,cudnnConvolutionDescriptor_t,cudnnTensorDescriptor_t,Cint,Ptr{Csize_t}),handle,srcDesc,filterDesc,convDesc,destDesc,algo,sizeInBytes)
+@cudnncheck(:cudnnGetConvolutionForwardWorkspaceSize,(cudnnHandle_t,cudnnTensorDescriptor_t,cudnnFilterDescriptor_t,cudnnConvolutionDescriptor_t,cudnnTensorDescriptor_t,Cint,Ptr{Csize_t}),handle,srcDesc,filterDesc,convDesc,destDesc,algo,sizeInBytes)
 return sizeInBytes[1]
 end
 
-function cudnnConvolutionForward(handle::cudnnHandle_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,filterDesc::cudnnFilterDescriptor_t,filterData::CudaPtr,convDesc::cudnnConvolutionDescriptor_t,algo::Int,workSpace::CudaPtr,workSpaceSizeInBytes::UInt,beta,DestDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
-@cudnncheck(:cudnnConvolutionForward,(cudnnHandle_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnFilterDescriptor_t,Ptr{Void},cudnnConvolutionDescriptor_t,Cint,Ptr{Void},Csize_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,alpha,srcDesc,srcData.p,filterDesc,filterData.p,convDesc,algo,workSpace.p,workSpaceSizeInBytes,beta,destDesc,destData)
-return destData
+function cudnnConvolutionForward{T<:AbstractFloat}(handle::cudnnHandle_t,alpha::T,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,filterDesc::cudnnFilterDescriptor_t,filterData::CudaPtr,convDesc::cudnnConvolutionDescriptor_t,algo::Cint,workSpace::CudaPtr,workSpaceSizeInBytes::UInt,beta::T,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
+alpha = T[alpha]
+beta = T[beta]
+@cudnncheck(:cudnnConvolutionForward,(cudnnHandle_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnFilterDescriptor_t,Ptr{Void},cudnnConvolutionDescriptor_t,Cint,Ptr{Void},Csize_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,alpha,srcDesc,srcData,filterDesc,filterData,convDesc,algo,workSpace,workSpaceSizeInBytes,beta,destDesc,destData)
 end
 
 

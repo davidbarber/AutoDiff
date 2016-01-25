@@ -2,8 +2,8 @@
 typealias cudnnTensorDescriptor_t Ptr{Void} # hold the description of generic n-D dataset 
 export cudnnTensorDescriptor_t
 #cudnnTensorFormat_t
-const CUDNN_TENSOR_NCHW = 0 #data laid out order: image, features map, rows, columns
-const CUDNN_TENSOR_NHWC = 1 #data laid out order: image, rows, columns, features map
+const CUDNN_TENSOR_NCHW = 0 #data laid out order: bancth, channel, rows, columns
+const CUDNN_TENSOR_NHWC = 1 #data laid out order: bancth, rows, columns, channel
 
 function cudnnCreateTensorDescriptor()
 tensorDesc = cudnnTensorDescriptor_t[0]
@@ -11,14 +11,14 @@ tensorDesc = cudnnTensorDescriptor_t[0]
 return tensorDesc[1]
 end
 
-function cudnnSetTensor4dDescriptor{T<:AbstractFloat}(tensorDesc::cudnnTensorDescriptor_t,dataType::Type{T},n,c,h,w)
-dtype = cudnnDataTypeCheck(dataType)
-@cudnncheck(:cudnnSetTensor4dDescriptor,(cudnnTensorDescriptor_t,Cint,Cint,Cint,Cint,Cint,Cint),tensorDesc,CUDNN_TENSOR_NCHW,dtype,n,c,h,w)
+
+
+function cudnnSetTensor4dDescriptor(tensorDesc::cudnnTensorDescriptor_t,dataType::Int,n,c,h,w)
+@cudnncheck(:cudnnSetTensor4dDescriptor,(cudnnTensorDescriptor_t,Cint,Cint,Cint,Cint,Cint,Cint),tensorDesc,0,dataType,n,c,h,w)
 end
 
 
 function cudnnSetTensor4dDescriptorEx{T<:AbstractFloat}(tensorDesc::cudnnTensorDescriptor_t,dataType::Type{T},n,c,h,w,nStride,cStride,hStride,wStride)
-dtype = cudnnDataTypeCheck(dataType)
 @cudnncheck(:cudnnSetTensor4dDescriptorEx,(cudnnTensorDescriptor_t,Cint,Cint,Cint,Cint,Cint,Cint,Cint,Cint,Cint),n,c,h,w,nStride,cStride,hStride,wStride)
 end
 
@@ -32,15 +32,14 @@ nStride = Cint[0]
 cStride = Cint[0]
 hStride = Cint[0]
 wStride = Cint[0]
-@cudnncheck(:cudnnGetTensor4dDescriptor,(cudnnTensorDescriptor_t,Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint}),tensorDesc,dataType,n,c,h,w,nStride,cStride,hStride,wStride)
-dtype = cudnnDataTypeConvert(dataType[1])
-return (tensorDesc,dtype,(n[1],c[1],h[1],w[1]),(nStride[1],cStride[1],hStride[1],wStride[1]))
+@cudnncheck(:cudnnGetTensor4dDescriptor,(cudnnTensorDescriptor_t,Ptr{Cint},Ptr{Cint},Ptr{Cint},Ref{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint}),tensorDesc,dataType,n,c,h,w,nStride,cStride,hStride,wStride)
+#dtype = cudnnDataTypeConvert(dataType[1])
+return ((n[1],c[1],h[1],w[1]),(nStride[1],cStride[1],hStride[1],wStride[1]))
 end
 
 
-function cudnnSetTensorNdDescriptor{T<:AbstractFloat}(tensorDesc::cudnnTensorDescriptor_t,dataType::Type{T},nbDims::UInt,dimA::Array{UInt,1},strideA::Array{UInt,1})
-dtype = cudnnDataTypeCheck(dataType)
-@cudnncheck(:cudnnSetTensorNdDescriptor,(cudnnTensorDescriptor_t,Cint,Cint,Ptr{Cint},Ptr{Cint}),tensorDesc,dtype,nbDims,dimA,strideA)
+function cudnnSetTensorNdDescriptor(tensorDesc::cudnnTensorDescriptor_t,dataType,nbDims,dimA,strideA)
+@cudnncheck(:cudnnSetTensorNdDescriptor,(cudnnTensorDescriptor_t,Clonglong,Clonglong,Ptr{Clonglong},Ptr{Clonglong}),tensorDesc,dataType,nbDims,dimA,strideA)
 end
 
 function cudnnGetTensorNdDescriptor(tensorDesc::cudnnTensorDescriptor_t,nbDimsRequested::UInt)

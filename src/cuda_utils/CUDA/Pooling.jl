@@ -27,8 +27,8 @@ horizontalStride = Cint[0]
 return (mode[1],(windowHeight[1],windowWidth[1]),(verticalPadding[1],horizontalPadding[1]),(verticalStride[1],horizontalStride[1]))
 end
 
-function cudnnSetPoolingNdDescriptor(poolingDesc::cudnnPoolingDescriptor_t,mode::Int,nbDims::Int,windowDimA::Array{UInt,1},paddingA::Array{UInt,1},strideA::Array{UInt,1})
-@cudnncheck(:cudnnSetPoolingNdDescriptor,(cudnnPoolingDescriptor_t,Cint,Cint,Ptr{Cint},Ptr{Cint},Ptr{Cint}),poolingDesc,mode,nbDims,windowDimA,paddingA,strideA)
+function cudnnSetPoolingNdDescriptor(poolingDesc::cudnnPoolingDescriptor_t,mode::Int,nbDims::Int,windowDimA::Array{Int,1},paddingA::Array{Int,1},strideA::Array{Int,1})
+@cudnncheck(:cudnnSetPoolingNdDescriptor,(cudnnPoolingDescriptor_t,Cint,Cint,Ptr{Int},Ptr{Int},Ptr{Int}),poolingDesc,mode,nbDims,windowDimA,paddingA,strideA)
 end
 
 function cudnnGetPoolingNdDescriptor(poolingDesc::cudnnPoolingDescriptor_t,nbDimsRequested::Int)
@@ -63,7 +63,7 @@ end
 
 #WARN: alpha, beta should be float, but in CuDNN.h it is void
 function cudnnPoolingForward(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,beta,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
-@cudnncheck(:cudnnPoolingForward,(cudnnHandle_t,cudnnPoolingDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,poolingDesc,alpha,srcDesc,srcData.p,beta,destDesc,destData.p)
+@cudnncheck(:cudnnPoolingForward,(cudnnHandle_t,cudnnPoolingDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,poolingDesc,Float64[alpha],srcDesc,srcData,Float64[beta],destDesc,destData)
 end
 
 function cudnnPoolingBackward(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,srcDiff::cudnnTensorDescriptor_t,srcDiffData::CudaPtr,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr,beta,destDiff::cudnnTensorDescriptor_t,destDiffData::CudaPtr)

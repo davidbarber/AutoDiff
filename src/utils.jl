@@ -9,12 +9,31 @@ function convert(net::network,gpucpu::ASCIIString)
     #else
     #netout=deepcopy(net)
     netout=deepcopy(net)
+    
     nds=net.validnodes
     if gpucpu=="GPU"
+        handle= cudnnCreate()
+        netout.handle = handle
         netout.gpu=true
         for n in nds
+            # Check tensor
+            if typeof(net.node[n]) == ADTensor
+            tNode = net.node[n]
+            dType = cudnnDataTypeCheck(eltype(net.value[n]))
+            #check filter
+            if tNode.filter == false
+            v = NDTensor(handle,CudaArray(net.value[n]),tNode.dims,tNode.stride,dType)
+            netout.value[n] = v
+            netout.gradient[n]=CudaArray(net.gradient[n])
+            else
+            netout.value[n] = NDFilter(CudaArray(net.value[n]),tNode.dims,dType)
+            netout.gradient[n]=CudaArray(net.gradient[n])
+            end
+            
+            else
             netout.value[n]=CudaArray(net.value[n])
             netout.gradient[n]=CudaArray(net.gradient[n])
+            end
             if isdefined(net.auxvalue,n)
                 if isa(net.auxvalue[n],Tuple)
                     tmp=Array(Any,length(net.auxvalue[n]))

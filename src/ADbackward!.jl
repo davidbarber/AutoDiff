@@ -5,7 +5,6 @@ function ADbackward!(net;debug=false,AccumulateGradient=false)
     =#
 
     if debug; println("Get gradient:"); end
-
     fill!(net.gradient[net.FunctionNode],1.0)
     for n in net.ancestors
         if net.node[n].takederivative
