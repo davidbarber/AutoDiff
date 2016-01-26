@@ -18,11 +18,9 @@ function compile(net;backend="CPU",debug=false)
     #Allocate graident for backward pass
     iter = length(net.value)
     for i = 1:iter
-    net.gradient[i]=cArray(false,Float64,size(net.value[i]))
-    
+    net.gradient[i]=cArray(false,zeros(size(net.value[i])))
     if i == iter
     net.gradient[i] = cArray(false,ones(size(net.value[i])))
-    
     end
     end
 

@@ -8,9 +8,9 @@ function ADbackward!(net;debug=false,AccumulateGradient=false)
     if debug; println("Get gradient:"); end
 
     for node in net.backwardNodes
-            if !AccumulateGradient
-                fill!(net.gradient[n],0.0)
-            end
+            #########IMPORTANT#########
+            #all the grediants are accumulated 
+            #CHECK WITH DAVID 
 
             for c in net.relevantchildren[n]
                 if debug
