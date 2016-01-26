@@ -75,6 +75,7 @@ abstract ADdummy <: ADnode
 type ADFunction <:ADnode
 index::Int
 parents::Array{Int,1}
+children::Array{Int,1}
 f::Function
 f_inplace::Function
 df::Function
@@ -89,17 +90,17 @@ ADFunction(f::Function,operands...) = begin
         global node 
         idx = nodecounter    
        
-        parents = map(n->n.index,operands)
-        takederivative = any((x)->isa(x,ADVariable),operands)
-        
-        if takederivative
-        thisnode = new(idx,parents,f,Inplace[f],Derivative[f])
+        parents = map(n->n.index,operands) 
+        #parents is need for forward pass
+        children = map(n->((n!=nothing)? n.index:nothing),filter(n->isa(n,ADVariable),operands))
+        # in backward pass differentiable parents become children
+        if ! isempty(children)
+        thisnode = new(idx,parents,children,f,Inplace[f],Derivative[f])
         push!(forwardNodes,thisnode) # forward accumulation
         unshift!(backwardNodes,thisnode) # backward accumulation
         return ADVariable(idx)
         else
-        println("Finde a ADconst")
-        thisnode = new(idx,parents,f,Inplace[f],Derivative[f])
+        thisnode = new(idx,parents,nothing,f,Inplace[f],Derivative[f])
         push!(forwardNodes,thisnode)
         return ADconst(idx)
         end
@@ -296,13 +297,12 @@ getindex(x::Array,A::ADTensor)=getindex(x,A.index)
 export getindex
 
 import Base.setindex!
-setindex!(x::Array,value,A::ADnode)=setindex!(x,collection(value),A.index)
+setindex!(x::Array,value,A::ADnode)=setindex!(x,value,A.index)
 export setidex!
 
 import Base.setindex!
-setindex!(x::Array,value,A::ADTensor)=setindex!(x,collection(value),A.index)
+setindex!(x::Array,value,A::ADTensor)=setindex!(x,value,A.index)
 export setindex!
-
 
 
 function setindex!(x::Array,value::Float64,A::ADnode)
@@ -350,12 +350,12 @@ end
 
 
 include("utils.jl")
-#include("CUDAutils.jl")
+include("CUDAutils.jl")
 
 include("defs.jl")
-#include("compile.jl")
+include("compile.jl")
 
-#include("ADforward!.jl")
+include("ADforward!.jl")
 #include("ADbackward!.jl")
 
 #include("gradcheckGPU.jl"); export gradcheckGPU

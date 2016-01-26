@@ -9,9 +9,22 @@ function compile(net;backend="CPU",debug=false)
 
     if backend == "CPU"
 
-
-
-
+    forward = net.forwardNodes
+    backward = net.backwardNodes
+    # TODO: for loop below can be saved, as filter() ADforward() also iterates 
+    # through all node
+    net.forwardNodes = filter(x->(isa(x,ADFunction)),forward)
+    ADforward!(net;debug=false,AllocateMemory=true)
+    #Allocate graident for backward pass
+    iter = length(net.value)
+    for i = 1:iter
+    net.gradient[i]=cArray(false,Float64,size(net.value[i]))
+    
+    if i == iter
+    net.gradient[i] = cArray(false,ones(size(net.value[i])))
+    
+    end
+    end
 
     elseif backend == "GPU"
 
@@ -21,8 +34,9 @@ function compile(net;backend="CPU",debug=false)
     end
 
 
-    # It's good to ensure that we only compuile on the CPU since then we don't need to write inplace versions of the GPU functions (we only need the inplace versions of the GPU derivatives. This makes coding a bit easier)
 
+    # It's good to ensure that we only compuile on the CPU since then we don't need to write inplace versions of the GPU functions (we only need the inplace versions of the GPU derivatives. This makes coding a bit easier)
+#=
     if debug
         println("Compiling into a tree and storing messages:")
     end
@@ -64,7 +78,7 @@ function compile(net;backend="CPU",debug=false)
     net.gpu=gpu
 
 
-    ADforward!(net;debug=debug,AllocateMemory=true)
+
     if debug;  println("Done forward pass compilation:");  end
 
     # backward compilation:
@@ -106,15 +120,8 @@ function compile(net;backend="CPU",debug=false)
     if debug
         println("Compiled into a DAG with $(length(node)) nodes")
     end
-
+=#
     return net
-
-end
-
-
-function Allocation(net::network)
-forward = net.forwardNodes
-backward = net.backwardNodes
 
 end
 

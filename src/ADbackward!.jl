@@ -4,13 +4,14 @@ function ADbackward!(net;debug=false,AccumulateGradient=false)
     (c) David Barber, University College London 2015
     =#
 
+
     if debug; println("Get gradient:"); end
-    fill!(net.gradient[net.FunctionNode],1.0)
-    for n in net.ancestors
-        if net.node[n].takederivative
+
+    for node in net.backwardNodes
             if !AccumulateGradient
                 fill!(net.gradient[n],0.0)
             end
+
             for c in net.relevantchildren[n]
                 if debug
                     println("-----------------")
@@ -27,6 +28,15 @@ function ADbackward!(net;debug=false,AccumulateGradient=false)
                 end
             end
         end
+
+
+
+
+
+
+
+
+
     end
 
     if debug; println("done backward pass");  end
