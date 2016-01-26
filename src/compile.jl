@@ -3,7 +3,23 @@
   For GPU or CPU operation
 =#
 
-function compile(net;debug=false,gpu=false)
+function compile(net;backend="CPU",debug=false)
+
+    
+
+    if backend == "CPU"
+
+
+
+
+
+    elseif backend == "GPU"
+
+
+    else
+    throw("backend type must be GPU or CPU")
+    end
+
 
     # It's good to ensure that we only compuile on the CPU since then we don't need to write inplace versions of the GPU functions (we only need the inplace versions of the GPU derivatives. This makes coding a bit easier)
 
@@ -18,13 +34,6 @@ function compile(net;debug=false,gpu=false)
     returnderivative=zeros(Bool,N)
     # check whether need to be derive 
     # achieved in ADFunction
-
-
-
-
-
-
-
     for i in net.validnodes
         if !(node[i]==nothing)
             node[i].children=setdiff(find(G[:,i]),node[i].index)
@@ -99,6 +108,13 @@ function compile(net;debug=false,gpu=false)
     end
 
     return net
+
+end
+
+
+function Allocation(net::network)
+forward = net.forwardNodes
+backward = net.backwardNodes
 
 end
 

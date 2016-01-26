@@ -110,7 +110,6 @@ export ADFunction
 #TODO: here might be some bugs, what if user called ADVariable(idx) ?
 type ADVariable <:ADnode
 index::Int
-
 ADVariable()=begin
         global nodecounter+=1
         global node   
@@ -136,6 +135,7 @@ ADconst(value) = begin
      global nodecounter+=1
      global node   
      thisnode = new(nodecounter,collect(value))
+     push!(forwardNodes,thisnode)
      return thisnode
     end
 ADconst(idx::Int)= begin    
