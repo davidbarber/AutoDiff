@@ -1,5 +1,9 @@
+# (c) David Barber, University College London 2015
+#=From the README the main perporse of compile is to allocate memory
+  For GPU or CPU operation
+=#
+
 function compile(net;debug=false,gpu=false)
-    # (c) David Barber, University College London 2015
 
     # It's good to ensure that we only compuile on the CPU since then we don't need to write inplace versions of the GPU functions (we only need the inplace versions of the GPU derivatives. This makes coding a bit easier)
 
@@ -8,21 +12,19 @@ function compile(net;debug=false,gpu=false)
     end
     node=net.node
     N=length(node)
-#    NN=net.node[end].index
-    if isempty(net.FunctionNode)
-        net.FunctionNode=N
-    end
-
+    
     # get the computation tree:
     G=zeros(Bool,N,N)
     returnderivative=zeros(Bool,N)
-        for i in net.validnodes
-            G[node[i].index,node[i].parents]=1
-            if !(node[i].input)
-#                node[i].takederivative=any(map( (x)-> any(x.takederivative), node[node[i].parents]) ) # set to true for those parents that require derivative
-                node[i].takederivative=any( (x)-> any(x.takederivative), node[node[i].parents] ) # set to true for those parents that require derivative
-            end
-    end
+    # check whether need to be derive 
+    # achieved in ADFunction
+
+
+
+
+
+
+
     for i in net.validnodes
         if !(node[i]==nothing)
             node[i].children=setdiff(find(G[:,i]),node[i].index)

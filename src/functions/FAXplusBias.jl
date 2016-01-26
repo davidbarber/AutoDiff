@@ -54,7 +54,7 @@ end
 Derivative[FAXplusBias]=DAXplusBias
 Inplace[FAXplusBias]=FAXplusBias_inplace
 
-AXplusBias(A,X,b)=ADnode(FAXplusBias,[A X b])
+AXplusBias(A,X,b)=ADFunction(FAXplusBias,[A X b])
 export AXplusBias
 
 

@@ -5,7 +5,7 @@
 
 # f(X)=transpose(X)
 import Base.transpose
-transpose(A::ADnode)=ADtrans(A)
+transpose(A::ADnode)=ADFunction(A)
 export transpose
 
 

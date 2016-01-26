@@ -22,5 +22,5 @@ end
 Derivative[Fkinklin]=Dkinklin
 Inplace[Fkinklin]=Fkinklin_inplace
 
-kinklin(A::ADnode)=ADnode(Fkinklin,A)
+kinklin(A::ADnode)=ADFunction(Fkinklin,A)
 export kinklin

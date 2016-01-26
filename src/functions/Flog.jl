@@ -33,6 +33,6 @@ Inplace[Flog]=Flog_inplace
 
 import Base.log
 
-log(n::ADnode)=ADnode(Flog,n)
+log(n::ADnode)=ADFunction(Flog,n)
 
 export log

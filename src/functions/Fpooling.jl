@@ -34,5 +34,5 @@ end
 
 Derivative[FPooling] = DPooling
 Inplace[FPooling]   = FPooling
-Pooling(i::ADTensor)=ADnode(FPooling,[i])
+Pooling(i::ADTensor)=ADFunction(FPooling,i)
 export Pooling

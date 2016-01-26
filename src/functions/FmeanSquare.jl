@@ -50,7 +50,7 @@ function meanSquare(n::ArrayADnode)
     return ADnode(FmeanSquare,n)
 end
 
-#meanSquare(A::ADtrans)=ADnode(FmeanSquare, ftranspose(node[A.parent]))
-meanSquare(A::ADtrans)=ADnode(FmeanSquare, node[A.parent]) # meanSq(A')=meanSq(A)
+#meanSquare(A::ADtrans)=ADFunction(FmeanSquare, ftranspose(node[A.parent]))
+meanSquare(A::ADtrans)=ADFunction(FmeanSquare, node[A.parent]) # meanSq(A')=meanSq(A)
 
 export meanSquare

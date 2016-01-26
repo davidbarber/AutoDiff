@@ -107,11 +107,11 @@ Inplace[FAX]=FAX_inplace
 
 Derivative[FAX]=DAX
 import Base.*
-*(A::ADnode,B::ADnode)=ADnode(FAX,[A B])
+*(A::ADnode,B::ADnode)=ADFunction(FAX,[A B])
 
 
-*(A::Real,B::ADnode)=ADnode(FAX,[ADconst(A) B])
-*(A::ADnode,B::Real)=ADnode(FAX,[A ADconst(B)])
+*(A::Real,B::ADnode)=ADFunction(FAX,[ADconst(A) B])
+*(A::ADnode,B::Real)=ADFunction(FAX,[A ADconst(B)])
 
 
 @gpu *(A::CudaArray,B::CudaArray)=CUBLAS.gemm('N','N',A,B)

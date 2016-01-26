@@ -41,9 +41,9 @@ Derivative[Fvcat]=Dvcat # Define dictionary lookup
 Inplace[Fvcat]=Fvcat_inplace
 
 import Base.vcat
-vcat(n::ADnode)=ADnode(Fvcat,n)
+vcat(n::ADnode)=ADFunction(Fvcat,n)
 
 vcat(n::Array{ADnode,1})=n
-vcat(n::ArrayADnode)=ADnode(Fvcat,n)
+vcat(n::ArrayADnode)=ADFunction(Fvcat,n)
 
 export vcat

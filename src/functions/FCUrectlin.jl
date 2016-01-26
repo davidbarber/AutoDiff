@@ -31,7 +31,7 @@ end
 
 Derivative[FCUrectlin] = DCUrectlin
 Inplace[FCUrectlin]   = FCUrectlin
-CUrectlin(i::ADTensor)=ADnode(FCUrectlin,[i])
+CUrectlin(i::ADTensor)=ADFunction(FCUrectlin,i)
 export CUrectlin
 
 

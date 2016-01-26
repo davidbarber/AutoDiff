@@ -60,7 +60,7 @@ end
 Derivative[FsigmoidAXplusBias]=DsigmoidAXplusBias
 Inplace[FsigmoidAXplusBias]=FsigmoidAXplusBias_inplace
 
-sigmoidAXplusBias(A,X,b)=ADnode(FsigmoidAXplusBias,[A X b])
+sigmoidAXplusBias(A,X,b)=ADFunction(FsigmoidAXplusBias,A,X,b)
 export sigmoidAXplusBias
 
 

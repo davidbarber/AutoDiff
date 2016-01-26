@@ -88,6 +88,6 @@ end
 Derivative[FKLsoftmax]=DKLsoftmax
 Inplace[FKLsoftmax]=FKLsoftmax_inplace
 
-KLsoftmax(p::ADnode,x::ADnode)=ADnode(FKLsoftmax,[p x])
+KLsoftmax(p::ADnode,x::ADnode)=ADFunction(FKLsoftmax,p,x)
 
 export KLsoftmax

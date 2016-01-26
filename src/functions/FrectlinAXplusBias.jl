@@ -52,7 +52,7 @@ end
 Derivative[FrectlinAXplusBias]=DrectlinAXplusBias
 Inplace[FrectlinAXplusBias]=FrectlinAXplusBias_inplace
 
-rectlinAXplusBias(A,X,b)=ADnode(FrectlinAXplusBias,[A X b])
+rectlinAXplusBias(A,X,b)=ADFunction(FrectlinAXplusBias,A,X,b)
 export rectlinAXplusBias
 
 

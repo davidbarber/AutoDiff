@@ -41,6 +41,6 @@ end
 Derivative[FConvolution] = DConvolution
 Inplace[FConvolution]   = FConvolution
 export FConvolution
-Convolution(tensor::ADTensor,filter::ADTensor)=ADnode(FConvolution,[tensor filter])
+Convolution(tensor::ADTensor,filter::ADTensor)=ADFunction(FConvolution,tensor filter)
 export Convolution
 

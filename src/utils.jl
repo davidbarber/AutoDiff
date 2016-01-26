@@ -1,6 +1,6 @@
 void(x)=()
 
-
+#=
 import Base.convert
 function convert(net::network,gpucpu::ASCIIString)
     
@@ -249,7 +249,7 @@ function mydeepcopy(A)
     return B
 end
 export mydeepcopy
-
+=#
 
 
 

@@ -28,5 +28,5 @@ end
 
 Derivative[FCUsoftmax] = DCUsoftmax
 Inplace[FCUsoftmax]   = FCUsoftmax
-CUsoftmax(i::ADTensor)=ADnode(FCUsoftmax,[i])
+CUsoftmax(i::ADTensor)=ADFunction(FCUsoftmax,i)
 export CUsoftmax

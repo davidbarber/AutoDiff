@@ -48,7 +48,7 @@ end
 Derivative[FabsAXplusBias]=DabsAXplusBias
 Inplace[FabsAXplusBias]=FabsAXplusBias_inplace
 
-absAXplusBias(A,X,b)=ADnode(FabsAXplusBias,[A X b])
+absAXplusBias(A,X,b)=ADFunction(FabsAXplusBias,A,X,b)
 export absAXplusBias
 
 

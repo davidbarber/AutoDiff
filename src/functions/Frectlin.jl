@@ -16,7 +16,7 @@ end
 Derivative[Frectlin]=Drectlin
 Inplace[Frectlin]=Frectlin_inplace
 
-rectlin(A::ADnode)=ADnode(Frectlin,A)
+rectlin(A::ADnode)=ADFunction(Frectlin,A)
 export rectlin
 
 

@@ -21,5 +21,5 @@ end
 Derivative[Fstanh]=Dstanh
 Inplace[Fstanh]=Fstanh_inplace
 
-stanh(A::ADnode)=ADnode(Fstanh,A)
+stanh(A::ADnode)=ADFunction(Fstanh,A)
 export stanh

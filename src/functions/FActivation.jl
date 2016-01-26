@@ -28,7 +28,7 @@ end
 
 Derivative[FActivation] = DActivation
 Inplace[FActivation]   = FActivation
-CUActivation(i::ADTensor)=ADnode(FActivation,[i])
+CUActivation(i::ADTensor)=ADFunction(FActivation,i)
 export CUActivation
 
 
