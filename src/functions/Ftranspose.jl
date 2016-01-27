@@ -61,6 +61,13 @@ function *(A::ADtrans,B::Real)
     return ADnode(FAtransposeX,[node[A.parent] ADconst(B)])
 end
 
+function *(A::ADtrans,B::ADtrans)
+    node[A.index]=nothing
+    node[B.index]=nothing
+    return ADnode(FAtransposeXtranspose,[node[A.parent] node[B.parent]])
+end
+
+
 function *(A::ADnode,B::ADtrans)
     node[B.index]=nothing
     return ADnode(FAXtranspose,[A node[B.parent]])
@@ -71,15 +78,14 @@ function *(A::Real,B::ADtrans)
     return ADnode(FAXtranspose,[ADconst(A) node[B.parent]])
 end
 
-function *(A::ADtrans,B::ADtrans)
-    node[A.index]=nothing
-    node[B.index]=nothing
-    return ADnode(FAtransposeXtranspose,[node[A.parent] node[B.parent]])
-end
-
 export *
 
 import Base.+
+function +(A::ADtrans,B::ADtrans)
+    node[A.index]=nothing
+    node[B.index]=nothing
+    return ADnode(FXtransposePYtranspose,[node[A.parent] node[B.parent]])
+end
 
 function +(A::ADtrans,B::ADnode)
     node[A.index]=nothing
@@ -93,17 +99,15 @@ function +(A::ADnode,B::ADtrans)
 end
 
 
-function +(A::ADtrans,B::ADtrans)
-    node[A.index]=nothing
-    node[B.index]=nothing
-    return ADnode(FXtransposePYtranspose,[node[A.parent] node[B.parent]])
-end
-
-
 export +
 
 
 import Base.-
+function -(A::ADtrans,B::ADtrans)
+    node[A.index]=nothing
+    node[B.index]=nothing
+    return ADnode(FXtransposeMYtranspose,[node[A.parent] node[B.parent]])
+end
 
 function -(A::ADtrans,B::ADnode)
     node[A.index]=nothing
@@ -113,12 +117,6 @@ end
 function -(A::ADnode,B::ADtrans)
     node[B.index]=nothing
     return ADnode(FXMYtranspose,[A node[B.parent]])
-end
-
-function -(A::ADtrans,B::ADtrans)
-    node[A.index]=nothing
-    node[B.index]=nothing
-    return ADnode(FXtransposeMYtranspose,[node[A.parent] node[B.parent]])
 end
 
 trans=ftranspose

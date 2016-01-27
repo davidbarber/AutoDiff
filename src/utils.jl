@@ -68,7 +68,7 @@ function convert(net::network,gpucpu::ASCIIString)
 #end
 end
 export convert
-
+=#
 
 
 import Base.copy!
@@ -249,7 +249,7 @@ function mydeepcopy(A)
     return B
 end
 export mydeepcopy
-=#
+
 
 
 

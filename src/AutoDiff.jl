@@ -14,7 +14,6 @@ include("gpumacros.jl")
 #export @gpu, @cpu
 
 include("initfile.jl")
-#include("cuda_utils/Node.jl")
 
 @cpu println("Using CPU")
 #@gpu println("Compiling kernels...")
@@ -70,7 +69,7 @@ export backwardNodes
 abstract ADnode 
 
 abstract ADValueNode <:ADnode
-abstract ADdummy <: ADValueNode 
+abstract ADdummy 
 abstract ADFunctionNode <:ADnode
 
 
@@ -226,7 +225,7 @@ export ADtrans
 
 
 
-type ADdiag<:ADdummy# Dummy diag node that can be used for code optimisation
+type ADdiag<:ADdummy # Dummy diag node that can be used for code optimisation
     index # node index
     parent # node parent index
     input::Bool # we set this to true since this prevents dummy nodes being differentiated
@@ -309,9 +308,13 @@ export getindex
 
 import Base.setindex!
 setindex!(x::Array,value,A::ADnode)=setindex!(x,value,A.index)
-export setidex!
 
-import Base.setindex!
+function setindex!(x::Array,value::Float64,A::ADnode)
+    tmp=cArray((1,1))
+    fill!(tmp,value)
+    setindex!(x,tmp,A.index)
+end
+
 function setindex!(x::Array,value,A::ADVariable)
 if A.size !=nothing
 setindex!(x,reshape(value,A.size),A.index)
@@ -322,12 +325,6 @@ end
 export setindex!
 
 
-function setindex!(x::Array,value::Float64,A::ADnode)
-    tmp=cArray((1,1))
-    fill!(tmp,value)
-    setindex!(x,tmp,A.index)
-end
-export setindex!
 
 
 
@@ -375,10 +372,10 @@ include("compile.jl")
 include("ADforward!.jl")
 include("ADbackward!.jl")
 
-#include("gradcheckGPU.jl"); export gradcheckGPU
-#include("gradcheckCPU.jl"); export gradcheckCPU
+include("gradcheckGPU.jl"); export gradcheckGPU
+include("gradcheckCPU.jl"); export gradcheckCPU
 
-#include("netutils.jl")
+include("netutils.jl")
 #=
 function gradcheck(net;showgrad=false)
     if net.gpu
@@ -388,9 +385,9 @@ function gradcheck(net;showgrad=false)
     end
 end
 =#
-#export gradcheck
+export gradcheck
 
-#export matread, jldopen, matopen
+export matread, jldopen, matopen
 export ADnode, network, compile
 export ADforward!, ADbackward!
 #export gradcheck
