@@ -23,7 +23,7 @@ include("initfile.jl")
 
 @gpu using CUDArt
 @gpu using CUBLAS
-
+using Base.LinAlg.BLAS
 using Reexport
 @gpu (@reexport using CUDArt)
 
@@ -356,7 +356,7 @@ include("defs.jl")
 include("compile.jl")
 
 include("ADforward!.jl")
-#include("ADbackward!.jl")
+include("ADbackward!.jl")
 
 #include("gradcheckGPU.jl"); export gradcheckGPU
 #include("gradcheckCPU.jl"); export gradcheckCPU
@@ -375,7 +375,7 @@ end
 
 #export matread, jldopen, matopen
 export ADnode, network, compile
-#export ADforward!, ADbackward!
+export ADforward!, ADbackward!
 #export gradcheck
 #export ArrayOrCudaArray
 
