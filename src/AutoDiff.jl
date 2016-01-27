@@ -69,10 +69,12 @@ export backwardNodes
 # Type Hierarchy
 abstract ADnode 
 
-abstract ADdummy <: ADnode 
+abstract ADValueNode <:ADnode
+abstract ADdummy <: ADValueNode 
+abstract ADFunctionNode <:ADnode
 
 
-type ADFunction <:ADnode
+type ADFunction <:ADFunctionNode
 index::Int
 parents::Array{Int,1}
 children::Array{Int,1}
@@ -109,24 +111,33 @@ end
 export ADFunction
 
 #TODO: here might be some bugs, what if user called ADVariable(idx) ?
-type ADVariable <:ADnode
+type ADVariable<: ADValueNode
 index::Int
-ADVariable()=begin
-        global nodecounter+=1
-        global node   
-        thisnode = ADVariable(nodecounter)
-        return thisnode 
-        end
-
+size
+ADVariable() = begin
+                  global nodecounter+=1
+                  thisnode = new(nodecounter,nothing)
+                  return thisnode
+                  end
 
 ADVariable(idx::Int)=begin
-                    thisnode = new(idx)
+                    thisnode = new(idx,nothing)
                     return thisnode
                     end
+
+ADVariable(size::NTuple) = begin
+                            global nodecounter+=1
+                            thisnode = new(nodecounter,size)
+                            return thisnode
+                           end
 end
-
-
 export ADVariable
+
+Tensor(size::NTuple{4,Int}) = ADVariable(size)
+export Tensor
+Filters(size::NTuple{3,Int}) = ADVariable(size)
+export Filters
+
 
 type ADconst <:ADdummy
 index::Int
