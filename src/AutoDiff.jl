@@ -312,7 +312,13 @@ setindex!(x::Array,value,A::ADnode)=setindex!(x,value,A.index)
 export setidex!
 
 import Base.setindex!
-setindex!(x::Array,value,A::ADTensor)=setindex!(x,value,A.index)
+function setindex!(x::Array,value,A::ADVariable)
+if A.size !=nothing
+setindex!(x,reshape(value,A.size),A.index)
+else
+setindex!(x,value,A.index)
+end
+end
 export setindex!
 
 
