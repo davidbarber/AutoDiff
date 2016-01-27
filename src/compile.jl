@@ -9,27 +9,46 @@ function compile(net;backend="CPU",debug=false)
 
     if backend == "CPU"
 
-    forward = net.forwardNodes
-    backward = net.backwardNodes
-    # TODO: for loop below can be saved, as filter() ADforward() also iterates 
-    # through all node
-    net.forwardNodes = filter(x->(isa(x,ADFunction)),forward)
-    ADforward!(net;debug=false,AllocateMemory=true)
-    #Allocate graident for backward pass
-    iter = length(net.value)
-    for i = 1:iter
-    net.gradient[i]=cArray(false,zeros(size(net.value[i])))
-    if i == iter
-    net.gradient[i] = cArray(false,ones(size(net.value[i])))
-    end
-    end
+        forward = net.forwardNodes
+        # TODO: for loop below can be saved, as filter() ADforward() also iterates 
+        # through all node
+        net.forwardNodes = filter(x->(isa(x,ADFunction)),forward)
+        ADforward!(net;debug=false,AllocateMemory=true)
+        #Allocate graidents
+        iter = length(net.value)
+        net.gradient[iter] = cArray(false,ones(net.value[iter]))
+            for i = 1:iter-1
+            net.gradient[i]=cArray(false,zeros(size(net.value[i])))
+            end
 
     elseif backend == "GPU"
+         forward = net.forwardNodes
+        # TODO: for loop below can be saved, as filter() ADforward() also iterates 
+        # through all node
+        net.forwardNodes = filter(x->(isa(x,ADFunction)),forward)
+        ADforward!(net;debug=false,AllocateMemory=true)
 
+        iter = length(net.value)
+        s = size(net.value[iter])
+        net.gradient[iter] = cArray(true,ones(s))
+        net.value[iter] = cArray(true,Float64,s)
+
+        for i=1:iter-1
+        s = size(net.value[i])
+        net.gradient[i] = cArray(true,Float64,s)
+        net.value[i] = cArray(true,Float64,s)
+        end
 
     else
     throw("backend type must be GPU or CPU")
     end
+
+
+
+
+
+
+
 
 
 

@@ -26,7 +26,8 @@ function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
             if debug
                 @time net.value[node],net.auxvalue[node]=node.f(net.value[node.parents]...) ## not in place
             else
-                net.value[node],net.auxvalue[node]=node.f(net.value[node.parents]...) ## not in place
+                n = net.value[node.parents]
+                net.value[node],net.auxvalue[node]=node.f(n...) ## not in place
             end
         else
             if debug
