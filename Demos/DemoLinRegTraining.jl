@@ -5,9 +5,9 @@ useproc("GPU") # GPU is significantly faster for larger systems
 #useproc("CPU")
 
 StartCode()
-X=ADnode()
-w=ADvariable()
-Y=ADnode()
+X=ADconst()
+w=ADVariable()
+Y=ADconst()
 loss=meanSquareLoss(X*w,Y)+0.1*meanAbs(w)+0.05*meanSquare(w) # mixed regularisation term
 net=EndCode() # defines the graph
 
@@ -21,10 +21,10 @@ net.value[X]=randn(N,D)
 net.value[Y]=net.value[X]*net.value[w] # make a realisable problem
 net.value[w]=randn(D,1) # start with a random w
 
-net=compile(net) # compile and preallocate memory
+net=compile(net,backend="GPU") # compile and preallocate memory
 
 @gpu CUDArt.init([0]) # let the user do device management
-@gpu net=convert(net,"GPU")
+#@gpu net=convert(net,"GPU")
 #gradcheck(net)
 
 # Training:

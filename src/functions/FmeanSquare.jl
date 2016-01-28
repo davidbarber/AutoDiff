@@ -44,10 +44,10 @@ end
 Inplace[FmeanSquare]=FmeanSquare_inplace
 Derivative[FmeanSquare]=DmeanSquare
 
-meanSquare(n::ADnode)=ADnode(FmeanSquare,n)
+meanSquare(n::ADnode)=ADFunction(FmeanSquare,n)
 
 function meanSquare(n::ArrayADnode)
-    return ADnode(FmeanSquare,n)
+    return ADFunction(FmeanSquare,n)
 end
 
 #meanSquare(A::ADtrans)=ADFunction(FmeanSquare, ftranspose(node[A.parent]))

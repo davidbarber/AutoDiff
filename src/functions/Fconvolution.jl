@@ -87,6 +87,7 @@ elseif derivativeIDX ==2
 dtype = eltype(t)
 temp = CudaArray(dtype,size(t))
 cudnnConvolutionBackwardFilter(handle,alpha,srcDataDesc,t.ptr,diffDataDesc,grad_c.ptr,convDesc,0,workspace,0,beta,filterDesc,temp.ptr)
+
 CUBLAS.axpy!(1.0,temp,grad_n)
 free(temp)
 

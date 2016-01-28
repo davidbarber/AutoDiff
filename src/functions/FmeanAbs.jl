@@ -66,10 +66,10 @@ end
 Derivative[FmeanAbs]=DmeanAbs # Define dictionary lookup
 Inplace[FmeanAbs]=FmeanAbs_inplace
 
-meanAbs(n::ADnode)=ADnode(FmeanAbs,n)
+meanAbs(n::ADnode)=ADFunction(FmeanAbs,n)
 
 function meanAbs(n::ArrayADnode)
-    return ADnode(FmeanAbs,n)
+    return ADFunction(FmeanAbs,n)
 end
 
 

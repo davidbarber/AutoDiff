@@ -140,10 +140,16 @@ Filters(k::Int) = ADVariable((k,k))
 export Filters
 
 
-type ADconst <:ADdummy
+type ADconst <:ADnode
 index::Int
-value::Array{Float64}
+value
 size
+ADconst() = begin
+            global nodecounter+=1
+            thisnode = new(nodecounter,nothing,nothing)
+            push!(forwardNodes,thisnode)
+            return thisnode
+            end
 ADconst(value::Float64) = begin
         
      global nodecounter+=1
@@ -233,6 +239,7 @@ function setindex!(x::Array,value::Float64,A::ADnode)
     fill!(tmp,value)
     setindex!(x,tmp,A.index)
 end
+setindex!(x::Array,value::Float64,A::ADVariable)=setindex!(x,value,A)
 
 function setindex!(x::Array,value,A::ADVariable)
 if A.size !=nothing
