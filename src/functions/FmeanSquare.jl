@@ -7,7 +7,7 @@ function FmeanSquare(x...)
     return ([tmp/length(x)],nothing) # must always return an array for the value
 end
 
-function FmeanSquare_inplace(value,auxvalue,x...) # inplace
+function FmeanSquare_inplace(handle,value,auxvalue,x...) # inplace
     tmp=0.0
     for i in 1:length(x)
         tmp+=mean(x[i].*x[i])
@@ -16,7 +16,7 @@ function FmeanSquare_inplace(value,auxvalue,x...) # inplace
 end
 
 
-DmeanSquare(derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)=axpy!(2.0/(length(x)*length(x[derivativeIDX])),grad_c.*x[derivativeIDX],grad_n)
+DmeanSquare(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)=axpy!(2.0/(length(x)*length(x[derivativeIDX])),grad_c.*x[derivativeIDX],grad_n)
 
 
 if PROC=="GPU"
@@ -28,14 +28,14 @@ if PROC=="GPU"
     return (tmp,nothing) # must always return an array for the value
     end
 
-    function FmeanSquare_inplace(value,auxvalue,x::CudaArray...) # inplace
+    function FmeanSquare_inplace(handle,value,auxvalue,x::CudaArray...) # inplace
         fill!(value,0.0)
         for i in 1:length(x)
             CUBLAS.gemv!('T',1.0/(length(x)*length(x[i])),flatten(Float64,x[i]),vec(x[i]),1.0,value);
         end
     end
 
-    function DmeanSquare(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
+    function DmeanSquare(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
         alphaaxpy!(2.0/(length(x)*length(x[derivativeIDX])),grad_c,x[derivativeIDX],grad_n)
     end
 

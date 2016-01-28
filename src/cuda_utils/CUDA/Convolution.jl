@@ -43,7 +43,7 @@ c = Cint[0]
 h = Cint[0]
 w = Cint[0]
 @cudnncheck(:cudnnGetConvolution2dForwardOutputDim,(cudnnConvolutionDescriptor_t,cudnnTensorDescriptor_t,cudnnFilterDescriptor_t,Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint}),convDesc,inputTensorDesc,filterDesc,n,c,h,w)
-return (n[1],c[1],h[1],w[1])
+return (Int64(n[1]),Int64(c[1]),Int64(h[1]),Int64(w[1]))
 end
 
 #TODO: add the old version

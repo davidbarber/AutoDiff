@@ -51,7 +51,7 @@ outC = Cint[0]
 outH = Cint[0]
 outW = Cint[0]
 @cudnncheck(:cudnnGetPooling2dForwardOutputDim,(cudnnPoolingDescriptor_t,cudnnTensorDescriptor_t,Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint}),poolingDesc,inputDesc,outN,outC,outH,outW)
-return (outN[1],outC[1],outH[1],outW[1])
+return (Int64(outN[1]),Int64(outC[1]),Int64(outH[1]),Int64(outW[1]))
 end
 
 function cudnnGetPoolingNdFowardOutputDim(poolingDesc::cudnnPoolingDescriptor_t,inputDesc::cudnnTensorDescriptor_t,nbDims::Int)

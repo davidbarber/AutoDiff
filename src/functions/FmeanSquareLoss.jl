@@ -28,7 +28,7 @@ if PROC=="GPU"
         return (FmeanSquare(tmp)[1],nothing)
     end
 
-    function FmeanSquareLoss_inplace(value,auxvalue,x::CudaArray,y::CudaArray)
+    function FmeanSquareLoss_inplace(handle,value,auxvalue,x::CudaArray,y::CudaArray)
         #copy!(value,x)
         #axpy!(-1.0,y,value);FmeanSquare_inplace(value,auxvalue,value)
         # why doesn't this work??
@@ -39,7 +39,7 @@ if PROC=="GPU"
     end
 
 
-    function DmeanSquareLoss(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
+    function DmeanSquareLoss(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
         if derivativeIDX==1
             DmeanSquareLoss!(grad_c,x,y,grad_n)
         elseif derivativeIDX==2   

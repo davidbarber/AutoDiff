@@ -15,23 +15,23 @@ export ftranpose
 
 Ftranspose(X)=(X',nothing)
 
-function Ftranspose_inplace(value::Array,auxvalue,X::Array)
+function Ftranspose_inplace(handle,value::Array,auxvalue,X::Array)
     copy!(value,X')
 end
 
-function Dtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,X::Array)
+function Dtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,X::Array)
     axpy!(1.0,grad_c',grad_n)
 end
 
 
 if PROC=="GPU"
-    function Ftranspose_inplace(value::CudaArray,auxvalue,X::CudaArray)        
+    function Ftranspose_inplace(handle,value::CudaArray,auxvalue,X::CudaArray)        
         tmp=CudaArray(Float64,size(X))
         CUBLAS.geam!('T','N',1.0,X,0.0,tmp,value) # value=X'                
         free(tmp)
     end
     
-    function Dtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,X::CudaArray)
+    function Dtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,X::CudaArray)
         tmp=CudaArray(Float64,size(grad_n))
         CUBLAS.geam!('T','N',1.0,grad_c,0.0,tmp,tmp) # tmp=grad_c'                
         axpy!(1.0,tmp,grad_n); free(tmp)

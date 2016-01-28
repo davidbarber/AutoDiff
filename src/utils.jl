@@ -109,6 +109,7 @@ if PROC=="GPU"
 
     # CUDA modules:
     include("CUDAmodules.jl")
+    include("cuda_utils/CUDA/CuDNN.jl")
 
 end # end of GPU stuff
 

@@ -4,12 +4,12 @@ sf=2.5
 
 FstanhAXplusBias(A,X,b)=begin; a=A*X+b*ones(1,size(X,2)); return (sf*tanh(a),[]); end
 
-function FstanhAXplusBias_inplace(value,aux,A,X,b)
+function FstanhAXplusBias_inplace(handle,value,aux,A,X,b)
     a=A*X+b*ones(1,size(X,2))
     copy!(value,sf*tanh(a))
 end
 
-function DstanhAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
+function DstanhAXplusBias(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
     
     if derivativeIDX==1
         axpy!(1.0,(sf*grad_c.*(1.0-(f_c/sf).^2))*X',grad_n)
@@ -27,11 +27,11 @@ if PROC=="GPU"
         return(tmp,[])
     end
     
-    function FstanhAXplusBias_inplace(value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
+    function FstanhAXplusBias_inplace(handle,value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
         stanh!(sf,FAXplusBias(A,X,b)[1],value)
     end
     
-    function DstanhAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray,b::CudaArray)
+    function DstanhAXplusBias(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray,b::CudaArray)
         tmp=CudaArray(Float64,size(grad_c)); fill!(tmp,0.0)
         Dstanh!(sf,grad_c,f_c,tmp)
         if derivativeIDX==1

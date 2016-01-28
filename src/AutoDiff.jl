@@ -80,7 +80,8 @@ children::Array{Int,1}
 f::Function
 f_inplace::Function
 df::Function
-ADFunction(f::Function,operands...) = begin
+special # hold special information for some function now only used for convolution
+ADFunction(f::Function,operands::ADnode...;special=nothing) = begin
         
         operands = collect(operands)
         if(isempty(operands))
@@ -96,12 +97,12 @@ ADFunction(f::Function,operands...) = begin
         children = map(n->((n!=nothing)? n.index:nothing),filter(n->isa(n,ADVariable),operands))
         # in backward pass differentiable parents become children
         if ! isempty(children)
-        thisnode = new(idx,parents,children,f,Inplace[f],Derivative[f])
+        thisnode = new(idx,parents,children,f,Inplace[f],Derivative[f],special)
         push!(forwardNodes,thisnode) # forward accumulation
         unshift!(backwardNodes,thisnode) # backward accumulation
         return ADVariable(idx)
         else
-        thisnode = new(idx,parents,nothing,f,Inplace[f],Derivative[f])
+        thisnode = new(idx,parents,nothing,f,Inplace[f],Derivative[f],special)
         push!(forwardNodes,thisnode)
         return ADconst(idx)
         end
@@ -110,6 +111,7 @@ end
 export ADFunction
 
 #TODO: here might be some bugs, what if user called ADVariable(idx) ?
+
 type ADVariable<: ADValueNode
 index::Int
 size
@@ -134,73 +136,27 @@ export ADVariable
 
 Tensor(size::NTuple{4,Int}) = ADVariable(size)
 export Tensor
-Filters(size::NTuple{3,Int}) = ADVariable(size)
+Filters(k::Int) = ADVariable((k,k))
 export Filters
 
 
 type ADconst <:ADdummy
 index::Int
-value::Array{Float32}
-ADconst(value) = begin
+value::Array{Float64}
+size
+ADconst(value::Float64) = begin
         
      global nodecounter+=1
-     global node   
-     thisnode = new(nodecounter,collect(value))
+     thisnode = new(nodecounter,collect(value),nothing)
      push!(forwardNodes,thisnode)
      return thisnode
     end
 ADconst(idx::Int)= begin    
-                return new(idx) 
+                return new(idx,nothing,nothing) 
                 end
 
 end
 export ADconst
-
-
-#=
-type ADnode
-    index #node index
-    parents # node parent indices
-    f::Function   # function that the node computes
-    f_inplace::Function   # in place version of function
-    df::Function  # derivative function
-    children::Array{Int,1} # node child indices
-    takederivative # whether to take the derivative
-    returnderivative::Bool # whether to return the derivative
-    input::Bool # whether this is an input variable
-    isconst::Bool
-    constval
-   ADnode(f=nx,parents=[];returnderivative=false,isconst=false,constval=nothing)=
-        begin
-            global nodecounter+=1
-            global node
-            if f==nx
-                input=true
-            else
-                input=false
-            end
-            returnderivative=returnderivative==true
-            takederivative=returnderivative
-            if returnderivative & !input
-                error("cannot return derivative for a node that has parents")
-            end
-            if (isa(parents,Array{ADnode})||isa(parents,Array{ADTensor}))
-                parents=map(n->n.index,parents)
-            end
-            if (isa(parents,ADnode)||isa(parents,ADTensor))
-                parents=parents.index
-            end
-            thisnode=new(nodecounter,collect(parents),f,Inplace[f],Derivative[f],[0],takederivative,returnderivative,input,isconst,constval)
-            if isempty(node)
-                node=Array(Any,0)
-            end
-            push!(node,thisnode)
-            return thisnode
-        end
-end
-=#
-
-
 
 type ADtrans<: ADdummy # transpose node. Dummy node that can be used for code optimisation
     index # node index
@@ -246,36 +202,6 @@ type ADdiag<:ADdummy # Dummy diag node that can be used for code optimisation
 end
 export ADdiag
 
-type ADTensor
-index
-parents
-children
-input::Bool
-returnderivative::Bool
-isconst::Bool
-takederivative::Bool
-filter::Bool
-dims::Array{Int,1}
-stride::Array{Int,1}
-ADTensor(dims::Array{Int,1},filter::Bool) = begin
-                    
-                global nodecounter+=1
-                global node
-                if length(dims) != 4
-                error("Only support 4D tensor now")
-                end
-                stride = [dims[2]*dims[3]*dims[4],dims[3]*dims[4],dims[4],1]
-                #the calculation of stride is referred to mnistCuDNN.cpp
-                thisnode=new(nodecounter,[],[0],true,true,false,true,filter,dims,stride)
-            
-                if isempty(node)
-                node=Array(Any,0)
-                end
-                
-                push!(node,thisnode)
-                return thisnode
-            end
-end
 
 type network
     forwardNodes::Array{ADnode,1}
@@ -291,19 +217,12 @@ end
 
 
 
-Tensor(dims=[]) = ADTensor(dims,false)
-export Tensor
-Filters(dims=[]) = ADTensor(dims,true)
-export Filters
 ArrayADnode=Array{ADnode}
 ADnodeOrArrayADnode=Union{ADnode,Array{ADnode}}
 export ADnodeOrArrayADnode, ArrayADnode
 
 import Base.getindex
 getindex(x::Array,A::ADnode)=getindex(x,A.index)
-export getindex
-
-getindex(x::Array,A::ADTensor)=getindex(x,A.index)
 export getindex
 
 import Base.setindex!

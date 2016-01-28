@@ -3,13 +3,13 @@
 
 FrectlinAXplusBias(A,X,b)=begin; a=A*X+b*ones(1,size(X,2)); return (max(a,0.),(a.>0)); end
 
-function FrectlinAXplusBias_inplace(value,aux,A,X,b)
+function FrectlinAXplusBias_inplace(handle,value,aux,A,X,b)
     a=A*X+b*ones(1,size(X,2))
     copy!(value,max(a,0.0))
     copy!(aux,(a.>0))
 end
 
-function DrectlinAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
+function DrectlinAXplusBias(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
     if derivativeIDX==1
         axpy!(1.0,(grad_c.*faux_c)*X',grad_n)
     elseif derivativeIDX==2
@@ -25,14 +25,14 @@ if PROC=="GPU"
         # TODO: FIX THIS UNNECESSARY DOUBLE COMPUTATION
     end
     
-    function FrectlinAXplusBias_inplace(value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
+    function FrectlinAXplusBias_inplace(handle,value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
         FAXplusBias_inplace(value,aux,A,X,b)
         aux=CudaArray(Float64,size(value))
         copy!(aux,value)               
         rectlin!(value,value)
     end
     
-    function DrectlinAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray,b::CudaArray)
+    function DrectlinAXplusBias(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray,b::CudaArray)
         tmp=CudaArray(Float64,size(grad_c)); fill!(tmp,0.0)
         A_emult_Bg0!(grad_c,faux_c,tmp)               
         if derivativeIDX==1

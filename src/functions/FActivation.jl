@@ -1,5 +1,5 @@
 #TODO CPU Version
-function FActivation(inputs::Array)
+function FActivation!(inputs::Array)
 
 println("CPU version under development")
 return inputs,inputs
@@ -12,31 +12,30 @@ end
 
 
 #TODO missing handler
-function FActivation(value::CudaArray,au::CudaArray,tensor::CudaTensor)
-dstTensorDesc = cudnnCreateTensorDescriptor()
-dimension = tensor.dims
-cudnnSetTensor4dDescriptor(dstTensorDesc,tensor.dataType,dimension[1],dimension[2],dimension[3],dimension[4])
+function FActivation!(handle,value::CudaArray,auxvalue,X::CudaArray)
+
+free(value)
+(n,c,h,w) = size(X)
+dtype = eltype(X)
+dataType = cudnnDataTypeCheck(dtype)
+srcDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
+value = CudaArray(dtype,(n,c,h,w))
+dstDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(dstDataDesc,dataType,n,c,h,w)
 alpha = 1.0
 beta = 0.0
-cudnnActivationForward(tensor.handle,1,alpha,tensor.tensorDesc,tensor.data.ptr,beta,dstTensorDesc,value.ptr)
+cudnnActivationForward(handle,1,alpha,srcDataDesc,X.ptr,beta,dstDataDesc,value.ptr)
+return value
 end
 
-function DActivation()
+function DActivation(handle,)
 
 
 end
 
-Derivative[FActivation] = DActivation
-Inplace[FActivation]   = FActivation
-CUActivation(i::ADTensor)=ADFunction(FActivation,i)
+Derivative[FActivation!] = DActivation
+Inplace[FActivation!]   = FActivation!
+CUActivation(i::ADnode)=ADFunction(FActivation!,i)
 export CUActivation
 
-
-#TODO: still need to be change to fit the ADnode 
-function activationBackward(inputs::CudaArray,outputs::CudaArray,diffDesc::cudnnTensorDescriptor_t,diff::CudaArray,n,c,h,w)
-alpha = 1.0
-beta = 0.0
-out = CudaArray(ctx.dataType,n*c*w*h)
-cudnnActivationBackward(ctx.handle,1,alpha,ctx.dstTensorDesc,ouputs,diffDesc,diff,ctx.srcTensorDesc,inputs,beta,diffDesc,diff,ctx.srcTensorDesc,out)
-return out
-end

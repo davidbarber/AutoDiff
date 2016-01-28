@@ -4,9 +4,9 @@ FXtransposeMYtranspose(x::Float64,y::Float64)=Fxmy(x,y)
 FXtransposeMYtranspose(x::Float64,y)=Fxmy(x,y')
 FXtransposeMYtranspose(x,y::Float64)=Fxmy(x',y)
 FXtransposeMYtranspose(x,y)=Fxmy(x',y')
-FXtransposeMYtranspose_inplace(value,auxvalue,x,y)=Fxmy_inplace(value,auxvalue,x',y')
+FXtransposeMYtranspose_inplace(handle,value,auxvalue,x,y)=Fxmy_inplace(value,auxvalue,x',y')
 
-function DXtransposeMYtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
+function DXtransposeMYtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
     if derivativeIDX==1
         if size(x)==(1,1)
             axpy!(1.0,[sum(grad_c)],grad_n)
@@ -26,7 +26,7 @@ end
 
 if PROC=="GPU"
 
-    function FXtransposeMYtranspose_inplace(value,auxvalue,x::CudaArray,y::CudaArray)
+    function FXtransposeMYtranspose_inplace(handle,value,auxvalue,x::CudaArray,y::CudaArray)
         if size(x)==(1,1)
             FXMYtranspose_inplace(value,auxvalue,x::CudaArray,y::CudaArray)
         elseif size(y)==(1,1)
@@ -36,7 +36,7 @@ if PROC=="GPU"
         end
     end
 
-    function DXtransposeMYtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
+    function DXtransposeMYtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
         if derivativeIDX==1
             DXtransposeMY(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
         elseif derivativeIDX==2

@@ -2,11 +2,11 @@
 
 Fsoftmax(x::Array{Float64,2})=(exp(x)./sum(exp(x),1),[]) # TODO: better to subtract the max of x to make it numerically more stable
 
-function Fsoftmax_inplace(value,auxvalue,x::Array{Float64,2})
+function Fsoftmax_inplace(handle,value,auxvalue,x::Array{Float64,2})
     copy!(value,exp(x)./sum(exp(x),1)) # TODO: better to subtract the max of x to make it numerically more stable
 end
           
-function Dsoftmax(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array{Float64,2})
+function Dsoftmax(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array{Float64,2})
     axpy!(1.0,f_c.*(grad_c-repmat(sum(f_c.*grad_c,1),size(f_c,1),1)),grad_n)
 end
 
@@ -38,7 +38,7 @@ if PROC=="GPU"
     export softmax!
 
 
-    function Fsoftmax_inplace(value,auxvalue,X::CudaArray)
+    function Fsoftmax_inplace(handle,value,auxvalue,X::CudaArray)
         expX=CudaArray(Float64,size(X))
         exp!(X,expX) 
         onr=CudaArray(Float64,(1,size(X,1))); fill!(onr,1.0);
@@ -49,7 +49,7 @@ if PROC=="GPU"
     end
 
 
-    function Dsoftmax(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray)
+    function Dsoftmax(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray)
         tmp=CudaArray(Float64,size(f_c))
         vmult!(1.0,f_c,grad_c,tmp)
         onr=CudaArray(Float64,(1,size(tmp,1))); fill!(onr,1.0);
