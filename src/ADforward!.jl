@@ -20,7 +20,7 @@ function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
     # forward pass:
     for node in net.forwardNodes
         if debug
-            println("node $i: $(thisnode.f)($(thisnode.parents))");
+            println("node $(node.index): $(node.f)($(node.parents))");
         end
         if AllocateMemory
             if debug

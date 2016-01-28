@@ -21,7 +21,7 @@ net.value[X]=randn(N,D)
 net.value[Y]=net.value[X]*net.value[w] # make a realisable problem
 net.value[w]=randn(D,1) # start with a random w
 
-net=compile(net,backend="GPU") # compile and preallocate memory
+net=compile(net,backend="GPU",debug=true) # compile and preallocate memory
 
 @gpu CUDArt.init([0]) # let the user do device management
 #@gpu net=convert(net,"GPU")

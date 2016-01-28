@@ -5,8 +5,6 @@ function FAX(A::Array,X::Array)
     elseif size(X)==(1,1)
         return (A.*X[1],nothing)
     else
-        println(A)
-        println(X)
         return (A*X,nothing)
     end
 end
@@ -112,8 +110,8 @@ import Base.*
 *(A::ADnode,B::ADnode)=ADFunction(FAX,A,B)
 
 
-*(A::Real,B::ADnode)=ADFunction(FAX,ADconst(A),B)
-*(A::ADnode,B::Real)=ADFunction(FAX,A,ADconst(B))
+*(A::AbstractFloat,B::ADnode)=ADFunction(FAX,ADconst(A),B)
+*(A::ADnode,B::AbstractFloat)=ADFunction(FAX,A,ADconst(B))
 
 
 @gpu *(A::CudaArray,B::CudaArray)=CUBLAS.gemm('N','N',A,B)

@@ -40,7 +40,7 @@ for t=1:T
 end
 
 net=compile(net) # compile and preallocate memory
-
+#=
 @gpu CUDArt.init([0])
 @gpu net=convert(net,"GPU")
 #gradcheck(net) # only use a small network to check the gradient, otherwise this will take a long time
@@ -84,3 +84,4 @@ if PlotResults
     figure(); imshow(actpot, interpolation="none"); title("test membrane potential a_i(t)")
     figure(); plot(error); title("training loss against iteration")
 end
+=#

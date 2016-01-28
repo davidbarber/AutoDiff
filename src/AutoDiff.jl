@@ -76,7 +76,7 @@ abstract ADFunctionNode <:ADnode
 type ADFunction <:ADFunctionNode
 index::Int
 parents::Array{Int,1}
-children::Array{Int,1}
+children
 f::Function
 f_inplace::Function
 df::Function
@@ -91,7 +91,7 @@ ADFunction(f::Function,operands::ADnode...;special=nothing) = begin
         global nodecounter+=1
         global node 
         idx = nodecounter    
-       
+        println("The $(idx)th function is $(f)")
         parents = map(n->n.index,operands) 
         #parents is need for forward pass
         children = map(n->((n!=nothing)? n.index:nothing),filter(n->isa(n,ADVariable),operands))
@@ -102,6 +102,8 @@ ADFunction(f::Function,operands::ADnode...;special=nothing) = begin
         unshift!(backwardNodes,thisnode) # backward accumulation
         return ADVariable(idx)
         else
+        println(idx)
+        println(parents)
         thisnode = new(idx,parents,nothing,f,Inplace[f],Derivative[f],special)
         push!(forwardNodes,thisnode)
         return ADconst(idx)
@@ -147,15 +149,16 @@ size
 ADconst() = begin
             global nodecounter+=1
             thisnode = new(nodecounter,nothing,nothing)
-            push!(forwardNodes,thisnode)
             return thisnode
             end
 ADconst(value::Float64) = begin
-        
-     global nodecounter+=1
-     thisnode = new(nodecounter,collect(value),nothing)
-     push!(forwardNodes,thisnode)
-     return thisnode
+        global nodecounter+=1
+        global node
+        tmp=Array(Float64,(1,1))
+        fill!(tmp,value)
+        thisnode = new(nodecounter,tmp,nothing)
+        unshift!(forwardNodes,thisnode) #push the scalar constant to the top
+        return thisnode
     end
 ADconst(idx::Int)= begin    
                 return new(idx,nothing,nothing) 
@@ -237,7 +240,7 @@ setindex!(x::Array,value,A::ADnode)=setindex!(x,value,A.index)
 function setindex!(x::Array,value::Float64,A::ADnode)
     tmp=cArray((1,1))
     fill!(tmp,value)
-    setindex!(x,tmp,A.index)
+    setindex!(x,value,A.index)
 end
 setindex!(x::Array,value::Float64,A::ADVariable)=setindex!(x,value,A)
 

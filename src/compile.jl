@@ -4,14 +4,18 @@
 =#
 
 function compile(net;backend="CPU",debug=false)
-
     
 
+    while(isa(net.forwardNodes[1],ADconst))
+    constant = shift!(net.forwardNodes)
+    net.value[constant.index] = constant.value
+    end
+    
     if backend == "CPU"
         
         # TODO: for loop below can be saved, as filter() ADforward() also iterates 
         # through all node
-        ADforward!(net;debug=false,AllocateMemory=true)
+        ADforward!(net;debug=debug,AllocateMemory=true)
         #Allocate graidents
         iter = length(net.value)
         net.gradient[iter] = cArray(false,Float64,size(net.value[iter]))
@@ -23,7 +27,7 @@ function compile(net;backend="CPU",debug=false)
         net.handle = cudnnCreate()
         # TODO: for loop below can be saved, as filter() ADforward() also iterates 
         # through all node
-        ADforward!(net;debug=false,AllocateMemory=true)
+        ADforward!(net;debug=debug,AllocateMemory=true)
 
         iter = length(net.value)
         s = size(net.value[iter])

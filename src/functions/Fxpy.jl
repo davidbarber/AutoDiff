@@ -85,9 +85,9 @@ Derivative[Fxpy]=Dxpy
 Inplace[Fxpy]=Fxpy_inplace
 
 import Base.+
-+(A::ADnode,B::ADnode)=ADFunction(Fxpy,[A B])
-+(A::Real,B::ADnode)=ADFunction(Fxpy,[ADconst(A) B])
-+(A::ADnode,B::Real)=ADFunction(Fxpy,[A ADconst(B)])
++(A::ADnode,B::ADnode)=ADFunction(Fxpy,A,B)
++(A::AbstractFloat,B::ADnode)=ADFunction(Fxpy,ADconst(A),B)
++(A::ADnode,B::AbstractFloat)=ADFunction(Fxpy,A,ADconst(B))
 
 
 

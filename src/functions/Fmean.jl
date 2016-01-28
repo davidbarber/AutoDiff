@@ -66,11 +66,11 @@ end
 Derivative[Fmean]=Dmean # Define dictionary lookup
 Inplace[Fmean]=Fmean_inplace
 
-mean(n::ADnode)=ADnode(Fmean,n)
+mean(n::ADnode)=ADFunction(Fmean,n)
 
 
 function mean(n::ArrayADnode)
-    return ADnode(Fmean,n)
+    return ADFunction(Fmean,n...)
 end
 
 
