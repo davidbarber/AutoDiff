@@ -28,7 +28,7 @@ end
 
 
 
-function DCUsoftmax(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
+function DCUsoftmax(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,X::CudaArray)
 alpha = 1.0
 beta = 0.0
 (n,c,h,w) = size(X)
@@ -41,7 +41,7 @@ diffDataDesc = cudnnCreateTensorDescriptor()
 (n,c,h,w) = size(grad_c)
 cudnnSetTensor4dDescriptor(diffDataDesc,dataType,n,c,h,w)
 
-cudnnSoftmaxBackward(handle,1,1,alpha,srcDataDesc,X.ptr,diffDataDesc,grad_c.ptr,beta,srcDataDesc,temp)
+cudnnSoftmaxBackward(handle,1,1,alpha,srcDataDesc,X.ptr,diffDataDesc,grad_c.ptr,beta,srcDataDesc,temp.ptr)
 CUBLAS.axpy!(1.0,temp,grad_n)
 free(temp)
 cudnnDestroyTensorDescriptor(srcDataDesc)

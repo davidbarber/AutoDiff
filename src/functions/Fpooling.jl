@@ -40,19 +40,26 @@ cudnnSetPooling2dDescriptor(poolingDesc,0,2,2,0,0,2,2)
 alpha = 1.0
 beta = 0.0
 (n,c,h,w) = size(f_c)
+println("dimension of srcDesc is")
+println((n,c,h,w))
 dtype = eltype(X)
 dataType = cudnnDataTypeCheck(dtype)
 srcDataDesc = cudnnCreateTensorDescriptor()
 cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
+
+diffDataDesc = cudnnCreateTensorDescriptor()
+(n,c,h,w) = size(grad_c)
+println("dimension of diffDataDesc is")
+println((n,c,h,w))
+cudnnSetTensor4dDescriptor(diffDataDesc,dataType,n,c,h,w)
+
 
 (n,c,h,w) = size(X)
 dstDataDesc = cudnnCreateTensorDescriptor()
 cudnnSetTensor4dDescriptor(dstDataDesc,dataType,n,c,h,w)
 temp = CudaArray(dtype,n,c,h,w)
 
-diffDataDesc = cudnnCreateTensorDescriptor()
-(n,c,h,w) = size(grad_c)
-cudnnSetTensor4dDescriptor(diffDataDesc,dataType,n,c,h,w)
+
 
 cudnnPoolingBackward(handle,poolingDesc,alpha,srcDataDesc,f_c.ptr,diffDataDesc,grad_c.ptr,dstDataDesc,X.ptr,beta,dstDataDesc,temp.ptr)
 CUBLAS.axpy!(1.0,temp,grad_n)
