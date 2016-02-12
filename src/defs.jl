@@ -112,7 +112,8 @@ f=[
    "Felu",
    "Fabs",
    "Fkinklin",
-   "FkinklinAXplusBias"
+   "FkinklinAXplusBias",
+    "Falex"
    ]
 
 for fn in f
@@ -126,7 +127,7 @@ include("TrainingAlgorithms.jl")
 #Fnegative(x)=(-x,[])
 #Dnegative=Array(Function,1)
 #Dnegative[1]=dnegative1(x,self,aux,t)=-t.*ones(size(x))
-#Dnegative[1]=dnegative1(x::Float64,self,aux,t)=-t
+#Dnegative[1]=dnegative1(x::Float32,self,aux,t)=-t
 #Derivative[Fnegative]=Dnegative # Define dictionary lookup
 #export Fnegative
 #export dnegative1 # need for source code execution
@@ -134,10 +135,10 @@ include("TrainingAlgorithms.jl")
 #export ADnegative
 
 ## KL Loss: f(p,q)=KL(p,q)
-#FKLLoss(p::Array{Float64,2},q::Array{Float64,2})=begin DN=prod(size(p));(sum(p.*(log(p)-log(q)))/DN,DN); end
+#FKLLoss(p::Array{Float32,2},q::Array{Float32,2})=begin DN=prod(size(p));(sum(p.*(log(p)-log(q)))/DN,DN); end
 #DKLLoss=Array(Function,2)
-#DKLLoss[1]=DKLLoss1(p::Array{Float64,2},q::Array{Float64,2},self,aux,t)=t.*(1+log(p)-log(q))/aux
-#DKLLoss[2]=DKLLoss2(p::Array{Float64,2},q::Array{Float64,2},self,aux,t)=t.*(p./q)./aux
+#DKLLoss[1]=DKLLoss1(p::Array{Float32,2},q::Array{Float32,2},self,aux,t)=t.*(1+log(p)-log(q))/aux
+#DKLLoss[2]=DKLLoss2(p::Array{Float32,2},q::Array{Float32,2},self,aux,t)=t.*(p./q)./aux
 #Derivative[FKLLoss]=DKLLoss
 #export FKLLoss,DKLLoss
 #export DKLLoss1,DKLLoss2 # need for source code execution
@@ -145,10 +146,10 @@ include("TrainingAlgorithms.jl")
 #export ADKLLoss
 #
 # Multinomial Logistic Loss: -sum(log(p_c)) where p\propto exp(x) and c is a bit array of the same size as x
-#FMultLogisticLoss(c::BitArray{2},x::Array{Float64,2})=begin DN=prod(size(x));logZ=logsumexp(x);aux=(logZ,DN); return (#(-sum(x[c])+sum(logZ))/DN,aux); end
+#FMultLogisticLoss(c::BitArray{2},x::Array{Float32,2})=begin DN=prod(size(x));logZ=logsumexp(x);aux=(logZ,DN); return (#(-sum(x[c])+sum(logZ))/DN,aux); end
 #DMultLogisticLoss=Array(Function,2)
-#DMultLogisticLoss[1]=DMultLogisticLoss1(c::BitArray{2},x::Array{Float64,2},self,aux,t)=nan # not needed
-#DMultLogisticLoss[2]=DMultLogisticLoss2(c::BitArray{2},x::Array{Float64,2},self,aux,t)=begin p=zeros(size(c)); p[c]=1.#; return t.*(exp(x.-aux[1])-p)./aux[2]; end
+#DMultLogisticLoss[1]=DMultLogisticLoss1(c::BitArray{2},x::Array{Float32,2},self,aux,t)=nan # not needed
+#DMultLogisticLoss[2]=DMultLogisticLoss2(c::BitArray{2},x::Array{Float32,2},self,aux,t)=begin p=zeros(size(c)); p[c]=1.#; return t.*(exp(x.-aux[1])-p)./aux[2]; end
 #Derivative[FMultLogisticLoss]=DMultLogisticLoss
 #export FMultLogisticLoss,DMultLogisticLoss
 #export DMultLogisticLoss1,DMultLogisticLoss2 # need for source code execution
@@ -156,15 +157,15 @@ include("TrainingAlgorithms.jl")
 #export ADMultLogisticLoss
 #
 ##Logistic Loss: -sum(log(sigma(c.*x)))/prod(size(x)) c[i] is +1 or -1 class variable
-#FLogisticLoss(c::Array{Float64,2},x::Array{Float64,2})=begin DN=prod(size(x)); aux=(1./(1.+exp(-c.*x)),DN); return (-s#um(log(aux[1]))/DN,aux); end
+#FLogisticLoss(c::Array{Float32,2},x::Array{Float32,2})=begin DN=prod(size(x)); aux=(1./(1.+exp(-c.*x)),DN); return (-s#um(log(aux[1]))/DN,aux); end
 #DLogisticLoss=Array(Function,2)
-#DLogisticLoss[1]=DLogisticLoss1(c::Array{Float64,2},x::Array{Float64,2},self,aux,t)=-t.*(1.-aux[1]).*x/aux[2]
-#DLogisticLoss[2]=DLogisticLoss2(c::Array{Float64,2},x::Array{Float64,2},self,aux,t)=-t.*(1.-aux[1]).*c/aux[2]
+#DLogisticLoss[1]=DLogisticLoss1(c::Array{Float32,2},x::Array{Float32,2},self,aux,t)=-t.*(1.-aux[1]).*x/aux[2]
+#DLogisticLoss[2]=DLogisticLoss2(c::Array{Float32,2},x::Array{Float32,2},self,aux,t)=-t.*(1.-aux[1]).*c/aux[2]
 #
-#FLogisticLoss(c::Array{Float64},x::Array{Float64})=begin DN=prod(size(x)); aux=(1./(1.+exp(-c.*x)),DN); return (-sum(l#og(aux[1]))/DN,aux); end
+#FLogisticLoss(c::Array{Float32},x::Array{Float32})=begin DN=prod(size(x)); aux=(1./(1.+exp(-c.*x)),DN); return (-sum(l#og(aux[1]))/DN,aux); end
 #DLogisticLoss=Array(Function,2)
-#DLogisticLoss[1]=DLogisticLoss1(c::Array{Float64,1},x::Array{Float64,2},self,aux,t)=-t.*(1.-aux[1]).*x/aux[2]
-#DLogisticLoss[2]=DLogisticLoss2(c::Array{Float64,1},x::Array{Float64,2},self,aux,t)=-t.*(1.-aux[1]).*c/aux[2]
+#DLogisticLoss[1]=DLogisticLoss1(c::Array{Float32,1},x::Array{Float32,2},self,aux,t)=-t.*(1.-aux[1]).*x/aux[2]
+#DLogisticLoss[2]=DLogisticLoss2(c::Array{Float32,1},x::Array{Float32,2},self,aux,t)=-t.*(1.-aux[1]).*c/aux[2]
 #Derivative[FLogisticLoss]=DLogisticLoss
 #export FLogisticLoss,DLogisticLoss
 #export DLogisticLoss1,DLogisticLoss2 # need for source code execution

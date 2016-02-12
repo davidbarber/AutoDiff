@@ -17,7 +17,7 @@ end
 
 macro gpu(ex)
     global PROC
-    if PROC=="GPU"
+    if PROC=="GPU" || PROC=="GPU32"
          esc(ex)
     end
 end

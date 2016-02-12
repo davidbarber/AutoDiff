@@ -40,7 +40,7 @@ end
 
 function cArray(eltype,sz::Tuple)
     global PROC
-    if PROC=="GPU"
+     if PROC=="GPU"
         return CudaArray(eltype,sz)
     else
         return zeros(eltype,sz)
@@ -74,10 +74,29 @@ function cArray(proc::ASCIIString,A::Array)
 end
 
 
+function cArray(proc::ASCIIString,eltype,A::Array)
+    if proc=="GPU"
+        return CudaArray(eltype,A)
+    else
+        return map(eltype,A)
+    end
+end
+
+function cArray(GPUproc::Bool,eltype,A::Array)
+    if GPUproc==true
+        return CudaArray(eltype,A)
+    else
+        return map(eltype,A)
+    end
+end
+
+
+
+
 export cArray
 
 
-function cArray(gpu,eltype,sz::Tuple)
+function cArray(gpu::Bool,eltype,sz::Tuple)
     if gpu==true
        return CudaArray(eltype,sz)
     else
@@ -102,6 +121,14 @@ function cArray(gpu,A::Array)
     end
 end
 export cArray
+
+
+function CudaArray(eltype,A::Array)
+    CudaArray(map(eltype,A))
+end
+export CudaArray
+
+
 
 
 

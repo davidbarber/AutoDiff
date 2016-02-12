@@ -20,11 +20,11 @@ include("initfile.jl")
 #@gpu include("compile_kernels.jl")
 @gpu println("Using GPU")
 
-@gpu using CUDArt
-@gpu using CUBLAS
+@gpu (using CUDArt; println("using CUDArt"))
+@gpu (using CUBLAS; println("using CUBLAS"))
 
 using Reexport
-@gpu (@reexport using CUDArt)
+@gpu (@reexport using CUDArt;println("reexport using CUDArt"))
 
 global nodecounter
 export nodecounter
@@ -183,24 +183,24 @@ type network
     ForwardPassList
     parentIDX
     gpu::Bool
+    eltype # Float32 or Float64
 
    function network()
     vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(Node(),NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU")
+        return new(Node(),NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU",Float64)
     end
 
     function network(node)
         vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(node,NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU")
+        return new(node,NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU",Float64)
     end
 
     function network(node,FunctionNode,value,auxvalue,gradient,anc,relevantchildren,forwardlist=nothing)
     vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(node,NodeCounter(),value,auxvalue,gradient,vn,anc,relevantchildren,forwardlist,nothing,PROC=="GPU")
+        return new(node,NodeCounter(),value,auxvalue,gradient,vn,anc,relevantchildren,forwardlist,nothing,PROC=="GPU",Float64)
     end
 
 end
-
 
 
 include("utils.jl")

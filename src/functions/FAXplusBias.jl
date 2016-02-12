@@ -27,7 +27,7 @@ if PROC=="GPU"
 #    end
 
 
-    function FAXplusBias_inplace(value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
+    function FAXplusBias_inplace(value,aux,A::CudaArray{Float64},X::CudaArray{Float64},b::CudaArray{Float64})
         ons=CudaArray(Float64,(1,size(X,2))); fill!(ons,1.0)        
 #        Fxpy_inplace(value,aux,FAX(A,X)[1],FAX(b,ons)[1])
         gemm!('N','N',1.0,b,ons,0.0,value)
@@ -35,9 +35,7 @@ if PROC=="GPU"
         free(ons)
     end
 
-
-
-    function DAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray,b::CudaArray)
+    function DAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray{Float64},X::CudaArray{Float64},b::CudaArray{Float64})
         if derivativeIDX==1
             gemm!('N','T',1.0,grad_c,X,1.0,grad_n)
         elseif derivativeIDX==2
@@ -49,6 +47,28 @@ if PROC=="GPU"
         end
     end
 
+
+    function FAXplusBias_inplace(value,aux,A::CudaArray{Float32},X::CudaArray{Float32},b::CudaArray{Float32})
+        ons=CudaArray(Float32,(1,size(X,2))); fill!(ons,Float32(1.0))        
+#        Fxpy_inplace(value,aux,FAX(A,X)[1],FAX(b,ons)[1])
+        gemm!('N','N',Float32(1.0),b,ons,Float32(0.0),value)
+        gemm!('N','N',Float32(1.0),A,X,Float32(1.0),value)
+        free(ons)
+    end
+
+
+    function DAXplusBias(derivativeIDX,f_c,faux_c,grad_c::CudaArray{Float32},grad_n::CudaArray{Float32},A::CudaArray{Float32},X::CudaArray{Float32},b::CudaArray{Float32})
+        if derivativeIDX==1
+            gemm!('N','T',Float32(1.0),grad_c,X,Float32(1.0),grad_n)
+        elseif derivativeIDX==2
+            gemm!('T','N',Float32(1.0),A,grad_c,Float32(1.0),grad_n)
+        elseif derivativeIDX==3
+            ons=CudaArray(Float32,(size(X,2),1)); fill!(ons,Float32(1.0))
+            gemm!('N','N',Float32(1.0),grad_c,ons,Float32(1.0),grad_n)
+            free(ons)
+        end
+    end
+
 end
 
 Derivative[FAXplusBias]=DAXplusBias
@@ -56,6 +76,3 @@ Inplace[FAXplusBias]=FAXplusBias_inplace
 
 AXplusBias(A,X,b)=ADnode(FAXplusBias,[A X b])
 export AXplusBias
-
-
-

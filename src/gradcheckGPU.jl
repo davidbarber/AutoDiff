@@ -9,9 +9,9 @@ println("GRADCHECK GPU")
 #    netCPU.value[i]=to_host(netGPU.value[i])
 #    netCPU.gradient[i]=to_host(netGPU.gradient[i])
 #end
-netCPU=convert(netGPU,"CPU")
+netCPU=convert(netGPU,"CPU",Float64)
 
-netCPU=compile(netCPU;gpu=false)
+netCPU=compile(netCPU;gpu=false,eltype=Float64)
 
 ADforward!(netCPU); ADbackward!(netCPU); #println("evaluated CPU")
 ADforward!(netGPU); ADbackward!(netGPU); #println("evaluated GPU")

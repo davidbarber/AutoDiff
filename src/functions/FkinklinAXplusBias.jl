@@ -21,7 +21,7 @@ function DkinklinAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
     end
 end
 
-if PROC=="GPU"    
+if PROC=="GPU" 
 
     function FkinklinAXplusBias_inplace(value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
         FAXplusBias_inplace(value,[],A,X,b)
@@ -47,6 +47,27 @@ if PROC=="GPU"
         free(tmp)
     end
 
+
+    function DkinklinAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray{Float32},X::CudaArray{Float32},b::CudaArray{Float32})
+        tmp=CudaArray(Float32,size(grad_c)); fill!(tmp,0.0)
+        A_emult_Bg0!(grad_c,faux_c,tmp)        
+        scale!((1-gamma),tmp)
+        axpy!(gamma,grad_c,tmp)
+
+        if derivativeIDX==1
+            gemm!('N','T',Float32(1.0),tmp,X,Float32(1.0),grad_n)
+        elseif derivativeIDX==2
+            gemm!('T','N',Float32(1.0),A,tmp,Float32(1.0),grad_n)
+        elseif derivativeIDX==3
+            ons=CudaArray(Float32,(size(X,2),1)); fill!(ons,1.0)
+            gemm!('N','N',Float32(1.0),tmp,ons,Float32(1.0),grad_n)
+            free(ons)
+        end
+        free(tmp)
+    end
+
+
+    
 end
 
 

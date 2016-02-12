@@ -45,6 +45,27 @@ if PROC=="GPU"
         free(tmp)
     end
 
+
+    function DrectlinAXplusBias(derivativeIDX,f_c,faux_c::CudaArray{Float32},grad_c::CudaArray{Float32},grad_n::CudaArray{Float32},A::CudaArray{Float32},X::CudaArray{Float32},b::CudaArray{Float32})
+        tmp=CudaArray(Float32,size(grad_c)); fill!(tmp,Float32(0.0))
+        #A_emult_Bg0!(grad_c,faux_c,tmp)               
+        # This is a bit silly -- the CPU and GPU faux store different quantities        
+        # This means that one cannot convert from CPU to GPU and then run backward pass on the GPU to get correct results -- we would have to first run a forward pass on the GPU
+        A_emult_Bg0!(grad_c,faux_c,tmp)               
+        if derivativeIDX==1
+            gemm!('N','T',Float32(1.0),tmp,X,Float32(1.0),grad_n)
+        elseif derivativeIDX==2
+            gemm!('T','N',Float32(1.0),A,tmp,Float32(1.0),grad_n)
+        elseif derivativeIDX==3
+            ons=CudaArray(Float32,(size(X,2),1)); fill!(ons,Float32(1.0))
+            gemm!('N','N',Float32(1.0),tmp,ons,Float32(1.0),grad_n)
+            #free(ons) #TODO causes CUDA error
+        end
+        # free(tmp) #TODO causes CUDA error
+    end
+
+
+    
 end
 
 

@@ -1,4 +1,4 @@
-extern "C"   // ensure function name to be exactly "gax"
+extern "C"   
 {
     __global__ void sigmoid(const int lengthA, const double *a,  double *b)
     {

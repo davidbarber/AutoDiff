@@ -22,8 +22,31 @@ if PROC=="GPU"
         elseif derivativeIDX==2
             DYbinaryentropyXsigmoidY!(x,y,grad_c,grad_n)
         end
-    end    
+    end
+
+#    FBinaryEntropyLossXsigmoidY_inplace(value,aux,x::CudaArray,y::CudaArray)=binaryentropyXsigmoidY!(x,y,value)
+    
+#    function DBinaryEntropyLossXsigmoidY(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray{Float64},y::CudaArray{Float64})
+#        if derivativeIDX==1
+#            DXbinaryentropyXsigmoidY!(x,y,grad_c,grad_n)
+#        elseif derivativeIDX==2
+#            DYbinaryentropyXsigmoidY!(x,y,grad_c,grad_n)
+#        end
+#    end
+   
+
+#    function DBinaryEntropyLossXsigmoidY(derivativeIDX,f_c,faux_c,grad_c::CudaArray{Float32},grad_n::CudaArray{Float32},x::CudaArray{Float32},y::CudaArray{Float32})
+#        if derivativeIDX==1
+#            DXbinaryentropyXsigmoidY_32!(x,y,grad_c,grad_n)
+#        elseif derivativeIDX==2
+#            DYbinaryentropyXsigmoidY_32!(x,y,grad_c,grad_n)
+#        end
+#    end    
+
+    
 end
+
+
 
 
 Derivative[FBinaryEntropyLossXsigmoidY]=DBinaryEntropyLossXsigmoidY

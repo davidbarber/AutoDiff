@@ -2,7 +2,8 @@ void(x)=()
 
 
 import Base.convert
-function convert(net::network,gpucpu::ASCIIString)
+#function convert(net::network,gpucpu::ASCIIString)
+function convert(net::network,gpucpu::ASCIIString,eltype=Float64)
     
     #if (net.gpu & (gpucpu=="GPU")) | (!net.gpu & (gpucpu=="CPU"))
     #    return net
@@ -10,37 +11,42 @@ function convert(net::network,gpucpu::ASCIIString)
     #netout=deepcopy(net)
     netout=deepcopy(net)
     nds=net.validnodes
+    netout.eltype=eltype        
+    #if gpucpu=="GPU" || gpucpu=="GPU32"
     if gpucpu=="GPU"
         netout.gpu=true
         for n in nds
-            netout.value[n]=CudaArray(net.value[n])
-            netout.gradient[n]=CudaArray(net.gradient[n])
+            netout.value[n]=CudaArray(eltype,net.value[n])
+            netout.gradient[n]=CudaArray(eltype,net.gradient[n])
             if isdefined(net.auxvalue,n)
                 if isa(net.auxvalue[n],Tuple)
                     tmp=Array(Any,length(net.auxvalue[n]))
                     for i=1:length(net.auxvalue[n]) # can be a tuple, so iterate over elements
                         tmp[i]=nothing
                         if  ~isa(net.auxvalue[n][i],Void) && ~isempty(net.auxvalue[n][i])
-                            tmp[i]=CudaArray(net.auxvalue[n][i])
+                            tmp[i]=CudaArray(eltype,net.auxvalue[n][i])
                         end
                     end
                     netout.auxvalue[n]=tuple(tmp...)
                 else
                     if  ~isa(net.auxvalue[n],Void) && ~isempty(net.auxvalue[n])
-                        netout.auxvalue[n]=CudaArray(net.auxvalue[n])
+                        netout.auxvalue[n]=CudaArray(eltype,net.auxvalue[n])
                     end
                 end
             end
         end
     end
     if gpucpu=="CPU"
+        if eltype==Float32
+            warning("CPU computations currently only defined for Float32")
+        end
         netout.gpu=false
         for n in nds
-            netout.value[n]=to_host(net.value[n])
-            netout.gradient[n]=to_host(net.gradient[n])
+            netout.value[n]=map(eltype,to_host(net.value[n]))
+            netout.gradient[n]=map(eltype,to_host(net.gradient[n]))
             if isdefined(net.auxvalue,n)
                 if  isa(net.auxvalue[n],CudaArray)
-                    netout.auxvalue[n]=to_host(net.auxvalue[n])
+                    netout.auxvalue[n]=map(eltype,to_host(net.auxvalue[n]))
                 end
             end
         end
@@ -56,9 +62,11 @@ import Base.copy!
 @gpu copy!(gB::CudaArray,gA::CudaArray)=CUBLAS.blascopy!(length(gA),gA,1,gB,1)
 export copy!
 
-@gpu axpy!(a,x::CudaArray,y::CudaArray)=CUBLAS.axpy!(length(x),a,x,1,y,1)
+@gpu axpy!(a::Real,x::CudaArray{Float32},y::CudaArray{Float32})=CUBLAS.axpy!(length(x),Float32(a),x,1,y,1)
+@gpu axpy!(a::Real,x::CudaArray{Float64},y::CudaArray{Float64})=CUBLAS.axpy!(length(x),Float64(a),x,1,y,1)
+
 axpy!(a,x::Array,y::Array)=BLAS.axpy!(a,x,y)
-axpy!(a::Array{Float64,1},x::Array,y::Array)=BLAS.axpy!(a[1],x,y)
+axpy!(a::Array{Real,1},x::Array,y::Array)=BLAS.axpy!(a[1],x,y)
 export axpy!
 
 function A_elmult_B_update!(alphascal,A,B,betascal,C)
@@ -74,7 +82,7 @@ end
 export A_elmult_B_update!
 
 
-function axpy(a::Float64,x::Array,y::Array)
+function axpy(a::Real,x::Array,y::Array)
     out=copy(y)
     axpy!(a,x,out)
     return out
@@ -83,9 +91,10 @@ export axpy
 
 #@gpu using CUDArt, CUBLAS
 
-if PROC=="GPU"
+if (PROC=="GPU") || (PROC=="GPU32")
     import Base.LinAlg.BLAS.scale!
-    scale!(s,g::CudaArray)=CUBLAS.scal!(length(g),s,g,1)
+    scale!(s,g::CudaArray{Float64})=CUBLAS.scal!(length(g),Float64(s),g,1)
+    scale!(s,g::CudaArray{Float32})=CUBLAS.scal!(length(g),Float32(s),g,1)
     export scale!
 
     # CUDA modules:
@@ -102,14 +111,13 @@ sigma(x)=1./(1.+exp(-x))
 export sigma
 
 
-if PROC=="GPU"
+if (PROC=="GPU") || (PROC=="GPU32")
     function extract(A::CudaArray)
     return to_host(A)
     end
 end
 extract(A)=A
 export extract
-
 
 
 
@@ -132,6 +140,16 @@ function converttype!(x,intype,outtype)
     end
 end
 
+function convert!(outtype,x::Array)    
+    for i=1:length(x)
+        if isdefined(x,i)
+            x[i]=convert(outtype,x[i])
+        end
+    end
+end
+export convert!
+
+
 # find the max value of each column of a matrix:
 function argcolmax(x)
     out=Array(Int,size(x,2))
@@ -142,7 +160,7 @@ function argcolmax(x)
 end
 export argcolmax
 
-softmax(x::Array{Float64,2})=exp(x)./sum(exp(x),1)
+softmax(x::Array{Real,2})=exp(x)./sum(exp(x),1)
 export softmax
 
 function logsumexp(x)

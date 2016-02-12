@@ -2,15 +2,18 @@
 # The method uses Nesterov's accelerated gradient, with minibatches
 # (c) David Barber, University College London 2015
 
+# Note that this Float64 version is quite slow -- see the DemoMNIST32 for a faster Float32 version
+
 PlotResults=true
 
-useproc("GPU") # GPU about 4 times faster than CPU
+useproc("GPU") 
+#useproc("CPU") # GPU about 4 times faster than CPU
 
 using MAT
 
-Ntrain=60000
+Ntrain=1000
 BatchSize=1000
-TrainingIts=10000 # number of Nesterov updates
+TrainingIts=100 # number of Nesterov updates
 include("loadmnist.jl")
 images,label=loadmnist()
 r=randperm(size(images,2))
@@ -33,7 +36,8 @@ ytrain=h[1]=ADnode()
 for layer=2:L-1
     w[layer]=ADvariable()
     bias[layer]=ADvariable()
-#    h[layer]=kinklinAXplusBias(w[layer],h[layer-1],bias[layer])
+    #h[layer]=kinklinAXplusBias(w[layer],h[layer-1],bias[layer])
+#    h[layer]=AXplusBias(w[layer],h[layer-1],bias[layer])
 #    h[layer]=absAXplusBias(w[layer],h[layer-1],bias[layer])
     h[layer]=rectlinAXplusBias(w[layer],h[layer-1],bias[layer])
 #    h[layer]=abs(w[layer]*h[layer-1])+1.5*w[layer]*h[layer-1]
@@ -55,13 +59,18 @@ for i=2:L
 end
 initvalue=deepcopy(net.value[w[L]])
 
+#convert!(Array{Float32},net.value)
 net=compile(net) # compile the DAG and preallocate memory
 
+
+
 @gpu CUDArt.init([0]) # let the user do device management
-@gpu net=convert(net,"GPU")
+@gpu net=convert(net,PROC)
+
+
 #gradcheck(net)
 
-println("Training: using $(net.gpu==true? "GPU" : "CPU") ")
+    println("Training: using $(net.gpu==true? "GPU" : "CPU") $(net.eltype)")
 tstart=time()
 error=Array(Float64,0)
 ParsToUpdate=Parameters(net)
@@ -77,7 +86,7 @@ for iter=1:TrainingIts
     ADforward!(net)
     ADbackward!(net)
     push!(error,extract(net.value[net.FunctionNode])[1])
-    printover("iteration $iter: training loss = $(error[iter]) : meanSqLoss = $(784*to_host(net.value[meanSqloss]))")
+    printover("iteration $iter: training loss = $(error[iter]) : meanSqLoss = $(784*to_host(net.value[meanSqloss])[1])")
     for par in ParsToUpdate
         #GradientDescentUpdate!(net.value[par],net.gradient[par],LearningRate)
         #GradientDescentMomentumUpdate!(net.value[par],net.gradient[par],avgrad[par],Momentum,LearningRate)
@@ -99,3 +108,4 @@ if PlotResults
         readline(STDIN)
     end
 end
+

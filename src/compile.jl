@@ -1,4 +1,4 @@
-function compile(net;debug=false,gpu=false)
+function compile(net;debug=false,gpu=false,eltype=Float64)
     # (c) David Barber, University College London 2015
 
     # It's good to ensure that we only compuile on the CPU since then we don't need to write inplace versions of the GPU functions (we only need the inplace versions of the GPU derivatives. This makes coding a bit easier)
@@ -32,9 +32,11 @@ function compile(net;debug=false,gpu=false)
     # forward pass: assume the nodes are defined in ancestral order
     if debug;  println("Forward Pass compilation:");  end
 
+    #TODO: need to fix this for conversion.....
     for n in net.validnodes
         if node[n].isconst==true
-            if typeof(node[n].constval)==Float64
+            #if typeof(node[n].constval)==Float32
+            if isaScalar(node[n].constval)
                 net.value[n]=cArray(gpu,node[n].constval*ones(1,1))
             else
                 net.value[n]=cArray(gpu,node[n].constval)

@@ -14,7 +14,7 @@ function DAhadamardprodB(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,B)
     end
 end
 
-if PROC=="GPU"
+if (PROC=="GPU") || (PROC=="GPU32")
     
     function FAhadamardprodB(A::CudaArray,B::CudaArray)
         tmp=CudaArray(Float64,size(A))

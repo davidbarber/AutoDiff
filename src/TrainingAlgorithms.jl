@@ -61,7 +61,7 @@ function NesterovInit(net)
     velo=Array(Any,length(net.node)) # needed for Nesterov
     for par in Parameters(net)
 #        velo[par]=cArray(size(net.value[par])); fill!(velo[par],0.0) # Nesterov velocity
-        velo[par]=cArray(net.gpu,zeros(size(net.value[par]))) # Nesterov velocity
+        velo[par]=cArray(net.gpu,zeros(net.eltype,size(net.value[par]))) # Nesterov velocity
     end
     return velo
 end
@@ -81,8 +81,8 @@ function NesterovGradientDescentUpdate!(thetaP,gradP,v,LearningRate,t)
     # However, as we converge, mu goes to 1 and the gradient goes to zero.
     # This means that thetaP tends to theta anyway as we converge to the optimum.
 
-    mu_new=1-3/(t+5)
-    mu_old=1-3/(t+4)
+    mu_new=min(0.999,1-3/(t+5))
+    mu_old=min(0.999,1-3/(t+4))
     scale!(mu_old,v)
     axpy!(mu_new,v,thetaP)
     axpy!(-LearningRate,gradP,v)
