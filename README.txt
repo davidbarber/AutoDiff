@@ -94,7 +94,7 @@ julia> net.value[A]=rand(2,2)
 julia> net.value[X]=rand(2,1)
 julia> net=compile(net)
 julia> CUDArt.init([0])
-julia> net=convert(net,"GPU")
+julia> net=convert(net,"GPU") # for Float32 use net=convert(net,"GPU",Float32) 
 julia> ADforward!(net)
 julia> ADbackward!(net)
 julia> net.gradient[X]
