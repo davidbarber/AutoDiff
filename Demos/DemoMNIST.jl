@@ -9,7 +9,7 @@ useproc("GPU") # GPU about 4 times faster than CPU
 using MAT
 
 Ntrain=60000
-BatchSize=200
+BatchSize=1000
 TrainingIts=10000 # number of Nesterov updates
 include("loadmnist.jl")
 images,label=loadmnist()
@@ -33,9 +33,9 @@ ytrain=h[1]=ADnode()
 for layer=2:L-1
     w[layer]=ADvariable()
     bias[layer]=ADvariable()
-    h[layer]=kinklinAXplusBias(w[layer],h[layer-1],bias[layer])
+#    h[layer]=kinklinAXplusBias(w[layer],h[layer-1],bias[layer])
 #    h[layer]=absAXplusBias(w[layer],h[layer-1],bias[layer])
-#    h[layer]=rectlinAXplusBias(w[layer],h[layer-1],bias[layer])
+    h[layer]=rectlinAXplusBias(w[layer],h[layer-1],bias[layer])
 #    h[layer]=abs(w[layer]*h[layer-1])+1.5*w[layer]*h[layer-1]
 end
 w[L]=ADvariable()

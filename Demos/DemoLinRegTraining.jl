@@ -1,8 +1,8 @@
 # Linear Regression with L1 penalty
 PlotResults=true
 
-useproc("GPU") # GPU is significantly faster for larger systems
-#useproc("CPU")
+#useproc("GPU") # GPU is significantly faster for larger systems
+useproc("CPU")
 
 StartCode()
 X=ADnode()
@@ -13,8 +13,8 @@ net=EndCode() # defines the graph
 
 # instantiate parameter nodes and inputs:
 
-D=1000 # dimension of weight vector
-N=5000 # number of datapoints
+D=100 # dimension of weight vector
+N=500 # number of datapoints
 truew=randn(D,1).*(rand(D,1).>0.8)
 net.value[w]=truew
 net.value[X]=randn(N,D)
