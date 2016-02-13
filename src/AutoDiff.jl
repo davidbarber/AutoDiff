@@ -67,7 +67,6 @@ export backwardNodes
 
 # Type Hierarchy
 abstract ADnode 
-
 abstract ADValueNode <:ADnode
 abstract ADdummy 
 abstract ADFunctionNode <:ADnode

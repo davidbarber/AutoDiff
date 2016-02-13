@@ -9,7 +9,7 @@ println("CPU version under develop")
 return 0
 end
 
-
+if PROC=="GPU"
 function FConvolution(handle,mapping::NTuple{2,Int},value::CudaArray,auxvalue,t::CudaArray,f::CudaArray)
 # Creation 
 free(value)
@@ -98,6 +98,7 @@ cudnnDestroyFilterDescriptor(filterDesc)
 cudnnDestroyConvolutionDescriptor(convDesc)
 free(workspace)
 return grad_n
+end
 end
 
 Derivative[FConvolution] = DConvolution

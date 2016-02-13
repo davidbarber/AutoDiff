@@ -5,12 +5,13 @@ println("CPU rectLin in development")
 return inputs,inputs
 end
 #TODO this is the CPU version
-function DCUrectlin()
-
+function DCrossChannel()
+println("CPU Version under development")
 end
 
 
-#TODO missing handler
+
+if PROC=="GPU"
 function FCrossChannel(handle,value::CudaArray,auxvalue,X::CudaArray)
 #creation 
 
@@ -72,6 +73,8 @@ cudnnDestroyTensorDescriptor(diffDataDesc)
 cudnnDestroyTensorDescriptor(dstDataDesc)
 cudnnDestroyLRNDescriptor(normDesc)
 return grad_n
+end
+
 end
 
 Derivative[FCrossChannel] = DCrossChannel

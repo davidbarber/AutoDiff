@@ -28,7 +28,7 @@ net=compile(net,backend="GPU",debug=true) # compile and preallocate memory
 #gradcheck(net)
 
 # Training:
-println("Training: using $(net.gpu==true? "GPU" : "CPU") ")
+#println("Training: using $(net.gpu==true? "GPU" : "CPU") ")
 ParsToUpdate=Parameters(net)
 nupdates=500
 LearningRate=0.1

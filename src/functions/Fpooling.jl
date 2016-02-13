@@ -11,6 +11,7 @@ function DPooling()
 end
 
 
+if PROC=="GPU"
 function FPooling(handle,value::CudaArray,auxvalue,X::CudaArray)
 free(value)
 (n,c,h,w) = size(X)
@@ -73,6 +74,7 @@ return grad_n
 
 end
 
+end
 Derivative[FPooling] = DPooling
 Inplace[FPooling]   = FPooling
 Pooling(i::ADnode)=ADFunction(FPooling,i)

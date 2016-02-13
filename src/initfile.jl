@@ -1,1 +1,1 @@
-global PROC; PROC="CPU"
+global PROC; PROC="GPU"

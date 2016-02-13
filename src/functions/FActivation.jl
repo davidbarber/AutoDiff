@@ -11,7 +11,8 @@ function DActivation()
 end
 
 
-#TODO missing handler
+
+if PROC=="GPU"
 function FActivation(handle,value::CudaArray,auxvalue,X::CudaArray)
 
 free(value)
@@ -60,6 +61,7 @@ cudnnDestroyTensorDescriptor(dstDataDesc)
 return grad_n
 end
 
+end
 Derivative[FActivation] = DActivation
 Inplace[FActivation]   = FActivation
 CUActivation(i::ADnode)=ADFunction(FActivation,i)

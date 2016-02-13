@@ -9,6 +9,7 @@ function DCUsoftmax()
 println("CPU version of CuDNN softmax under Development")
 end
 
+if PROC=="GPU"
 function FCUsoftmax(handle,value::CudaArray,auxvalue,X::CudaArray)
 free(value)
 (n,c,h,w) = size(X)
@@ -49,6 +50,7 @@ cudnnDestroyTensorDescriptor(diffDataDesc)
 return grad_n
 end
 
+end
 
 Derivative[FCUsoftmax] = DCUsoftmax
 Inplace[FCUsoftmax]   = FCUsoftmax
