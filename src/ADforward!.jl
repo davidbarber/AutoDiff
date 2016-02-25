@@ -1,6 +1,6 @@
 function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
 #=   calculate the value and auxiliary values of a net function
-=#
+=# 
     # (c) David Barber, University College London 2015
     #=
     if AllocateMemory & net.gpu
