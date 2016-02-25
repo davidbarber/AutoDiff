@@ -113,7 +113,7 @@ f=[
    "Fabs",
    "Fkinklin",
    "FkinklinAXplusBias",
-    "Falex"
+    "Falex",
    "FConvolution",
    "FCUrectlin",
    "FCUsoftmax",

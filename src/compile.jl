@@ -39,6 +39,7 @@ function compile(net;debug=false,backend="CPU",eltype=Float64)
         net.gradient[i] = cArray(true,zeros(s))
         net.value[i] = cArray(true,net.value[i])
         end
+    end
 #=
     if debug;  println("Done forward pass compilation:");  end
 
