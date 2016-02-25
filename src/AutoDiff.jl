@@ -254,9 +254,6 @@ end
 end
 export setindex!
 
-
-
-
 include("utils.jl")
 include("CUDAutils.jl")
 
