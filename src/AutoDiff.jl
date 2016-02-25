@@ -34,7 +34,6 @@ global GPU
 #@gpu ArrayOrCudaArray = Union{Array,CudaArray}
 #ArrayOrCudaArray = Array
 
-
 function StartCode()
     global nodecounter = 0
     global forwardNodes=[]
@@ -79,7 +78,7 @@ children
 f::Function
 f_inplace::Function
 df::Function
-special # hold special information for some function now only used for convolution
+special # hold extra information of function now only used for convolution
 ADFunction(f::Function,operands::ADnode...;special=nothing) = begin
         
         operands = collect(operands)
@@ -90,15 +89,15 @@ ADFunction(f::Function,operands::ADnode...;special=nothing) = begin
         global nodecounter+=1
         global node 
         idx = nodecounter    
-        println("The $(idx)th function is $(f)")
+        #println("The $(idx)th function is $(f)")
         parents = map(n->n.index,operands) 
         #parents is need for forward pass
         children = map(n->((n!=nothing)? n.index:nothing),filter(n->isa(n,ADVariable),operands))
         # in backward pass differentiable parents become children
-        if ! isempty(children)
+        if !isempty(children)
         thisnode = new(idx,parents,children,f,Inplace[f],Derivative[f],special)
         push!(forwardNodes,thisnode) # forward accumulation
-        unshift!(backwardNodes,thisnode) # backward accumulation
+        unshift!(backwardNodes,thisnode) #backward accumulation
         return ADVariable(idx)
         else
         println(idx)
@@ -119,6 +118,7 @@ size
 ADVariable() = begin
                   global nodecounter+=1
                   thisnode = new(nodecounter,nothing)
+                  push!(backwardNodes,thisnode)
                   return thisnode
                   end
 
@@ -141,7 +141,7 @@ Filters(k::Int) = ADVariable((k,k))
 export Filters
 
 
-type ADconst <:ADnode
+type ADconst <:ADValueNode
 index::Int
 value
 size
@@ -253,42 +253,6 @@ end
 export setindex!
 
 
-
-
-
-
-#=
-type network
-    #node::Array{ADnode,1}
-    node::Array{Any,1}
-    FunctionNode::Int # Node that forms the scalar function (by default the last node in the graph)
-    value
-    auxvalue
-    gradient
-    validnodes
-    ancestors
-    relevantchildren
-    ForwardPassList
-    parentIDX
-    gpu::Bool
-    handle
-   function network()
-    vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(Node(),NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU",nothing)
-    end
-
-    function network(node)
-        vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(node,NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU",nothing)
-    end
-
-    function network(node,FunctionNode,value,auxvalue,gradient,anc,relevantchildren,forwardlist=nothing)
-    vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(node,NodeCounter(),value,auxvalue,gradient,vn,anc,relevantchildren,forwardlist,nothing,PROC=="GPU")
-    end
-
-end
-=#
 
 
 include("utils.jl")
