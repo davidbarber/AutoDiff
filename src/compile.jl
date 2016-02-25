@@ -4,6 +4,7 @@ function compile(net;debug=false,backend="CPU",eltype=Float64)
 # (c) David Barber, University College London 2015
 #=From the README the main perporse of compile is to allocate memory
   For GPU or CPU operation
+
 =#   
     # put constants into value 
     while(isa(net.forwardNodes[1],ADconst))
