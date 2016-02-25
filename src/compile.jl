@@ -1,13 +1,10 @@
-<<<<<<< HEAD
-function compile(net;debug=false,gpu=false,eltype=Float64)
+function compile(net;debug=false,backend="CPU",eltype=Float64)
     # (c) David Barber, University College London 2015
-=======
 # (c) David Barber, University College London 2015
 #=From the README the main perporse of compile is to allocate memory
   For GPU or CPU operation
 =#
 
-function compile(net;backend="CPU",debug=false)
 
     
 
@@ -30,11 +27,9 @@ function compile(net;backend="CPU",debug=false)
 
     elseif backend == "GPU"
 
-
     else
     throw("backend type must be GPU or CPU")
     end
->>>>>>> origin/AD-type-extension
 
 
 
