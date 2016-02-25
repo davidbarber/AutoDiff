@@ -10,7 +10,7 @@ function FmeanAbs(x...)
     return ([tmp/length(x)],nothing)
 end
 
-function FmeanAbs_inplace(value::Array,auxvalue,x...) # inplace
+function FmeanAbs_inplace(handle,value::Array,auxvalue,x...) # inplace
     tmp=0.0
     for i in 1:length(x)
         tmp+=mean(abs(x[i]))
@@ -19,7 +19,7 @@ function FmeanAbs_inplace(value::Array,auxvalue,x...) # inplace
 end
 
 
-function DmeanAbs(derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)
+function DmeanAbs(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)
     axpy!(grad_c[1]/(length(x)*length(x[derivativeIDX])),sign(x[derivativeIDX]),grad_n)
 
 end
@@ -46,7 +46,7 @@ if PROC=="GPU"
     end
 
 
-    function FmeanAbs_inplace(value::CudaArray,auxvalue,x::CudaArray...) # inplace
+    function FmeanAbs_inplace(handle,value::CudaArray,auxvalue,x::CudaArray...) # inplace
         fill!(value,0.0)
         for i in 1:length(x)
             axpy!(1.0/length(x),meanAbs(x[i]),value)
@@ -54,7 +54,7 @@ if PROC=="GPU"
     end
 
 
-    function DmeanAbs(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
+    function DmeanAbs(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
         tmp=CudaArray(Float64,size(grad_n))
         vsign!(x[derivativeIDX],tmp)
         alphaaxpy!(1.0/(length(x)*length(x[derivativeIDX])),grad_c,tmp,grad_n)
@@ -66,10 +66,10 @@ end
 Derivative[FmeanAbs]=DmeanAbs # Define dictionary lookup
 Inplace[FmeanAbs]=FmeanAbs_inplace
 
-meanAbs(n::ADnode)=ADnode(FmeanAbs,n)
+meanAbs(n::ADnode)=ADFunction(FmeanAbs,n)
 
 function meanAbs(n::ArrayADnode)
-    return ADnode(FmeanAbs,n)
+    return ADFunction(FmeanAbs,n)
 end
 
 

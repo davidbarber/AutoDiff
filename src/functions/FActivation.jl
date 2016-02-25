@@ -11,32 +11,58 @@ function DActivation()
 end
 
 
-#TODO missing handler
-function FActivation(value::CudaArray,au::CudaArray,tensor::CudaTensor)
-dstTensorDesc = cudnnCreateTensorDescriptor()
-dimension = tensor.dims
-cudnnSetTensor4dDescriptor(dstTensorDesc,tensor.dataType,dimension[1],dimension[2],dimension[3],dimension[4])
+if PROC=="GPU"
+function FActivation(handle,value::CudaArray,auxvalue,X::CudaArray)
+
+free(value)
+(n,c,h,w) = size(X)
+dtype = eltype(X)
+dataType = cudnnDataTypeCheck(dtype)
+srcDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
+value = CudaArray(dtype,(n,c,h,w))
+dstDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(dstDataDesc,dataType,n,c,h,w)
 alpha = 1.0
 beta = 0.0
-cudnnActivationForward(tensor.handle,1,alpha,tensor.tensorDesc,tensor.data.ptr,beta,dstTensorDesc,value.ptr)
+cudnnActivationForward(handle,1,alpha,srcDataDesc,X.ptr,beta,dstDataDesc,value.ptr)
+
+
+cudnnDestroyTensorDescriptor(srcDataDesc)
+cudnnDestroyTensorDescriptor(dstDataDesc)
+return value
 end
 
-function DActivation()
+function DActivation(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,X::CudaArray)
+alpha = 1.0
+beta = 0.0
+(n,c,h,w) = size(f_c)
+dtype = eltype(f_c)
+dataType = cudnnDataTypeCheck(dtype)
+srcDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
 
+(n,c,h,w) = size(X)
+dstDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(dstDataDesc,dataType,n,c,h,w)
+temp = CudaArray(dtype,n,c,h,w)
 
+(n,c,h,w) = size(grad_c)
+diffDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(diffDataDesc,dataType,n,c,h,w)
+
+cudnnActivationBackward(handle,1,alpha,srcDataDesc,f_c.ptr,diffDataDesc,grad_c.ptr,dstDataDesc,X.ptr,beta,dstDataDesc,temp.ptr)
+CUBLAS.axpy!(1.0,temp,grad_n)
+
+cudnnDestroyTensorDescriptor(srcDataDesc)
+cudnnDestroyTensorDescriptor(diffDataDesc)
+cudnnDestroyTensorDescriptor(dstDataDesc)
+return grad_n
 end
 
+end
 Derivative[FActivation] = DActivation
 Inplace[FActivation]   = FActivation
-CUActivation(i::ADTensor)=ADFunction(FActivation,i)
+CUActivation(i::ADnode)=ADFunction(FActivation,i)
 export CUActivation
 
-
-#TODO: still need to be change to fit the ADnode 
-function activationBackward(inputs::CudaArray,outputs::CudaArray,diffDesc::cudnnTensorDescriptor_t,diff::CudaArray,n,c,h,w)
-alpha = 1.0
-beta = 0.0
-out = CudaArray(ctx.dataType,n*c*w*h)
-cudnnActivationBackward(ctx.handle,1,alpha,ctx.dstTensorDesc,ouputs,diffDesc,diff,ctx.srcTensorDesc,inputs,beta,diffDesc,diff,ctx.srcTensorDesc,out)
-return out
-end

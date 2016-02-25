@@ -20,9 +20,12 @@ function convert(net::network,gpucpu::ASCIIString,eltype=Float64)
         netout.gpu=true
         for n in nds
 <<<<<<< HEAD
+<<<<<<< HEAD
             netout.value[n]=CudaArray(eltype,net.value[n])
             netout.gradient[n]=CudaArray(eltype,net.gradient[n])
 =======
+=======
+>>>>>>> CUDNN-ADD-BACK
             # Check tensor
             if typeof(net.node[n]) == ADTensor
             tNode = net.node[n]
@@ -41,7 +44,10 @@ function convert(net::network,gpucpu::ASCIIString,eltype=Float64)
             netout.value[n]=CudaArray(net.value[n])
             netout.gradient[n]=CudaArray(net.gradient[n])
             end
+<<<<<<< HEAD
 >>>>>>> origin/AD-type-extension
+=======
+>>>>>>> CUDNN-ADD-BACK
             if isdefined(net.auxvalue,n)
                 if isa(net.auxvalue[n],Tuple)
                     tmp=Array(Any,length(net.auxvalue[n]))
@@ -79,7 +85,7 @@ function convert(net::network,gpucpu::ASCIIString,eltype=Float64)
 #end
 end
 export convert
-
+=#
 
 
 import Base.copy!
@@ -123,6 +129,7 @@ if (PROC=="GPU") || (PROC=="GPU32")
 
     # CUDA modules:
     include("CUDAmodules.jl")
+    include("cuda_utils/CUDA/CuDNN.jl")
 
 end # end of GPU stuff
 

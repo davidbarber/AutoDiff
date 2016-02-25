@@ -17,11 +17,11 @@ if PROC=="GPU"
         return (tmp,nothing) # memory leak here
     end
     
-    function Flog_inplace(value,auxvalue,x::CudaArray)
+    function Flog_inplace(handle,value,auxvalue,x::CudaArray)
         log!(x,value)
     end
     
-    function Dlog(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray)
+    function Dlog(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray)
         vdivupdate!(1.0,grad_c,f_c,grad_n)
     end
 

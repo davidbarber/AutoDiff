@@ -13,7 +13,7 @@ function Felu(x)
     return (y,nothing)
 end
 
-function Felu_inplace(value::Array,auxvalue,x) # inplace
+function Felu_inplace(handle,value::Array,auxvalue,x) # inplace
     for i=1:length(x)
         if x[i]>0
             value[i]=x[i]
@@ -24,7 +24,7 @@ function Felu_inplace(value::Array,auxvalue,x) # inplace
 end
 
 
-function Delu(derivativeIDX,f_c,faux_c,grad_c,grad_n,x)
+function Delu(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x)
     tmp=ones(size(x))
     for i=1:length(x)
         if x[i]<0
@@ -36,7 +36,7 @@ end
 
 if 1==0 # TODO GPU version
 
-    function Felu_inplace(value::CudaArray,auxvalue,x::CudaArray...) # inplace
+    function Felu_inplace(handle,value::CudaArray,auxvalue,x::CudaArray...) # inplace
     end
 
     function Delu(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)

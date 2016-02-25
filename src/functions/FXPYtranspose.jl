@@ -7,9 +7,9 @@ FXPYtranspose(x,y::Float64)=Fxpy(x,y)
 
 FXPYtranspose(x::Array,y::Array)=Fxpy(x,y')
 
-FXPYtranspose_inplace(value,auxvalue,x::Array,y::Array)=Fxpy_inplace(value,auxvalue,x,y')
+FXPYtranspose_inplace(handle,value,auxvalue,x::Array,y::Array)=Fxpy_inplace(value,auxvalue,x,y')
 
-function DXPYtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
+function DXPYtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
     if derivativeIDX==1
         if size(x)==(1,1)
             axpy!(1.0,[sum(grad_c)],grad_n)
@@ -27,9 +27,9 @@ end
 
 if PROC=="GPU"
 
-FXPYtranspose_inplace(value,auxvalue,x::CudaArray,y::CudaArray)=FXtransposePY_inplace(value,auxvalue,y,x)
+FXPYtranspose_inplace(handle,value,auxvalue,x::CudaArray,y::CudaArray)=FXtransposePY_inplace(value,auxvalue,y,x)
 
-function DXPYtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
+function DXPYtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
     if derivativeIDX==1
         if size(x)==(1,1)
             axpy!(1.0,sum(grad_c),grad_n)

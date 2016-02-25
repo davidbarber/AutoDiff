@@ -113,11 +113,19 @@ f=[
    "Fabs",
    "Fkinklin",
    "FkinklinAXplusBias",
+<<<<<<< HEAD
     "Falex"
    #"FConvolution",
    #"FCUrectlin",
    #"FCUsoftmax",
    #"FPooling"
+=======
+   "FConvolution",
+   "FCUrectlin",
+   "FCUsoftmax",
+   "FPooling",
+   "FActivation"
+>>>>>>> CUDNN-ADD-BACK
    ]
 
 for fn in f

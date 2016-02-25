@@ -25,7 +25,6 @@ include("initfile.jl")
 @gpu (using CUBLAS; println("using CUBLAS"))
 
 using Base.LinAlg.BLAS
-
 using Reexport
 @gpu (@reexport using CUDArt;println("reexport using CUDArt"))
 
@@ -36,7 +35,6 @@ global GPU
 
 #@gpu ArrayOrCudaArray = Union{Array,CudaArray}
 #ArrayOrCudaArray = Array
-
 
 function StartCode()
     global nodecounter = 0
@@ -60,7 +58,7 @@ function getForwardNodes()
     global forwardNodes
     forwardNodes
 end
-export forwartNodes
+export forwardNodes
 
 function getBackwardNodes()
     global backwardNodes
@@ -70,18 +68,20 @@ export backwardNodes
 
 # Type Hierarchy
 abstract ADnode 
+abstract ADValueNode <:ADnode
+abstract ADdummy 
+abstract ADFunctionNode <:ADnode
 
-abstract ADdummy <: ADnode 
 
-
-type ADFunction <:ADnode
+type ADFunction <:ADFunctionNode
 index::Int
 parents::Array{Int,1}
-children::Array{Int,1}
+children
 f::Function
 f_inplace::Function
 df::Function
-ADFunction(f::Function,operands...) = begin
+special # hold extra information of function now only used for convolution
+ADFunction(f::Function,operands::ADnode...;special=nothing) = begin
         
         operands = collect(operands)
         if(isempty(operands))
@@ -91,18 +91,20 @@ ADFunction(f::Function,operands...) = begin
         global nodecounter+=1
         global node 
         idx = nodecounter    
-       
+        #println("The $(idx)th function is $(f)")
         parents = map(n->n.index,operands) 
         #parents is need for forward pass
         children = map(n->((n!=nothing)? n.index:nothing),filter(n->isa(n,ADVariable),operands))
         # in backward pass differentiable parents become children
-        if ! isempty(children)
-        thisnode = new(idx,parents,children,f,Inplace[f],Derivative[f])
+        if !isempty(children)
+        thisnode = new(idx,parents,children,f,Inplace[f],Derivative[f],special)
         push!(forwardNodes,thisnode) # forward accumulation
-        unshift!(backwardNodes,thisnode) # backward accumulation
+        unshift!(backwardNodes,thisnode) #backward accumulation
         return ADVariable(idx)
         else
-        thisnode = new(idx,parents,nothing,f,Inplace[f],Derivative[f])
+        println(idx)
+        println(parents)
+        thisnode = new(idx,parents,nothing,f,Inplace[f],Derivative[f],special)
         push!(forwardNodes,thisnode)
         return ADconst(idx)
         end
@@ -111,88 +113,61 @@ end
 export ADFunction
 
 #TODO: here might be some bugs, what if user called ADVariable(idx) ?
-type ADVariable <:ADnode
-index::Int
-ADVariable()=begin
-        global nodecounter+=1
-        global node   
-        thisnode = ADVariable(nodecounter)
-        return thisnode 
-        end
 
+type ADVariable<: ADValueNode
+index::Int
+size
+ADVariable() = begin
+                  global nodecounter+=1
+                  thisnode = new(nodecounter,nothing)
+                  push!(backwardNodes,thisnode)
+                  return thisnode
+                  end
 
 ADVariable(idx::Int)=begin
-                    thisnode = new(idx)
+                    thisnode = new(idx,nothing)
                     return thisnode
                     end
+
+ADVariable(size::NTuple) = begin
+                            global nodecounter+=1
+                            thisnode = new(nodecounter,size)
+                            return thisnode
+                           end
 end
-
-
 export ADVariable
 
-type ADconst <:ADdummy
+Tensor(size::NTuple{4,Int}) = ADVariable(size)
+export Tensor
+Filters(k::Int) = ADVariable((k,k))
+export Filters
+
+
+type ADconst <:ADValueNode
 index::Int
-value::Array{Float32}
-ADconst(value) = begin
-        
-     global nodecounter+=1
-     global node   
-     thisnode = new(nodecounter,collect(value))
-     push!(forwardNodes,thisnode)
-     return thisnode
+value
+size
+ADconst() = begin
+            global nodecounter+=1
+            thisnode = new(nodecounter,nothing,nothing)
+            return thisnode
+            end
+ADconst(value::Float64) = begin
+        global nodecounter+=1
+        global node
+        tmp=Array(Float64,(1,1))
+        fill!(tmp,value)
+        thisnode = new(nodecounter,tmp,nothing)
+        unshift!(forwardNodes,thisnode) #push the scalar constant to the top
+        return thisnode
     end
 ADconst(idx::Int)= begin    
-                return new(idx) 
+                return new(idx,nothing,nothing) 
                 end
+
 
 end
 export ADconst
-
-
-#=
-type ADnode
-    index #node index
-    parents # node parent indices
-    f::Function   # function that the node computes
-    f_inplace::Function   # in place version of function
-    df::Function  # derivative function
-    children::Array{Int,1} # node child indices
-    takederivative # whether to take the derivative
-    returnderivative::Bool # whether to return the derivative
-    input::Bool # whether this is an input variable
-    isconst::Bool
-    constval
-   ADnode(f=nx,parents=[];returnderivative=false,isconst=false,constval=nothing)=
-        begin
-            global nodecounter+=1
-            global node
-            if f==nx
-                input=true
-            else
-                input=false
-            end
-            returnderivative=returnderivative==true
-            takederivative=returnderivative
-            if returnderivative & !input
-                error("cannot return derivative for a node that has parents")
-            end
-            if (isa(parents,Array{ADnode})||isa(parents,Array{ADTensor}))
-                parents=map(n->n.index,parents)
-            end
-            if (isa(parents,ADnode)||isa(parents,ADTensor))
-                parents=parents.index
-            end
-            thisnode=new(nodecounter,collect(parents),f,Inplace[f],Derivative[f],[0],takederivative,returnderivative,input,isconst,constval)
-            if isempty(node)
-                node=Array(Any,0)
-            end
-            push!(node,thisnode)
-            return thisnode
-        end
-end
-=#
-
-
 
 type ADtrans<: ADdummy # transpose node. Dummy node that can be used for code optimisation
     index # node index
@@ -217,7 +192,7 @@ export ADtrans
 
 
 
-type ADdiag<:ADdummy# Dummy diag node that can be used for code optimisation
+type ADdiag<:ADdummy # Dummy diag node that can be used for code optimisation
     index # node index
     parent # node parent index
     input::Bool # we set this to true since this prevents dummy nodes being differentiated
@@ -238,37 +213,6 @@ type ADdiag<:ADdummy# Dummy diag node that can be used for code optimisation
 end
 export ADdiag
 
-type ADTensor
-index
-parents
-children
-input::Bool
-returnderivative::Bool
-isconst::Bool
-takederivative::Bool
-filter::Bool
-dims::Array{Int,1}
-stride::Array{Int,1}
-ADTensor(dims::Array{Int,1},filter::Bool) = begin
-                    
-                global nodecounter+=1
-                global node
-                if length(dims) != 4
-                error("Only support 4D tensor now")
-                end
-                stride = [dims[2]*dims[3]*dims[4],dims[3]*dims[4],dims[4],1]
-                #the calculation of stride is referred to mnistCuDNN.cpp
-                thisnode=new(nodecounter,[],[0],true,true,false,true,filter,dims,stride)
-            
-                if isempty(node)
-                node=Array(Any,0)
-                end
-                
-                push!(node,thisnode)
-                return thisnode
-            end
-end
-
 type network
     forwardNodes::Array{ADnode,1}
     backwardNodes::Array{ADnode,1} # Node that forms the scalar function (by default the last node in the graph)
@@ -283,10 +227,6 @@ end
 
 
 
-Tensor(dims=[]) = ADTensor(dims,false)
-export Tensor
-Filters(dims=[]) = ADTensor(dims,true)
-export Filters
 ArrayADnode=Array{ADnode}
 ADnodeOrArrayADnode=Union{ADnode,Array{ADnode}}
 export ADnodeOrArrayADnode, ArrayADnode
@@ -295,62 +235,27 @@ import Base.getindex
 getindex(x::Array,A::ADnode)=getindex(x,A.index)
 export getindex
 
-getindex(x::Array,A::ADTensor)=getindex(x,A.index)
-export getindex
-
 import Base.setindex!
 setindex!(x::Array,value,A::ADnode)=setindex!(x,value,A.index)
-export setidex!
-
-import Base.setindex!
-setindex!(x::Array,value,A::ADTensor)=setindex!(x,value,A.index)
-export setindex!
-
 
 function setindex!(x::Array,value::Float64,A::ADnode)
     tmp=cArray((1,1))
     fill!(tmp,value)
-    setindex!(x,tmp,A.index)
+    setindex!(x,value,A.index)
+end
+setindex!(x::Array,value::Float64,A::ADVariable)=setindex!(x,value,A)
+
+function setindex!(x::Array,value,A::ADVariable)
+if A.size !=nothing
+setindex!(x,reshape(value,A.size),A.index)
+else
+setindex!(x,value,A.index)
+end
 end
 export setindex!
 
 
 
-
-#=
-type network
-    #node::Array{ADnode,1}
-    node::Array{Any,1}
-    FunctionNode::Int # Node that forms the scalar function (by default the last node in the graph)
-    value
-    auxvalue
-    gradient
-    validnodes
-    ancestors
-    relevantchildren
-    ForwardPassList
-    parentIDX
-    gpu::Bool
-    eltype # Float32 or Float64
-
-   function network()
-    vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(Node(),NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU",Float64)
-    end
-
-    function network(node)
-        vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(node,NodeCounter(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),vn,nothing,nothing,nothing,nothing,PROC=="GPU",Float64)
-
-    end
-
-    function network(node,FunctionNode,value,auxvalue,gradient,anc,relevantchildren,forwardlist=nothing)
-    vn=find(map((x)->( x!=nothing && !isa(x,ADdummy))  ,Node()))
-        return new(node,NodeCounter(),value,auxvalue,gradient,vn,anc,relevantchildren,forwardlist,nothing,PROC=="GPU",Float64)
-    end
-
-end
-=#
 
 include("utils.jl")
 include("CUDAutils.jl")
@@ -361,10 +266,10 @@ include("compile.jl")
 include("ADforward!.jl")
 include("ADbackward!.jl")
 
-#include("gradcheckGPU.jl"); export gradcheckGPU
-#include("gradcheckCPU.jl"); export gradcheckCPU
+include("gradcheckGPU.jl"); export gradcheckGPU
+include("gradcheckCPU.jl"); export gradcheckCPU
 
-#include("netutils.jl")
+include("netutils.jl")
 #=
 function gradcheck(net;showgrad=false)
     if net.gpu
@@ -374,7 +279,8 @@ function gradcheck(net;showgrad=false)
     end
 end
 =#
-#export gradcheck
+
+export gradcheck
 
 #export matread, jldopen, matopen
 export ADnode, network, compile

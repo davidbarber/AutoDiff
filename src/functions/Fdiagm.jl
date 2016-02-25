@@ -44,6 +44,14 @@ export diagm
 
 import Base.*
 
+
+
+function *(A::ADdiag,B::ADdiag)
+    node[A.index]=nothing
+    node[B.index]=nothing
+    return diagm(node[A.parent].*node[B.parent])
+end
+
 function *(A::ADdiag,B::ADnode)
     node[A.index]=nothing
     return ADnode(FdiagAmultX,[node[A.parent] B])
@@ -63,14 +71,6 @@ function *(A::Real,B::ADdiag)
     node[B.index]=nothing
     return diagm(ADconst(A)*node[B.parent])
 end
-
-
-function *(A::ADdiag,B::ADdiag)
-    node[A.index]=nothing
-    node[B.index]=nothing
-    return diagm(node[A.parent].*node[B.parent])
-end
-
 
 export *
 

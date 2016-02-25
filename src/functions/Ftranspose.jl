@@ -15,23 +15,23 @@ export ftranpose
 
 Ftranspose(X)=(X',nothing)
 
-function Ftranspose_inplace(value::Array,auxvalue,X::Array)
+function Ftranspose_inplace(handle,value::Array,auxvalue,X::Array)
     copy!(value,X')
 end
 
-function Dtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,X::Array)
+function Dtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,X::Array)
     axpy!(1.0,grad_c',grad_n)
 end
 
 
 if PROC=="GPU"
-    function Ftranspose_inplace(value::CudaArray,auxvalue,X::CudaArray)        
+    function Ftranspose_inplace(handle,value::CudaArray,auxvalue,X::CudaArray)        
         tmp=CudaArray(Float64,size(X))
         CUBLAS.geam!('T','N',1.0,X,0.0,tmp,value) # value=X'                
         free(tmp)
     end
     
-    function Dtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,X::CudaArray)
+    function Dtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,X::CudaArray)
         tmp=CudaArray(Float64,size(grad_n))
         CUBLAS.geam!('T','N',1.0,grad_c,0.0,tmp,tmp) # tmp=grad_c'                
         axpy!(1.0,tmp,grad_n); free(tmp)
@@ -61,6 +61,13 @@ function *(A::ADtrans,B::Real)
     return ADnode(FAtransposeX,[node[A.parent] ADconst(B)])
 end
 
+function *(A::ADtrans,B::ADtrans)
+    node[A.index]=nothing
+    node[B.index]=nothing
+    return ADnode(FAtransposeXtranspose,[node[A.parent] node[B.parent]])
+end
+
+
 function *(A::ADnode,B::ADtrans)
     node[B.index]=nothing
     return ADnode(FAXtranspose,[A node[B.parent]])
@@ -71,15 +78,14 @@ function *(A::Real,B::ADtrans)
     return ADnode(FAXtranspose,[ADconst(A) node[B.parent]])
 end
 
-function *(A::ADtrans,B::ADtrans)
-    node[A.index]=nothing
-    node[B.index]=nothing
-    return ADnode(FAtransposeXtranspose,[node[A.parent] node[B.parent]])
-end
-
 export *
 
 import Base.+
+function +(A::ADtrans,B::ADtrans)
+    node[A.index]=nothing
+    node[B.index]=nothing
+    return ADnode(FXtransposePYtranspose,[node[A.parent] node[B.parent]])
+end
 
 function +(A::ADtrans,B::ADnode)
     node[A.index]=nothing
@@ -93,17 +99,15 @@ function +(A::ADnode,B::ADtrans)
 end
 
 
-function +(A::ADtrans,B::ADtrans)
-    node[A.index]=nothing
-    node[B.index]=nothing
-    return ADnode(FXtransposePYtranspose,[node[A.parent] node[B.parent]])
-end
-
-
 export +
 
 
 import Base.-
+function -(A::ADtrans,B::ADtrans)
+    node[A.index]=nothing
+    node[B.index]=nothing
+    return ADnode(FXtransposeMYtranspose,[node[A.parent] node[B.parent]])
+end
 
 function -(A::ADtrans,B::ADnode)
     node[A.index]=nothing
@@ -113,12 +117,6 @@ end
 function -(A::ADnode,B::ADtrans)
     node[B.index]=nothing
     return ADnode(FXMYtranspose,[A node[B.parent]])
-end
-
-function -(A::ADtrans,B::ADtrans)
-    node[A.index]=nothing
-    node[B.index]=nothing
-    return ADnode(FXtransposeMYtranspose,[node[A.parent] node[B.parent]])
 end
 
 trans=ftranspose

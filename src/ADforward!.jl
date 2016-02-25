@@ -20,7 +20,7 @@ function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
     # forward pass:
     for node in net.forwardNodes
         if debug
-            println("node $i: $(thisnode.f)($(thisnode.parents))");
+            println("node $(node.index): $(node.f)($(node.parents))");
         end
         if AllocateMemory
             if debug
@@ -31,9 +31,17 @@ function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
         else
             if debug
                 println("in place")
-                @time node.f_inplace(net.value[node],net.auxvalue[node],net.value[node.parents]...) ## in place
+                if (node.special!=nothing)
+                @time node.f_inplace(net.handle,node.special,net.value[node],net.auxvalue[node],net.value[node.parents]...) ## in place
+                else
+                @time node.f_inplace(net.handle,net.value[node],net.auxvalue[node],net.value[node.parents]...)
+                end
             else
-                node.f_inplace(net.value[node],net.auxvalue[node],net.value[node.parents]...) ## in place
+                if (node.special!=nothing)
+                net.value[node] = node.f_inplace(net.handle,node.special,net.value[node],net.auxvalue[node],net.value[node.parents]...) ## in place
+                else
+               net.value[node] = node.f_inplace(net.handle,net.value[node],net.auxvalue[node],net.value[node.parents]...)
+                end
             end
         end
     end

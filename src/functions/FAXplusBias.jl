@@ -3,11 +3,11 @@
 
 FAXplusBias(A,X,b)=(A*X+b*ones(1,size(X,2)),nothing)
 
-function FAXplusBias_inplace(value,aux,A,X,b)
+function FAXplusBias_inplace(handle,value,aux,A,X,b)
     copy!(value,A*X+b*ones(1,size(X,2)))
 end
 
-function DAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
+function DAXplusBias(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
     if derivativeIDX==1
         axpy!(1.0,grad_c*X',grad_n)
     elseif derivativeIDX==2
@@ -27,7 +27,11 @@ if PROC=="GPU"
 #    end
 
 
+<<<<<<< HEAD
     function FAXplusBias_inplace(value,aux,A::CudaArray{Float64},X::CudaArray{Float64},b::CudaArray{Float64})
+=======
+    function FAXplusBias_inplace(handle,value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
+>>>>>>> CUDNN-ADD-BACK
         ons=CudaArray(Float64,(1,size(X,2))); fill!(ons,1.0)        
 #        Fxpy_inplace(value,aux,FAX(A,X)[1],FAX(b,ons)[1])
         gemm!('N','N',1.0,b,ons,0.0,value)
@@ -35,7 +39,13 @@ if PROC=="GPU"
         free(ons)
     end
 
+<<<<<<< HEAD
     function DAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray{Float64},X::CudaArray{Float64},b::CudaArray{Float64})
+=======
+
+
+    function DAXplusBias(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray,b::CudaArray)
+>>>>>>> CUDNN-ADD-BACK
         if derivativeIDX==1
             gemm!('N','T',1.0,grad_c,X,1.0,grad_n)
         elseif derivativeIDX==2

@@ -9,7 +9,7 @@ function FAtransposeXtranspose(A,X)
     end
 end
 
-function FAtransposeXtranspose_inplace(value,auxvalue,A,X)
+function FAtransposeXtranspose_inplace(handle,value,auxvalue,A,X)
     if size(A)==(1,1)
         copy!(value,A[1]*X')
     elseif size(X)==(1,1)
@@ -20,7 +20,7 @@ function FAtransposeXtranspose_inplace(value,auxvalue,A,X)
 end
 
 
-function DAtransposeXtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
+function DAtransposeXtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
     if derivativeIDX==1
         if size(A)==(1,1)
             axpy!(1.0,[sum(X'.*grad_c)],grad_n)
@@ -55,7 +55,7 @@ if PROC=="GPU"
 #        end
 #    end
 
-    function FAtransposeXtranspose_inplace(value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
+    function FAtransposeXtranspose_inplace(handle,value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
         if size(A)==(1,1)
             CUBLAS.geam!('T','N',1.0,X,0.0,value,value) # nb argument converse of Base.scale!
             scale!(A,value) # nb argument converse of Base.scale!
@@ -67,7 +67,7 @@ if PROC=="GPU"
         end
     end
 
-    function DAtransposeXtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
+    function DAtransposeXtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
         if derivativeIDX==1
             if size(A)==(1,1)
                 tmp=CudaArray(Float64,size(X))

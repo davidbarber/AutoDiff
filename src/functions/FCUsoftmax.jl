@@ -9,24 +9,52 @@ function DCUsoftmax()
 println("CPU version of CuDNN softmax under Development")
 end
 
-function FCUsoftmax(value::CudaArray,au::CudaArray,tensor::CudaTensor)
-dstTensorDesc = cudnnCreateTensorDescriptor()
-dimension = tensor.dims
-cudnnSetTensor4dDescriptor(dstTensorDesc,tensor.dataType,dimension[1],dimension[2],dimension[3],dimension[4])
+
+if PROC=="GPU"
+function FCUsoftmax(handle,value::CudaArray,auxvalue,X::CudaArray)
+free(value)
+(n,c,h,w) = size(X)
+dtype = eltype(X)
+dataType = cudnnDataTypeCheck(dtype)
+srcDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
+value = CudaArray(dtype,(n,c,h,w))
+dstDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(dstDataDesc,dataType,n,c,h,w)
 alpha = 1.0
 beta = 0.0
-cudnnSoftmaxForward(tensor.handle,1,1,alpha,tensor.tensorDesc,tensor.data.ptr,beta,dstTensorDesc,value.ptr)
+cudnnSoftmaxForward(handle,1,1,alpha,srcDataDesc,X.ptr,beta,dstDataDesc,value.ptr)
+return value
 end
-export FCUsoftmax
 
-function DCUsoftmax(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaTensor)
+
+
+
+function DCUsoftmax(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,X::CudaArray)
 alpha = 1.0
 beta = 0.0
-cudnnSoftmaxBackward(tensor.handle,1,1,alpha,tensor.tensorDesc,tensor.data.ptr,tensor.tensorDesc,grad_c.ptr,beta,tensor.tensorDesc,grad_n.ptr)
+(n,c,h,w) = size(X)
+dtype = eltype(X)
+dataType = cudnnDataTypeCheck(dtype)
+srcDataDesc = cudnnCreateTensorDescriptor()
+cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
+temp = CudaArray(dtype,n,c,h,w)
+diffDataDesc = cudnnCreateTensorDescriptor()
+(n,c,h,w) = size(grad_c)
+cudnnSetTensor4dDescriptor(diffDataDesc,dataType,n,c,h,w)
+
+cudnnSoftmaxBackward(handle,1,1,alpha,srcDataDesc,X.ptr,diffDataDesc,grad_c.ptr,beta,srcDataDesc,temp.ptr)
+CUBLAS.axpy!(1.0,temp,grad_n)
+free(temp)
+cudnnDestroyTensorDescriptor(srcDataDesc)
+cudnnDestroyTensorDescriptor(diffDataDesc)
+return grad_n
 end
 
+end
 
 Derivative[FCUsoftmax] = DCUsoftmax
 Inplace[FCUsoftmax]   = FCUsoftmax
-CUsoftmax(i::ADTensor)=ADFunction(FCUsoftmax,i)
+CUsoftmax(i::ADnode)=ADFunction(FCUsoftmax,i)
+
 export CUsoftmax

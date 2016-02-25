@@ -51,7 +51,8 @@ outC = Cint[0]
 outH = Cint[0]
 outW = Cint[0]
 @cudnncheck(:cudnnGetPooling2dForwardOutputDim,(cudnnPoolingDescriptor_t,cudnnTensorDescriptor_t,Ptr{Cint},Ptr{Cint},Ptr{Cint},Ptr{Cint}),poolingDesc,inputDesc,outN,outC,outH,outW)
-return (outN[1],outC[1],outH[1],outW[1])
+
+return (Int64(outN[1]),Int64(outC[1]),Int64(outH[1]),Int64(outW[1]))
 end
 
 function cudnnGetPoolingNdFowardOutputDim(poolingDesc::cudnnPoolingDescriptor_t,inputDesc::cudnnTensorDescriptor_t,nbDims::Int)
@@ -62,10 +63,10 @@ end
 
 
 #WARN: alpha, beta should be float, but in CuDNN.h it is void
-function cudnnPoolingForward(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,beta,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
-@cudnncheck(:cudnnPoolingForward,(cudnnHandle_t,cudnnPoolingDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,poolingDesc,Float64[alpha],srcDesc,srcData,Float64[beta],destDesc,destData)
+function cudnnPoolingForward{T<:AbstractFloat}(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha::T,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,beta::T,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
+@cudnncheck(:cudnnPoolingForward,(cudnnHandle_t,cudnnPoolingDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,poolingDesc,T[alpha],srcDesc,srcData,T[beta],destDesc,destData)
 end
 
-function cudnnPoolingBackward(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,srcDiff::cudnnTensorDescriptor_t,srcDiffData::CudaPtr,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr,beta,destDiff::cudnnTensorDescriptor_t,destDiffData::CudaPtr)
-@cudnncheck(:cudnnPoolingBackward,(cudnnHandle_t,cudnnPoolingDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,poolingDesc,alpha,srcDesc,srcData.p,srcDiff,srcDiffData.p,destDesc,destdata.p,beta,destdiff,destDiffData.p)
+function cudnnPoolingBackward{T<:AbstractFloat}(handle::cudnnHandle_t,poolingDesc::cudnnPoolingDescriptor_t,alpha::T,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,srcDiff::cudnnTensorDescriptor_t,srcDiffData::CudaPtr,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr,beta::T,destDiff::cudnnTensorDescriptor_t,destDiffData::CudaPtr)
+@cudnncheck(:cudnnPoolingBackward,(cudnnHandle_t,cudnnPoolingDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,poolingDesc,T[alpha],srcDesc,srcData,srcDiff,srcDiffData,destDesc,destData,T[beta],destDiff,destDiffData)
 end

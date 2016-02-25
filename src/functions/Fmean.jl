@@ -8,7 +8,7 @@ function Fmean(x...)
     return ([tmp/length(x)],nothing)
 end
 
-function Fmean_inplace(value::Array,auxvalue,x...) # inplace
+function Fmean_inplace(handle,value::Array,auxvalue,x...) # inplace
     tmp=0.0
     for i in 1:length(x)
         tmp+=mean(x[i])
@@ -17,7 +17,7 @@ function Fmean_inplace(value::Array,auxvalue,x...) # inplace
 end
 
 
-function Dmean(derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)
+function Dmean(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)
     axpy!(grad_c[1],ones(size(grad_n))/(length(x)*length(x[derivativeIDX])),grad_n)
 end
 
@@ -65,15 +65,15 @@ if PROC=="GPU"
         return (tmp,nothing)
     end
     
+    function Fmean_inplace(handle,value::CudaArray{Float64},auxvalue,x::CudaArray{Float64}...) # inplace
 
-    function Fmean_inplace(value::CudaArray{Float64},auxvalue,x::CudaArray{Float64}...) # inplace
         fill!(value,0.0)
         for i in 1:length(x)
             axpy!(1.0/length(x),mean(x[i]),value)
         end
     end
 
-    function Fmean_inplace(value::CudaArray{Float32},auxvalue,x::CudaArray{Float32}...) # inplace
+    function Fmean_inplace(handle,value::CudaArray{Float32},auxvalue,x::CudaArray{Float32}...) # inplace
         fill!(value,Float32(0.0))
         for i in 1:length(x)
             axpy!(Float32(1.0/length(x)),mean(x[i]),value)
@@ -81,14 +81,15 @@ if PROC=="GPU"
     end
 
 
-    function Dmean(derivativeIDX,f_c,faux_c,grad_c::CudaArray{Float64},grad_n::CudaArray{Float64},x::CudaArray{Float64}...)
+    function Dmean(handle,derivativeIDX,f_c,faux_c,grad_c::CudaArray{Float64},grad_n::CudaArray{Float64},x::CudaArray{Float64}...)
+
         tmp=CudaArray(Float64,size(grad_n))
         fill!(tmp,1.0/(length(x)*length(x[derivativeIDX])))
         axpy!(grad_c,tmp,grad_n)
         free(tmp)
     end
 
-    function Dmean(derivativeIDX,f_c,faux_c,grad_c::CudaArray{Float32},grad_n::CudaArray{Float32},x::CudaArray{Float32}...)
+    function Dmean(handle,derivativeIDX,f_c,faux_c,grad_c::CudaArray{Float32},grad_n::CudaArray{Float32},x::CudaArray{Float32}...)
         tmp=CudaArray(Float32,size(grad_n))
         fill!(tmp,Float32(1.0/(length(x)*length(x[derivativeIDX]))))
         axpy!(grad_c,tmp,grad_n)
@@ -100,10 +101,10 @@ end
 Derivative[Fmean]=Dmean # Define dictionary lookup
 Inplace[Fmean]=Fmean_inplace
 
-mean(n::ADnode)=ADnode(Fmean,n)
+mean(n::ADnode)=ADFunction(Fmean,n)
 
 function mean(n::ArrayADnode)
-    return ADnode(Fmean,n)
+    return ADFunction(Fmean,n...)
 end
 
 

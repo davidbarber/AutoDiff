@@ -30,12 +30,13 @@ function cudnnDestroyLRNDescriptor(lrnDesc::cudnnLRNDescriptor_t)
 @cudnncheck(:cudnnDestroyLRNDescriptor,(cudnnLRNDescriptor_t,),lrnDesc)
 end
 
-function cudnnLRNCrossChanelForward(handle::cudnnHandle_t,lrnDesc::cudnnLRNDescriptor_t,mode::Int,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,beta,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
-@cudnncheck(:cudnnLRNCrossChannelForward,(cudnnHandle_t,cudnnLRNDescriptor_t,Cint,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,lrnDesc,mode,Float64[alpha],srcDesc,srcData,Float64[beta],destDesc,destData)
+
+function cudnnLRNCrossChanelForward{T<:AbstractFloat}(handle::cudnnHandle_t,lrnDesc::cudnnLRNDescriptor_t,mode::Int,alpha::T,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,beta::T,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr)
+@cudnncheck(:cudnnLRNCrossChannelForward,(cudnnHandle_t,cudnnLRNDescriptor_t,Cint,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,lrnDesc,mode,T[alpha],srcDesc,srcData,T[beta],destDesc,destData)
 end
 
-function cudnnLRNCrossChannelBackward(handle::cudnnHandle_t,lrnDesc::cudnnLRNDescriptor_t,mode::Int,alpha,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,srcDiffDesc::cudnnTensorDescriptor_t,srcDiffData::CudaPtr,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr,beta,destDiffDesc::cudnnTensorDescriptor_t,destDiffData::CudaPtr)
-@cudnncheck(:cudnnLRNCrossChannelBackward,(cudnnHandle_t,cudnnLRNDescriptor_t,Cint,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,lrnDesc,mode,alpha,srcDesc,srcData.p,srcDiffDesc,srcDiffData.p,destDesc,destData.p,beta,destDiffDesc.destDiffData.p)
+function cudnnLRNCrossChannelBackward{T<:AbstractFloat}(handle::cudnnHandle_t,lrnDesc::cudnnLRNDescriptor_t,mode::Int,alpha::T,srcDesc::cudnnTensorDescriptor_t,srcData::CudaPtr,srcDiffDesc::cudnnTensorDescriptor_t,srcDiffData::CudaPtr,destDesc::cudnnTensorDescriptor_t,destData::CudaPtr,beta::T,destDiffDesc::cudnnTensorDescriptor_t,destDiffData::CudaPtr)
+@cudnncheck(:cudnnLRNCrossChannelBackward,(cudnnHandle_t,cudnnLRNDescriptor_t,Cint,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void},Ptr{Void},cudnnTensorDescriptor_t,Ptr{Void}),handle,lrnDesc,mode,T[alpha],srcDesc,srcData,srcDiffDesc,srcDiffData,destDesc,destData,T[beta],destDiffDesc,destDiffData)
 end
 
 CUDNN_DIVNORM_PRECOMPUTED_MEANS = 0
