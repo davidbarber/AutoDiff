@@ -41,9 +41,9 @@ Derivative[Fhcat]=Dhcat # Define dictionary lookup
 Inplace[Fhcat]=Fhcat_inplace
 
 import Base.hcat
-hcat(n::ADnode)=ADnode(Fhcat,n)
+hcat(n::ADnode)=ADFunction(Fhcat,n)
 
 hcat(n::Array{ADnode,1})=n
-hcat(n::ArrayADnode)=ADnode(Fhcat,n)
+hcat(n::ArrayADnode)=ADFunction(Fhcat,n)
 
 export hcat

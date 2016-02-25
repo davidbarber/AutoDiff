@@ -52,8 +52,8 @@ function sumSq(n::ArrayADnode)
     return ADnode(FsumSq,n)
 end
 
-#sumSq(A::ADtrans)=ADnode(FsumSquare, ftranspose(node[A.parent]))
-sumSq(A::ADtrans)=ADnode(FsumSq, node[A.parent]) # sumsq(A')=sumsq(A)
+#sumSq(A::ADtrans)=ADFunction(FsumSquare, ftranspose(node[A.parent]))
+sumSq(A::ADtrans)=ADFunction(FsumSq, node[A.parent]) # sumsq(A')=sumsq(A)
 sumSq(A::ADdiag)=sumSq(node[A.parent])
 
 sumSquare=sumSq

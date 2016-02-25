@@ -1,28 +1,56 @@
+<<<<<<< HEAD
 function compile(net;debug=false,gpu=false,eltype=Float64)
     # (c) David Barber, University College London 2015
+=======
+# (c) David Barber, University College London 2015
+#=From the README the main perporse of compile is to allocate memory
+  For GPU or CPU operation
+=#
+
+function compile(net;backend="CPU",debug=false)
+
+    
+
+    if backend == "CPU"
+
+    forward = net.forwardNodes
+    backward = net.backwardNodes
+    # TODO: for loop below can be saved, as filter() ADforward() also iterates 
+    # through all node
+    net.forwardNodes = filter(x->(isa(x,ADFunction)),forward)
+    ADforward!(net;debug=false,AllocateMemory=true)
+    #Allocate graident for backward pass
+    iter = length(net.value)
+    for i = 1:iter
+    net.gradient[i]=cArray(false,zeros(size(net.value[i])))
+    if i == iter
+    net.gradient[i] = cArray(false,ones(size(net.value[i])))
+    end
+    end
+
+    elseif backend == "GPU"
+
+
+    else
+    throw("backend type must be GPU or CPU")
+    end
+>>>>>>> origin/AD-type-extension
+
+
 
     # It's good to ensure that we only compuile on the CPU since then we don't need to write inplace versions of the GPU functions (we only need the inplace versions of the GPU derivatives. This makes coding a bit easier)
-
+#=
     if debug
         println("Compiling into a tree and storing messages:")
     end
     node=net.node
     N=length(node)
-#    NN=net.node[end].index
-    if isempty(net.FunctionNode)
-        net.FunctionNode=N
-    end
-
+    
     # get the computation tree:
     G=zeros(Bool,N,N)
     returnderivative=zeros(Bool,N)
-        for i in net.validnodes
-            G[node[i].index,node[i].parents]=1
-            if !(node[i].input)
-#                node[i].takederivative=any(map( (x)-> any(x.takederivative), node[node[i].parents]) ) # set to true for those parents that require derivative
-                node[i].takederivative=any( (x)-> any(x.takederivative), node[node[i].parents] ) # set to true for those parents that require derivative
-            end
-    end
+    # check whether need to be derive 
+    # achieved in ADFunction
     for i in net.validnodes
         if !(node[i]==nothing)
             node[i].children=setdiff(find(G[:,i]),node[i].index)
@@ -55,7 +83,7 @@ function compile(net;debug=false,gpu=false,eltype=Float64)
     net.gpu=gpu
 
 
-    ADforward!(net;debug=debug,AllocateMemory=true)
+
     if debug;  println("Done forward pass compilation:");  end
 
     # backward compilation:
@@ -97,7 +125,7 @@ function compile(net;debug=false,gpu=false,eltype=Float64)
     if debug
         println("Compiled into a DAG with $(length(node)) nodes")
     end
-
+=#
     return net
 
 end

@@ -99,9 +99,9 @@ Derivative[Fxmy]=Dxmy
 Inplace[Fxmy]=Fxmy_inplace
 
 import Base.-
--(A::ADnode,B::ADnode)=ADnode(Fxmy,[A B])
--(A::Real,B::ADnode)=ADnode(Fxmy,[ADconst(A) B])
--(A::ADnode,B::Real)=ADnode(Fxmy,[A ADconst(B)])
+-(A::ADnode,B::ADnode)=ADFunction(Fxmy,[A B])
+-(A::Real,B::ADnode)=ADFunction(Fxmy,[ADconst(A) B])
+-(A::ADnode,B::Real)=ADFunction(Fxmy,[A ADconst(B)])
 
 
 export Fxmy, -

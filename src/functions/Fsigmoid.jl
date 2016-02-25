@@ -20,5 +20,5 @@ end
 Derivative[Fsigmoid]=Dsigmoid
 Inplace[Fsigmoid]=Fsigmoid_inplace
 
-sigmoid(A::ADnode)=ADnode(Fsigmoid,A)
+sigmoid(A::ADnode)=ADFunction(Fsigmoid,A)
 export sigmoid

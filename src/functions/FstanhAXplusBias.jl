@@ -50,7 +50,7 @@ end
 Derivative[FstanhAXplusBias]=DstanhAXplusBias
 Inplace[FstanhAXplusBias]=FstanhAXplusBias_inplace
 
-stanhAXplusBias(A,X,b)=ADnode(FstanhAXplusBias,[A X b])
+stanhAXplusBias(A,X,b)=ADFunction(FstanhAXplusBias,A,X,b)
 export stanhAXplusBias
 
 

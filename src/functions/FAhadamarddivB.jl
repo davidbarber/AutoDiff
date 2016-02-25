@@ -41,7 +41,7 @@ Derivative[FAhadamarddivB]=DAhadamarddivB
 Inplace[FAhadamarddivB]=FAhadamarddivB_inplace
 
 import Base. ./
-./(A::ADnode,B::ADnode)=ADnode(FAhadamarddivB,[A B])
+./(A::ADnode,B::ADnode)=ADFunction(FAhadamarddivB,A,B)
 export ./
 
 

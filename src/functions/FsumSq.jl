@@ -46,7 +46,7 @@ end
 Inplace[FsumSq]=FsumSq_inplace
 Derivative[FsumSq]=DsumSq
 
-sumSq(n::ADnode)=ADnode(FsumSq,n)
+sumSq(n::ADnode)=ADFunction(FsumSq,n)
 
 function sumSq(n::ArrayADnode)
     return ADnode(FsumSq,n)

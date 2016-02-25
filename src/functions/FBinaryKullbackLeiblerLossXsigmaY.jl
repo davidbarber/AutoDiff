@@ -16,7 +16,7 @@ end
 Derivative[FBinaryEntropyLossXsigmoidY]=DBinaryEntropyLossXsigmoidY
 Inplace[FBinaryEntropyLossXsigmoidY]=DBinaryEntropyLossXsigmoidY_inplace
 
-BinaryKullbackLeiblerLossXsigmoidY(nx,ny)=ADnode(FbinaryEntropyLoss,[nx ny])
+BinaryKullbackLeiblerLossXsigmoidY(nx,ny)=ADFunction(FbinaryEntropyLoss,nx,ny)
 export BinaryKullbackLeiblerLossXsigmoidY
 
 #TODO: GPU

@@ -47,7 +47,7 @@ end
 Derivative[Felu]=Delu # Define dictionary lookup
 Inplace[Felu]=Felu_inplace
 
-elu(n::ADnode)=ADnode(Felu,n)
+elu(n::ADnode)=ADFunction(Felu,n)
 
 ###elu(A::ADtrans)=transpose(elu(node[A.parent])) # elu(A')=(elu(A))' TODO:check
 

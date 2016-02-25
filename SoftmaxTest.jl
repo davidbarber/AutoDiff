@@ -1,0 +1,12 @@
+workspace()
+include("GPUStart.jl")
+StartCode()
+t = Tensor([1,1,100,100])
+c = CUsoftmax(t)
+net = EndCode()
+net.value[t] = rand(100,100)
+net = compile(net)
+net = convert(net,"GPU")
+ADforward!(net)
+ADbackward!(net)
+

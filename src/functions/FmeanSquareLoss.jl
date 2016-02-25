@@ -51,5 +51,5 @@ end
 Derivative[FmeanSquareLoss]=DmeanSquareLoss
 Inplace[FmeanSquareLoss]=FmeanSquareLoss_inplace
 
-meanSquareLoss(nx::ADnode,ny::ADnode)=ADnode(FmeanSquareLoss,[nx ny])
+meanSquareLoss(nx::ADnode,ny::ADnode)=ADFunction(FmeanSquareLoss,nx,ny)
 export  meanSquareLoss

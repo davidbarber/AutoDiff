@@ -113,7 +113,14 @@ f=[
    "Fabs",
    "Fkinklin",
    "FkinklinAXplusBias",
+<<<<<<< HEAD
     "Falex"
+=======
+   #"FConvolution",
+   #"FCUrectlin",
+   #"FCUsoftmax",
+   #"FPooling"
+>>>>>>> origin/AD-type-extension
    ]
 
 for fn in f

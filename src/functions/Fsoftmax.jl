@@ -70,8 +70,8 @@ end
 Derivative[Fsoftmax]=Dsoftmax
 Inplace[Fsoftmax]=Fsoftmax_inplace
 
-ADsoftmax(n)=ADnode(Fsoftmax,n)
+ADsoftmax(n)=ADFunction(Fsoftmax,n)
 
-softmax(n::ADnode)=ADnode(Fsoftmax,n)
+softmax(n::ADnode)=ADFunction(Fsoftmax,n)
 
 export softmax

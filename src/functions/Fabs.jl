@@ -29,7 +29,7 @@ Inplace[Fabs]=Fabs_inplace
 
 import Base.abs
 
-abs(n::ADnode)=ADnode(Fabs,n)
+abs(n::ADnode)=ADFunction(Fabs,n)
 
 ###abs(A::ADtrans)=transpose(abs(node[A.parent])) # abs(A')=(abs(A))' TODO:check
 

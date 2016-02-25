@@ -52,7 +52,7 @@ end
 Derivative[FBinaryEntropyLossXsigmoidY]=DBinaryEntropyLossXsigmoidY
 Inplace[FBinaryEntropyLossXsigmoidY]=FBinaryEntropyLossXsigmoidY_inplace
 
-BinaryKullbackLeiblerLossXsigmoidY(nx,ny)=ADnode(FBinaryEntropyLossXsigmoidY,[nx ny]) # give it a better name
+BinaryKullbackLeiblerLossXsigmoidY(nx,ny)=ADFunction(FBinaryEntropyLossXsigmoidY,nx,ny) # give it a better name
 export BinaryKullbackLeiblerLossXsigmoidY
 
 

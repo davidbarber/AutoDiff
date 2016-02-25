@@ -77,7 +77,7 @@ Derivative[Fsum]=Dsum # Define dictionary lookup
 Inplace[Fsum]=Fsum_inplace
 
 import Base.sum
-sum(n::ADnode)=ADnode(Fsum,n)
+sum(n::ADnode)=ADFunction(Fsum,n)
 
 
 function sum(n::ArrayADnode)
@@ -85,8 +85,8 @@ function sum(n::ArrayADnode)
 end
 
 # TODO: add similar as below for each unary function that can take a transposed argument
-#sum(A::ADtrans)=ADnode(Fsum, ftranspose(node[A.parent]))
-sum(A::ADtrans)=ADnode(Fsum, node[A.parent]) # sum(A')=sum(A)
+#sum(A::ADtrans)=ADFunction(Fsum, ftranspose(node[A.parent]))
+sum(A::ADtrans)=ADFunction(Fsum, node[A.parent]) # sum(A')=sum(A)
 
 sum(A::ADdiag)=sum(node[A.parent])
 

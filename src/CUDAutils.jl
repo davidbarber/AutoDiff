@@ -16,7 +16,9 @@ if PROC=="GPU"
     end
     export sum!
 
-    
+
+
+
     function ArrayToCudaArray!(nodes,net)
         nds=union(nodes)
         for n in nds

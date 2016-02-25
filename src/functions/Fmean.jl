@@ -107,7 +107,7 @@ function mean(n::ArrayADnode)
 end
 
 
-#mean(A::ADtrans)=ADnode(Fmean, ftranspose(node[A.parent]))
-mean(A::ADtrans)=ADnode(Fmean, node[A.parent]) # mean(A')=mean(A)
+#mean(A::ADtrans)=ADFunction(Fmean, ftranspose(node[A.parent]))
+mean(A::ADtrans)=ADFunction(Fmean, node[A.parent]) # mean(A')=mean(A)
 
 export mean

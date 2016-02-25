@@ -34,6 +34,6 @@ Inplace[Fexp]=Fexp_inplace
 
 import Base.exp
 
-exp(n::ADnode)=ADnode(Fexp,n)
+exp(n::ADnode)=ADFunction(Fexp,n)
 
 export exp

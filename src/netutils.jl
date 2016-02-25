@@ -22,7 +22,6 @@ export ancestors
 
 
 function Parameters(net)
-#    intersect(ancestors(net.node,net.FunctionNode),find(map(x->x.returnderivative,net.node))) # node indices that are parameters
     intersect(ancestors(net.node,net.FunctionNode),find(map(x->x.returnderivative,net.node[net.validnodes]))) # node indices that are parameters
 end
 export Parameters

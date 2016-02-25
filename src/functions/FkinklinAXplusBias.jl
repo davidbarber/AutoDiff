@@ -75,7 +75,7 @@ end
 Derivative[FkinklinAXplusBias]=DkinklinAXplusBias
 Inplace[FkinklinAXplusBias]=FkinklinAXplusBias_inplace
 
-kinklinAXplusBias(A,X,b)=ADnode(FkinklinAXplusBias,[A X b])
+kinklinAXplusBias(A,X,b)=ADFunction(FkinklinAXplusBias,A,X,b)
 export kinklinAXplusBias
 
 
