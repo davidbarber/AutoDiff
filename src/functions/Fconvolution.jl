@@ -1,7 +1,13 @@
 #TODO this is the CPU version 
-function FConvolution(inputs::Array,filters::Array)
-println("CPU version under develop")
-return inputs, filters
+function FConvolution(filterings::NTuple{2,Int},t::Array,f::Array)
+println("called")
+(n,c,h,w) = size(t)
+(i,o) = filterings
+(f1,f2) = size(f)
+p = 0 #assume padding is 0, will change future
+s = 1 # assume stride is 1, will change future
+
+return (n,o,h-f1+1,w-f1+1)
 end
 #TODO this is the CPU version
 function DConvolution()
@@ -10,7 +16,7 @@ return 0
 end
 
 if PROC=="GPU"
-function FConvolution(handle,mapping::NTuple{2,Int},value::CudaArray,auxvalue,t::CudaArray,f::CudaArray)
+function FConvolution(handle,value::CudaArray,auxvalue,t::CudaArray,f::CudaArray,filterings::NTuple{2,Int})
 # Creation 
 free(value)
 (n,c,h,w) = size(t)
@@ -19,7 +25,7 @@ dataType = cudnnDataTypeCheck(dtype)
 srcDataDesc = cudnnCreateTensorDescriptor()
 cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
 
-(i,o) = mapping 
+(i,o) = size(filterings)
 filterDesc = cudnnCreateFilterDescriptor()
 (h,w) = size(f)
 cudnnSetFilter4dDescriptor(filterDesc,dataType,i,o,h,w)
@@ -54,7 +60,7 @@ free(workspace)
 return value
 end
 
-function DConvolution(handle,mapping::NTuple{2,Int},derivativeIDX,f_c,faux_c,grad_c,grad_n,t::CudaArray,f::CudaArray)
+function DConvolution(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,t::CudaArray,f::CudaArray,filterings::NTuple{2,Int})
 # grad_n child
 # grad_c current 
 alpha = 1.0
@@ -72,7 +78,7 @@ srcDataDesc = cudnnCreateTensorDescriptor()
 (n,c,h,w) = size(t)
 cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
 
-(i,o) = mapping 
+(i,o) = size(filterings)
 filterDesc = cudnnCreateFilterDescriptor()
 (h,w) = size(f)
 cudnnSetFilter4dDescriptor(filterDesc,dataType,i,o,h,w)
@@ -108,6 +114,6 @@ Derivative[FConvolution] = DConvolution
 Inplace[FConvolution]   = FConvolution
 export FConvolution
 
-Convolution(tensor::ADnode,filters::ADnode,mapping::NTuple{2,Int})=ADFunction(FConvolution,tensor,filters;special=mapping)
+Convolution(tensor::ADnode,filters::ADnode,filterings::NTuple{2,Int})=ADFunction(FConvolution,tensor,filters;malloc=filterings)
 export Convolution
 

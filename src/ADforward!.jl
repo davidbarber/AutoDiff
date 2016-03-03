@@ -31,17 +31,9 @@ function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
         else
             if debug
                 println("in place")
-                if (node.special!=nothing)
-                @time node.f_inplace(net.handle,node.special,net.value[node],net.auxvalue[node],net.value[node.parents]...) ## in place
-                else
                 @time node.f_inplace(net.handle,net.value[node],net.auxvalue[node],net.value[node.parents]...)
-                end
             else
-                if (node.special!=nothing)
-                net.value[node] = node.f_inplace(net.handle,node.special,net.value[node],net.auxvalue[node],net.value[node.parents]...) ## in place
-                else
                net.value[node] = node.f_inplace(net.handle,net.value[node],net.auxvalue[node],net.value[node.parents]...)
-                end
             end
         end
     end

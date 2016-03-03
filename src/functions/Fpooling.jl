@@ -1,8 +1,10 @@
 #TODO CPU version 
-function FPooling(inputs::Array)
+function FPooling(malloc::Bool,inputs::Array)
 
-println("CPU version under develop")
-return inputs,inputs
+# now assume 2*2 pooling and stride 2
+(n,c,h,w) = size(inputs)
+
+return (n,c,(h-2)/2+1,(w-2)/2+1)
 end
 #TODO this is the CPU version
 function DPooling()
@@ -60,11 +62,8 @@ dstDataDesc = cudnnCreateTensorDescriptor()
 cudnnSetTensor4dDescriptor(dstDataDesc,dataType,n,c,h,w)
 temp = CudaArray(dtype,n,c,h,w)
 
-
-
 cudnnPoolingBackward(handle,poolingDesc,alpha,srcDataDesc,f_c.ptr,diffDataDesc,grad_c.ptr,dstDataDesc,X.ptr,beta,dstDataDesc,temp.ptr)
 CUBLAS.axpy!(1.0,temp,grad_n)
-
 free(temp)
 cudnnDestroyTensorDescriptor(srcDataDesc)
 cudnnDestroyTensorDescriptor(diffDataDesc)

@@ -36,6 +36,9 @@ global GPU
 #@gpu ArrayOrCudaArray = Union{Array,CudaArray}
 #ArrayOrCudaArray = Array
 
+
+
+
 function StartCode()
     global nodecounter = 0
     global forwardNodes=[]
@@ -67,10 +70,13 @@ end
 export backwardNodes
 
 # Type Hierarchy
+# ADnode is used to track the index dependency information 
 abstract ADnode 
 abstract ADValueNode <:ADnode
 abstract ADdummy 
 abstract ADFunctionNode <:ADnode
+
+
 
 
 type ADFunction <:ADFunctionNode
@@ -80,8 +86,8 @@ children
 f::Function
 f_inplace::Function
 df::Function
-special # hold extra information of function now only used for convolution
-ADFunction(f::Function,operands::ADnode...;special=nothing) = begin
+malloc
+ADFunction(f::Function,operands::ADnode...;malloc=true) = begin
         
         operands = collect(operands)
         if(isempty(operands))
@@ -89,7 +95,6 @@ ADFunction(f::Function,operands::ADnode...;special=nothing) = begin
         end
     
         global nodecounter+=1
-        global node 
         idx = nodecounter    
         #println("The $(idx)th function is $(f)")
         parents = map(n->n.index,operands) 
@@ -97,20 +102,20 @@ ADFunction(f::Function,operands::ADnode...;special=nothing) = begin
         children = map(n->((n!=nothing)? n.index:nothing),filter(n->isa(n,ADVariable),operands))
         # in backward pass differentiable parents become children
         if !isempty(children)
-        thisnode = new(idx,parents,children,f,Inplace[f],Derivative[f],special)
+        thisnode = new(idx,parents,children,f,Inplace[f],Derivative[f],malloc)
         push!(forwardNodes,thisnode) # forward accumulation
         unshift!(backwardNodes,thisnode) #backward accumulation
         return ADVariable(idx)
         else
-        println(idx)
-        println(parents)
-        thisnode = new(idx,parents,nothing,f,Inplace[f],Derivative[f],special)
+        thisnode = new(idx,parents,nothing,f,Inplace[f],Derivative[f],malloc)
         push!(forwardNodes,thisnode)
         return ADconst(idx)
         end
         end
 end
+
 export ADFunction
+
 
 #TODO: here might be some bugs, what if user called ADVariable(idx) ?
 
@@ -140,7 +145,7 @@ export ADVariable
 
 Tensor(size::NTuple{4,Int}) = ADVariable(size)
 export Tensor
-Filters(k::Int) = ADVariable((k,k))
+Filters(size::NTuple{2,Int}) = ADVariable(size)
 export Filters
 
 
@@ -247,12 +252,9 @@ end
 setindex!(x::Array,value::Float64,A::ADVariable)=setindex!(x,value,A)
 
 function setindex!(x::Array,value,A::ADVariable)
-if A.size !=nothing
-setindex!(x,reshape(value,A.size),A.index)
-else
 setindex!(x,value,A.index)
 end
-end
+
 export setindex!
 
 include("utils.jl")
