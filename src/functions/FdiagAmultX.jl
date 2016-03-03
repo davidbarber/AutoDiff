@@ -1,4 +1,16 @@
 # f(x)=diagA*X
+function FdiagAmultX(malloc::Bool,A::Array,X::Array)
+if length(A) == 1
+return size(X)
+end
+if length(X) == 1
+ l = length(A)
+return (l,l)
+end
+
+return (length(A),size(X,2))
+end
+
 function FdiagAmultX(A::Array,X::Array)
     if size(A)==(1,1)
         return (A[1].*X,nothing)

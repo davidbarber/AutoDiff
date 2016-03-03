@@ -1,5 +1,8 @@
 # Standard rectlin layer: f(A,x,b)=rectlin(A*x+b)
 # Note that the bias (a column vector) gets expanded here to match the dimension of A*x
+function FabsAXplusBias(malloc::Bool,A,X,b)
+return (size(A,1),size(X,2))
+end
 
 FabsAXplusBias(A,X,b)=begin; a=A*X+b*ones(1,size(X,2)); return (abs(a),sign(a)); end
 

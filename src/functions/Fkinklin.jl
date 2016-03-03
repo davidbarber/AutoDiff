@@ -1,7 +1,9 @@
 # kink linear: f(x)=max(x,gamma*x) where gamma=0.25
 gamma=0.25
 kinklin(x)=max(x,gamma*x)
-
+function Fkinklin(malloc::Bool,x)
+return size(x)
+end
 Fkinklin(x::Array{Float64,2})=(max(x,gamma*x),nothing)
 Fkinklin_inplace(handle,value,auxvalue,x::Array{Float64,2})=copy!(value,max(x,gamma*x))
 

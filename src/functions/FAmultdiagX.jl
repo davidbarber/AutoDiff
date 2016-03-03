@@ -1,4 +1,16 @@
 # f(x)=A*diagX
+function FAmultdiagX(malloc::Bool,A::Array,X::Array)
+    if length(A) == 1
+        s = length(X)
+        return (s,s)
+    end
+    if length(X) == 1
+        return size(A)
+    end
+
+    return (size(A,1),length(X))
+end
+
 function FAmultdiagX(A::Array,X::Array)
     if size(A)==(1,1)
         return (A[1].*diagm(vec(X)),nothing)

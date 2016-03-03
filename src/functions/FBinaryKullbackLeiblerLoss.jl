@@ -3,6 +3,9 @@
 # BinaryKullbackLeiblerLossXsigmaY is usually better.
 
 #FBinaryEntropyLoss(x::Array,y::Array)=([sum(x.*log(x./y)+(1.-x).*log((1.-x)./(1.-y)))/length(x)],[])
+function FBinaryEntropyLoss(malloc::Bool,x::Array,y::Array)
+return (1,1)
+end
 
 FBinaryEntropyLoss(x::Array,y::Array)=([sum(x.*log(x./y)+(1.-x).*log((1.-x)./(1.-y)))/length(x)],((y-x)./(y.*(1.-y))/length(x)))
 

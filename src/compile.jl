@@ -6,34 +6,40 @@ function compile(net;debug=false,backend="CPU",eltype=Float64)
   For GPU or CPU operation
 
 =#   
-    # put constants into value 
-    while(isa(net.forwardNodes[1],ADconst))
-    constant = shift!(net.forwardNodes)
-    net.value[constant.index] = constant.value
+# Memory allocation can still be save
+# As if user choose to run on GPU
+# it is not nessaccary to allcate memory on CPU first
+
+
+    # put constants into net.value
+    # allocate memory for ADVariable 
+    # After this while loop nodes in forwardNodes should only be ADFunction
+    while(!isa(net.forwardNodes[1],ADFunction))
+    node = shift!(net.forwardNodes)
+    if(isa(node,ADconst))
+    net.value[node.index] = node.value
+    elseif(isa(node,ADVariable))
+    net.gradient[node] = fill(0,size(node))
+    else
+    continue
     end
-    
-    if backend == "CPU"
-        for node in net.forwardNodes
-        
+    end
 
-
+    for node in net.forwardNodes
+        s =node.f(true,net.value[node.parents]...)
+        net.value[node] = fill(0,s)
+        net.auxvalue[node] = fill(0,s)
+        net.gradient[node] = fill(0,s)
         end
-        # TODO: for loop below can be saved, as filter() ADforward() also iterates 
-        # through all node
-        ADforward!(net;debug=debug,AllocateMemory=true)
-        #Allocate graidents
-        iter = length(net.value)
-        net.gradient[iter] = cArray(false,Float64,size(net.value[iter]))
-            for i = 1:iter-1
-            net.gradient[i]=cArray(false,Float64,size(net.value[i]))
-            end
+    
+    if backend == "GPU"
 
-        elseif backend == "GPU"
-        net.handle = cudnnCreate()
-        # TODO: for loop below can be saved, as filter() ADforward() also iterates 
-        # through all node
-        ADforward!(net;debug=debug,AllocateMemory=true)
 
+        net.handle = cudnnCreate() 
+        # GPU size allocation still need to be simplified
+        # GPU memory allocation can still be save by sharing pointer
+        # and reduce memory transaction
+        # Why did I separate this out ? 
         iter = length(net.value)
         s = size(net.value[iter])
         net.gradient[iter] = cArray(true,ones(s))

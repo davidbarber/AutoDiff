@@ -3,6 +3,10 @@
 
 FrectlinAXplusBias(A,X,b)=begin; a=A*X+b*ones(1,size(X,2)); return (max(a,0.),(a.>0)); end
 
+function FrectlinAXplusBias(malloc::Bool,A,X,b)
+return (size(A,1),size(X,2))
+end
+
 function FrectlinAXplusBias_inplace(handle,value,aux,A,X,b)
     a=A*X+b*ones(1,size(X,2))
     copy!(value,max(a,0.0))

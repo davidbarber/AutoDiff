@@ -1,6 +1,10 @@
 # mean square loss: f(x,y)=(sum_{i=1:I} (x_i-y_i)^2)/I
 # One way to do this is meansquare( x-y). However, this would define a new now x-y. This would be fast, but require storing x-y.
 # As an alternative, we'll recompute here x-y, rather than storing it. This will be slower, but saves on storage.
+function FmeanSquareLoss(malloc::Bool,x,y)
+return (1,1)
+end
+
 
 FmeanSquareLoss(x,y)=(FmeanSquare(axpy(-1.0,y,x))[1],nothing)
 function FmeanSquareLoss_inplace(value,auxvalue,x,y)

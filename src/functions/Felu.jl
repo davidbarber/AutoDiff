@@ -1,4 +1,8 @@
 # f(x)=elu(x)=x*[x>0] + (exp(x)-1)*[x<0]
+function Felu(malloc::Bool,x)
+return size(x)
+end
+
 
 alpha=1.0
 function Felu(x)

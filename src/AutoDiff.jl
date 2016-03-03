@@ -121,6 +121,7 @@ ADVariable() = begin
                   global nodecounter+=1
                   thisnode = new(nodecounter,nothing)
                   push!(backwardNodes,thisnode)
+                  unshift!(forwardNodes,thisnode)
                   return thisnode
                   end
 

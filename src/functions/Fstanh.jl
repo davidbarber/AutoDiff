@@ -3,6 +3,9 @@
 sf=2.5
 
 Fstanh(x::Array{Float64,2})=(sf*tanh(x),[]);
+function Fstanh(malloc::Bool,x)
+return size(x)
+end
 Fstanh_inplace(handle,value,aux,x::Array{Float64,2})=copy!(value,sf*tanh(x))
 
 Dstanh(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x)=axpy!(sf,grad_c.*(1.-(f_c/sf).^2),grad_n)

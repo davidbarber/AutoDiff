@@ -5,6 +5,12 @@ gamma=0.25
 
 FkinklinAXplusBias(A,X,b)=begin; a=A*X+b*ones(1,size(X,2)); return (max(a,gamma*a),gamma+(1-gamma)*(a.>0)); end
 
+function FkinklinAXplusBias(malloc::Bool,A,X,b)
+
+return (size(A,1),size(X,2))
+
+end
+
 function FkinklinAXplusBias_inplace(handle,value,aux,A,X,b)
     a=A*X+b*ones(1,size(X,2))
     copy!(value,max(a,gamma*a))

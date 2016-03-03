@@ -1,5 +1,7 @@
 Fexp(x)=(exp(x),nothing)
-
+function Fexp(malloc::Bool,x)
+return size(x)
+end
 function Fexp_inplace(value,auxvalue,x)
     copy!(value,exp(x))
 end

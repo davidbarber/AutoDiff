@@ -1,6 +1,7 @@
 #f(p,x)=KL(p,softmax(x))
-
-
+function FKLsoftmax(malloc::Bool,p::Array{Float64,2},x::Array{Float64,2})
+return (1,1)
+end
 FKLsoftmax(p::Array{Float64,2},x::Array{Float64,2})=begin DN=prod(size(x));Z=sum(exp(x),1);aux=(Z,DN); return ((sum(p.*(log(p)-x))+sum(log(Z)))/DN,aux); end
 
 function FKLsoftmax_inplace(handle,value,auxvalue,p::Array{Float64,2},x::Array{Float64,2})

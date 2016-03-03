@@ -8,6 +8,11 @@
 #TODO: don't need aux to be a tuple since we only use aux[1] 
 FsigmoidAXplusBias(A,X,b)=(1./(1+exp(-(A*X+b*ones(1,size(X,2))))),(zeros(size(A,1),size(X,2)),nothing)) # allocate memory for inplace gradients
 
+function FsigmoidAXplusBias(malloc::Bool,A,X,b)
+return (size(A,1),size(X,2))
+end
+
+
 FsigmoidAXplusBias_inplace(handle,value,aux,A,X,b)=copy!(value,1./(1+exp(-(A*X+b*ones(1,size(X,2))))))
 
 #TODO; Need to do similar inplace computations for the other transfer functions

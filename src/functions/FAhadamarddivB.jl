@@ -1,5 +1,7 @@
 # A./*B
-
+function FAhadamarddivB(malloc::Bool,A,B)
+return size(A)
+end
 FAhadamarddivB(A,B)=(A./B,nothing)
 
 function FAhadamarddivB_inplace(handle,value,aux,A,B)

@@ -1,5 +1,11 @@
 # f(x,y)=x-y
 
+function Fxmy(malloc::Bool,x,y)
+if(length(x)>length(y))
+return size(x)
+end
+return size(y)
+end
 
 function Fxmy(x::Float64,y::Float64)
     return ((x-y)*ones(1,1),nothing)

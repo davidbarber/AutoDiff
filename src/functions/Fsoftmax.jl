@@ -1,7 +1,9 @@
 #softmax function: f(x)=exp(x)/sum(exp(x))
 
 Fsoftmax(x::Array{Float64,2})=(exp(x)./sum(exp(x),1),[]) # TODO: better to subtract the max of x to make it numerically more stable
-
+function Fsoftmax(malloc::Bool,x)
+return size(x)
+end
 function Fsoftmax_inplace(handle,value,auxvalue,x::Array{Float64,2})
     copy!(value,exp(x)./sum(exp(x),1)) # TODO: better to subtract the max of x to make it numerically more stable
 end

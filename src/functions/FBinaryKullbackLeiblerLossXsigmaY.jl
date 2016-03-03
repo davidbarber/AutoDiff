@@ -1,4 +1,7 @@
 #f(x,y)=mean(KL(x,sigmoid(y))), where KL is the Kullback-Leibler divergence
+function FBinaryEntropyLossXsigmoidY(malloc::Bool,x,y)
+return (1,1)
+end
 
 FBinaryEntropyLossXsigmoidY(x,y)=([mean(x.*log(x)+(1.-x).*log(1.-x)+x.*y-log1pexp(y))],nothing)
 FBinaryEntropyLossXsigmoidY_inplace(handle,value,aux,x,y)=copy!(value,mean(x.*log(x)+(1.-x).*log(1.-x)+x.*y-log1pexp(y)))

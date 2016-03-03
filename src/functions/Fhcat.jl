@@ -1,4 +1,5 @@
 # f(x)=hcat(x...)
+# need to think a little bit
 Fhcat(x...)=(hcat(x...),nothing)
 Fhcat_inplace(handle,value,auxvalue,x...)=copy!(value,hcat(x...))
 

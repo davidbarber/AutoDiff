@@ -1,4 +1,7 @@
 # A.*B
+function FAhadamardprodB(malloc::Bool,A,B)
+return size(A)
+end
 
 FAhadamardprodB(A,B)=(A.*B,nothing)
 

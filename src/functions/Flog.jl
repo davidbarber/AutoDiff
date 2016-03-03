@@ -1,4 +1,7 @@
 Flog(x)=(log(x),nothing)
+function Flog(malloc::Bool,x)
+return size(x)
+end
 
 function Flog_inplace(value,auxvalue,x)
     copy!(value,log(x))

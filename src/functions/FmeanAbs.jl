@@ -1,6 +1,12 @@
 # f(x)=mean(abs(x))
 
 #TODO sum(abs)
+function FmeanAbs(malloc::Bool,x...)
+if length(x[1]==1)
+return (1,1)
+end
+return size(x[1])
+end
 
 function FmeanAbs(x...)
     tmp=0.0

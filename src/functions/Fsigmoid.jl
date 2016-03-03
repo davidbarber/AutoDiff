@@ -1,5 +1,9 @@
 # f(x)=1./(1+exp(-x))
 Fsigmoid(x)=(sigmoid(x),[]);
+
+function Fsigmoid(malloc::Bool,x)
+return size(x)
+end
 Fsigmoid_inplace(value,aux,x)=copy!(value,sigmoid(x))
 
 Dsigmoid(derivativeIDX,f_c,faux_c,grad_c,grad_n,x)=axpy!(1.0,grad_c.*f_c.*(1.-f_c),grad_n)

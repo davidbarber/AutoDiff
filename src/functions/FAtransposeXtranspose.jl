@@ -1,4 +1,17 @@
 # f(x)=A'*X'
+function FAtransposeXtranspose(malloc::Bool,A,X)
+if length(A) == 1
+    (r,c) = size(X)
+    return (c,r)
+end
+
+if length(X) == 1
+    (r,c) = size(A)
+    return (c,r)
+end
+    
+    return (size(A,2),size(X,1))
+end
 function FAtransposeXtranspose(A,X)
     if size(A)==(1,1)
         return (A[1].*X',nothing)

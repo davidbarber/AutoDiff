@@ -4,6 +4,10 @@ sf=2.5
 
 FstanhAXplusBias(A,X,b)=begin; a=A*X+b*ones(1,size(X,2)); return (sf*tanh(a),[]); end
 
+function FstanhAXplusBias(malloc,A,X,b)
+return (size(A,1),size(X,2))
+end
+
 function FstanhAXplusBias_inplace(handle,value,aux,A,X,b)
     a=A*X+b*ones(1,size(X,2))
     copy!(value,sf*tanh(a))

@@ -1,5 +1,8 @@
 # rectified linear: f(x)=max(x,0)
 rectlin(x)=x.*(x.>0)
+function Frectlin(malloc::Bool,x::Array{Float64,2})
+return size(x)
+end
 
 Frectlin(x::Array{Float64,2})=(max(x,0),[]);
 Frectlin_inplace(handle,value,auxvalue,x::Array{Float64,2})=copy!(value,max(x,0))

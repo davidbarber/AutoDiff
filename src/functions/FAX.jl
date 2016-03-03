@@ -1,4 +1,8 @@
 # f(x)=A*X
+function FAX(malloc::Bool,A::Array,X::Array)
+return (size(A,1),size(X,2))
+end
+
 function FAX(A::Array,X::Array)
     if size(A)==(1,1)
         return (A[1].*X,nothing)

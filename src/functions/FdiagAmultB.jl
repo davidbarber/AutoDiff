@@ -1,4 +1,17 @@
 # f(x)=diagA*X
+function FdiagAX(malloc::Bool,A::Array,X::Array)
+if length(A) == 1
+    return size(X)
+end
+if length(X) == 1
+    return size(A)
+end
+    (r,c) = size(A)
+
+return (r<c) ? (r,size(X,2)):(c,size(X,2))
+end
+
+
 function FdiagAX(A::Array,X::Array)
     if size(A)==(1,1)
         return (A[1].*X,nothing)

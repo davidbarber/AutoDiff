@@ -1,4 +1,9 @@
-
+function FmeanSquare(malloc::Bool,x...)
+if length(x[1]==1)
+return (1,1)
+end
+return size(x[1])
+end
 function FmeanSquare(x...)
     tmp=0.0
     for i in 1:length(x)
