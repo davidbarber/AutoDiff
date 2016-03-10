@@ -6,8 +6,6 @@ println("called")
 (f1,f2) = size(f)
 p = 0 #assume padding is 0, will change future
 s = 1 # assume stride is 1, will change future
-println("estimate out put size of convolution is :")
-println((n,i,h-f1+1,w-f1+1))
 return (n,i,h-f1+1,w-f1+1)
 end
 #TODO this is the CPU version

@@ -19,9 +19,7 @@ function GetNewBatch(OldMiniBatch,Ntrain)
 end
 export GetNewBatch
 
-
-
-
+# Some Design notes it seems possible to build a unique method for call below function
 # Standard Gradient Descent:
 
 function GradientDescentUpdate!(x,grad,LearningRate)
@@ -45,9 +43,11 @@ export GradientDescentMomentumUpdate!
 
 
 function GradientDescentMomentumInit(net)
-    avgrad=Array(Any,length(net.node)) 
-    for par in Parameters(net)
-        avgrad[par]=cArray(net.gpu,zeros(size(net.value[par]))) # initial average gradient
+    params = Parameters(net)
+    avgrad = Array(Any,length(params))
+    for (i,p) in params
+
+        avgrad[i]=cArray(net.gpu,zeros(size(net.value[p]))) # initial average gradient
     end
     return avgrad
 end
@@ -58,10 +58,11 @@ export GradientDescentMomentumInit
 # Nesterov Accelerated Gradient Descent:
 
 function NesterovInit(net)
-    velo=Array(Any,length(net.node)) # needed for Nesterov
-    for par in Parameters(net)
-#        velo[par]=cArray(size(net.value[par])); fill!(velo[par],0.0) # Nesterov velocity
-        velo[par]=cArray(net.gpu,zeros(net.eltype,size(net.value[par]))) # Nesterov velocity
+ velo=Array(Any,length(net.node)) 
+    params = Parameters(net)
+    velo = Array(Any,length(params))
+    for (i,p) in params
+        velo[i]=cArray(net.gpu,zeros(size(net.value[p]))) # initial average gradient
     end
     return velo
 end
@@ -80,7 +81,6 @@ function NesterovGradientDescentUpdate!(thetaP,gradP,v,LearningRate,t)
     # Formally, we would then need to retransform back to get the value for theta.
     # However, as we converge, mu goes to 1 and the gradient goes to zero.
     # This means that thetaP tends to theta anyway as we converge to the optimum.
-
     mu_new=min(0.999,1-3/(t+5))
     mu_old=min(0.999,1-3/(t+4))
     scale!(mu_old,v)

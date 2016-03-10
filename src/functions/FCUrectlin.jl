@@ -1,9 +1,9 @@
 #TODO CPU Version
 
-function FCrossChannel(inputs::Array)
+function FCrossChannel(malloc::Bool,inputs)
 
 println("CPU rectLin in development")
-return inputs,inputs
+return size(inputs)
 end
 #TODO this is the CPU version
 

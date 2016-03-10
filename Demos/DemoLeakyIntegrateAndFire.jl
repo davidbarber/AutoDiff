@@ -58,9 +58,9 @@ error=Array(Float64,0)
     ADbackward!(net)
     push!(error,extract(net.value[net.FunctionNode])[1])
     printover("iteration $i: training loss = $(error[i])")
-    for par in parstoupdate
+    for (j,p) in parstoupdate
         #GradientDescentUpdate!(net.value[par],net.gradient[par],LearningRate)
-        NesterovGradientDescentUpdate!(net.value[par],net.gradient[par],velo[par],LearningRate,i/500)
+        NesterovGradientDescentUpdate!(net.value[p],net.gradient[p],velo[j],LearningRate,i/500)
     end
 end
 

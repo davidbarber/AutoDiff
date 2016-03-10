@@ -75,8 +75,31 @@ function getParams()
     params
 end
 
+
+# Few future design notes: 
+# ADnode and network are used to track the index dependency information 
+# 1. Nodes are used to track index dependency, so that this can be simplified 
+# 2. The field f, f_inplace, df can be remove:
+#     i) give each operation a specific arguments state. For example, MeanState
+#        or ConvolutionState which have information about operation input
+#    ii) This will allow to implement more general and flexible function for forward
+#        and backward proporgation:
+#        forward(Opstate,netState)
+#        backward(Opstate,netState)
+#        allocate(Opstate)
+# 3. Base on above design then additional type is need:
+#    i) CPUNetState -> carry the CPU operation state
+#    ii) GPUNetState -> carry the GPU operation state
+# 4. Then the complie function should be slightly modified:
+#    i) compile(net,"CPU") => return CPUNetState
+#   ii) compile(net,"GPU") => return CPUNetState
+#  iii) ADForward(state::CPUNetState) <=> ADBackward(state::CPUNetState)
+#   iv) ADForward(state::GPUNetState) <=> ADBackward(state::GPUNetState)
+# 5. Advantage of doing this:
+#   i) Better structure, always easier for future improvement and extension 
+#  ii) Structural design will help code and memory optimization like GPU memory Coalescing
+# iii) Allowed more CuDNN function
 # Type Hierarchy
-# ADnode is used to track the index dependency information 
 abstract ADnode 
 abstract ADValueNode <:ADnode
 abstract ADdummy 

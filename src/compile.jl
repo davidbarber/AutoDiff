@@ -14,6 +14,11 @@ function compile(net,backend;debug=false,eltype=Float64)
     
 
     if backend =="CPU"
+           # Allocate memory for inputs includes:
+           #   i) Input variables
+           #  ii) Parameters 
+           # iii) Constant 
+           # similar for GPU version
          while(!isa(net.forwardNodes[1],ADFunctionNode))
                 node = shift!(net.forwardNodes)
     
@@ -35,7 +40,6 @@ function compile(net,backend;debug=false,eltype=Float64)
         end
         
     elseif backend =="GPU"
-        println("GPU")
         net.handle = cudnnCreate() 
         # GPU size allocation still need to be optimised
         # GPU memory allocation can still be save by sharing pointer
@@ -54,7 +58,6 @@ function compile(net,backend;debug=false,eltype=Float64)
          end
 
         for node in net.forwardNodes
-            println(node.parents)
             s =node.f(node.malloc,net.value[node.parents]...)
             println(s)
             net.value[node] = cArray(backend,zeros(s))
