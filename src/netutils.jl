@@ -47,12 +47,6 @@ function ancestors(node::Array{Any,1},nd::Int)
 end
 export ancestors
 
-
-
-<<<<<<< HEAD
-=======
-
->>>>>>> davidbarber/test-0.01
 function Parameters(net)
     return sort(net.params)
     #intersect(ancestors(net.node,net.FunctionNode),find(map(x->x.returnderivative,net.node[net.validnodes]))) # node indices that are parameters

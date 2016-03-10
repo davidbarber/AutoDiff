@@ -340,16 +340,9 @@ export ADforward!, ADbackward!
 #export ADvariable
 
 # make the following form an array if constval is a scalar:
-<<<<<<< HEAD
 #ADconst(constval)=ADnode(;returnderivative=false,isconst=true,constval=Float64(constval))
 #export ADconst
 
-=======
-ADconst(constval)=ADnode(;returnderivative=false,isconst=true,constval=Float64(constval))
-ADint(constval)=ADnode(;returnderivative=false,isconst=true,constval=Int(constval))
-export ADconst
-export ADint
->>>>>>> davidbarber/test-0.01
 
 #export @gpu, @cpu
 

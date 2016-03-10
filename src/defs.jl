@@ -113,18 +113,14 @@ f=[
    "Fabs",
    "Fkinklin",
    "FkinklinAXplusBias",
-<<<<<<< HEAD
     "Falex",
-   "FConvolution",
+   "Fconvolution",
    "FCUrectlin",
    "FCUsoftmax",
-   "FPooling",
-   "FActivation"
-=======
-   "Falex",
+   "Fpooling",
+   "FActivation",
    "Fgetcol",
    "Fgetrow"
->>>>>>> davidbarber/test-0.01
    ]
 
 for fn in f
