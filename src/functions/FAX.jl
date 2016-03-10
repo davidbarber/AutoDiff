@@ -69,7 +69,7 @@ if PROC=="GPU"
                 tmp=CudaArray(Float64,size(X))
                 vmult!(1.0,X,grad_c,tmp)
                 sum_update!(1.0,tmp,1.0,grad_n)
-                #axpy!(1.0,sum(tmp),grad_n); 
+                #axpy!(1.0,sum(tmp),grad_n);
                 free(tmp)
             elseif size(X)==(1,1)
                 alphaaxpy!(1.0,X,grad_c,grad_n)
@@ -99,7 +99,7 @@ if PROC=="GPU"
                 tmp=CudaArray(Float32,size(X))
                 vmult!(1.0,X,grad_c,tmp)
                 sum_update!(1.0,tmp,1.0,grad_n)
-                #axpy!(1.0,sum(tmp),grad_n); 
+                #axpy!(1.0,sum(tmp),grad_n);
                 free(tmp)
             elseif size(X)==(1,1)
                 alphaaxpy!(1.0,X,grad_c,grad_n)
@@ -121,12 +121,6 @@ if PROC=="GPU"
         end
     end
 
-    
-
-
-
-
-    
 end
 
 Derivative[FAX]=DAX

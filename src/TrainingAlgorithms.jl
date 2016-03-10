@@ -43,11 +43,17 @@ export GradientDescentMomentumUpdate!
 
 
 function GradientDescentMomentumInit(net)
+<<<<<<< HEAD
     params = Parameters(net)
     avgrad = Array(Any,length(params))
     for (i,p) in params
 
         avgrad[i]=cArray(net.gpu,zeros(size(net.value[p]))) # initial average gradient
+=======
+    avgrad=Array(Any,length(net.node))
+    for par in Parameters(net)
+        avgrad[par]=cArray(net.gpu,zeros(size(net.value[par]))) # initial average gradient
+>>>>>>> davidbarber/test-0.01
     end
     return avgrad
 end
@@ -81,8 +87,14 @@ function NesterovGradientDescentUpdate!(thetaP,gradP,v,LearningRate,t)
     # Formally, we would then need to retransform back to get the value for theta.
     # However, as we converge, mu goes to 1 and the gradient goes to zero.
     # This means that thetaP tends to theta anyway as we converge to the optimum.
+<<<<<<< HEAD
     mu_new=min(0.999,1-3/(t+5))
     mu_old=min(0.999,1-3/(t+4))
+=======
+
+    mu_new=min(0.99,1-3/(t+5))
+    mu_old=min(0.99,1-3/(t+4))
+>>>>>>> davidbarber/test-0.01
     scale!(mu_old,v)
     axpy!(mu_new,v,thetaP)
     axpy!(-LearningRate,gradP,v)

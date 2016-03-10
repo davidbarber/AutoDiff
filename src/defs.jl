@@ -81,7 +81,7 @@ Inplace=Dict() # Inplace version of function
 # Some of the GPU demos are very slow -- DemoLSTMsimple, for example. Need to investigate why.
 
 f=[
-   "Fnx",
+   "Fnx", "Ftanh",
    "Fstanh", "Fsigmoid", "Frectlin",
    "FAhadamardprodB",    "FAhadamarddivB",
    "Fsum", "Fmean",
@@ -113,12 +113,18 @@ f=[
    "Fabs",
    "Fkinklin",
    "FkinklinAXplusBias",
+<<<<<<< HEAD
     "Falex",
    "FConvolution",
    "FCUrectlin",
    "FCUsoftmax",
    "FPooling",
    "FActivation"
+=======
+   "Falex",
+   "Fgetcol",
+   "Fgetrow"
+>>>>>>> davidbarber/test-0.01
    ]
 
 for fn in f

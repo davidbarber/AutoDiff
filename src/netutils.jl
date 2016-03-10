@@ -1,13 +1,40 @@
+#function ancestors(node::Array{Any,1},nd::Int)
+#    anc=Array(Int,0)
+#    parents=node[nd].parents
+#    append!(anc,parents)
+#    done=false
+#    while !done
+#        newparents=Array(Int,0)
+#        for i in parents
+#            append!(newparents,node[i].parents)
+#        end
+#        if isempty(newparents)
+#            done=true
+#        else
+#            append!(anc,newparents)
+#            parents=newparents
+#        end
+#    end
+#    return sort(union(anc);rev=true)
+#
+#end
+#export ancestors
+
+
+
 function ancestors(node::Array{Any,1},nd::Int)
     anc=Array(Int,0)
     parents=node[nd].parents
     append!(anc,parents)
     done=false
+    counter=0
     while !done
+        counter+=1
         newparents=Array(Int,0)
         for i in parents
             append!(newparents,node[i].parents)
         end
+        newparents=setdiff(newparents,anc)
         if isempty(newparents)
             done=true
         else
@@ -22,6 +49,10 @@ export ancestors
 
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> davidbarber/test-0.01
 function Parameters(net)
     return sort(net.params)
     #intersect(ancestors(net.node,net.FunctionNode),find(map(x->x.returnderivative,net.node[net.validnodes]))) # node indices that are parameters
