@@ -43,6 +43,7 @@ function StartCode()
     global nodecounter = 0
     global forwardNodes=[]
     global backwardNodes = []
+    global params =[]
 end
 export StartCode
 
@@ -69,14 +70,17 @@ function getBackwardNodes()
 end
 export backwardNodes
 
+function getParams()
+    global params
+    params
+end
+
 # Type Hierarchy
 # ADnode is used to track the index dependency information 
 abstract ADnode 
 abstract ADValueNode <:ADnode
 abstract ADdummy 
 abstract ADFunctionNode <:ADnode
-
-
 
 
 type ADFunction <:ADFunctionNode
@@ -118,6 +122,25 @@ export ADFunction
 
 
 #TODO: here might be some bugs, what if user called ADVariable(idx) ?
+type ADParams <:ADValueNode
+index::Int
+size
+ADParams() = begin
+                  thisnode = ADVariable()
+                  push!(params,thisnode.index)
+                  return thisnode
+                  end
+
+ADParams(size::NTuple) = begin
+                            thisnode = ADVariable(size)
+                            push!(params,thisnode.index)
+                            return thisnode
+                           end
+end
+export ADParams
+
+
+
 
 type ADVariable<: ADValueNode
 index::Int
@@ -125,7 +148,6 @@ size
 ADVariable() = begin
                   global nodecounter+=1
                   thisnode = new(nodecounter,nothing)
-                  push!(backwardNodes,thisnode)
                   unshift!(forwardNodes,thisnode)
                   return thisnode
                   end
@@ -138,6 +160,7 @@ ADVariable(idx::Int)=begin
 ADVariable(size::NTuple) = begin
                             global nodecounter+=1
                             thisnode = new(nodecounter,size)
+                            unshift!(forwardNodes,thisnode)
                             return thisnode
                            end
 end
@@ -145,7 +168,7 @@ export ADVariable
 
 Tensor(size::NTuple{4,Int}) = ADVariable(size)
 export Tensor
-Filters(size::NTuple{2,Int}) = ADVariable(size)
+Filters(size::NTuple{2,Int}) = ADParams(size)
 export Filters
 
 
@@ -222,12 +245,13 @@ export ADdiag
 type network
     forwardNodes::Array{ADnode,1}
     backwardNodes::Array{ADnode,1} # Node that forms the scalar function (by default the last node in the graph)
+    params::Array{Int,1}
     value
     auxvalue
     gradient
     handle
    function network()
-        return new(getForwardNodes(),getBackwardNodes(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),nothing)
+        return new(getForwardNodes(),getBackwardNodes(),getParams(),Array(Any,NodeCounter()),Array(Any,NodeCounter()),Array(Any,NodeCounter()),nothing)
     end
 end
 

@@ -16,7 +16,7 @@ ThetaFired=-15.0
 alpha=0.95
 
 StartCode()  # This is where you start the code for your problem
-W=ADVariable() # parameter that we want to learn
+W=ADParams() # parameter that we want to learn
 a[1]=ADconst() # A variable that we will not take the derivative of
 p[1]=sigmoid(a[1])
 v[1]=ADconst()
@@ -39,29 +39,26 @@ for t=1:T
     net.value[v[t]]=0.99*(rand(N,1).>0.85)+0.001 # bound slighty away from 0/1 so that no NAN occur
 end
 
-net=compile(net) # compile and preallocate memory
+net=compile(net,"CPU") # compile and preallocate memory
 
-@gpu CUDArt.init([0])
-@gpu net=convert(net,"GPU")
 #gradcheck(net) # only use a small network to check the gradient, otherwise this will take a long time
 
 
 # Training:
-println("Training: using $(net.gpu==true? "GPU" : "CPU") ")
 nupdates=1000
 parstoupdate=Parameters(net)
 error=Array(Float64,0)
-    velo=NesterovInit(net) # Nesterov velocity
+   # velo=NesterovInit(net) # Nesterov velocity
     LearningRate=5.5
     for i=1:nupdates
     ADforward!(net)
     ADbackward!(net)
-    push!(error,extract(net.value[net.FunctionNode])[1])
+    #push!(error,extract(net.value[net.FunctionNode])[1])
     printover("iteration $i: training loss = $(error[i])")
-    for par in parstoupdate
+    #for par in parstoupdate
         #GradientDescentUpdate!(net.value[par],net.gradient[par],LearningRate)
-        NesterovGradientDescentUpdate!(net.value[par],net.gradient[par],velo[par],LearningRate,i/500)
-    end
+        #NesterovGradientDescentUpdate!(net.value[par],net.gradient[par],velo[par],LearningRate,i/500)
+    #end
 end
 
 
@@ -69,8 +66,6 @@ trainvalue=zeros(N,T)
 testprob=zeros(N,T)
 actpot=zeros(N,T)
 
-
-@gpu net=convert(net,"CPU")
 
 for t=1:T
     trainvalue[:,t]=net.value[v[t]]

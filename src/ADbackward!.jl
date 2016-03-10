@@ -19,11 +19,22 @@ function ADbackward!(net;debug=false,AccumulateGradient=false)
                     println("-----------------")
                     println("node $(node.index), child $c: $(node.df)($(node.parents))")
                         # This is why gradients must always add up whatever is currently there (ie not replace)
-                     @time net.gradient[c]=node.df(net.handle,derivativeIDX,net.value[node],net.auxvalue[node],net.gradient[node],net.gradient[c],net.value[node.parents]...)
-                else
-                 # deals with the case that x-->f<--x (which happens with e.g. x+x)
-                     @time net.gradient[c]=node.df(net.handle,derivativeIDX,net.value[node],net.auxvalue[node],net.gradient[node],net.gradient[c],net.value[node.parents]...)
+                       if(isa(node.malloc,Bool))
+                        @time net.gradient[c]=node.df(net.handle,derivativeIDX,net.value[node],net.auxvalue[node],net.gradient[node],net.gradient[c],net.value[node.parents]...)
+                        else
+                         @time net.gradient[c]=node.df(net.handle,derivativeIDX,net.value[node],net.auxvalue[node],net.gradient[node],net.gradient[c],net.value[node.parents]...)
+                        end
 
+
+                    else
+                    if(isa(node.malloc,Bool))
+                         net.gradient[c]=node.df(net.handle,derivativeIDX,net.value[node],net.auxvalue[node],net.gradient[node],net.gradient[c],net.value[node.parents]...)
+                        else
+                         net.gradient[c]=node.df(net.handle,node.malloc,derivativeIDX,net.value[node],net.auxvalue[node],net.gradient[node],net.gradient[c],net.value[node.parents]...)
+                        end
+
+
+                 # deals with the case that x-->f<--x (which happens with e.g. x+x)
                 end
         end
     end

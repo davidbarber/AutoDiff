@@ -1,13 +1,14 @@
 #TODO this is the CPU version 
-function FConvolution(filterings::NTuple{2,Int},t::Array,f::Array)
+function FConvolution(filterings::NTuple{2,Int},t,f)
 println("called")
 (n,c,h,w) = size(t)
 (i,o) = filterings
 (f1,f2) = size(f)
 p = 0 #assume padding is 0, will change future
 s = 1 # assume stride is 1, will change future
-
-return (n,o,h-f1+1,w-f1+1)
+println("estimate out put size of convolution is :")
+println((n,i,h-f1+1,w-f1+1))
+return (n,i,h-f1+1,w-f1+1)
 end
 #TODO this is the CPU version
 function DConvolution()
@@ -16,7 +17,7 @@ return 0
 end
 
 if PROC=="GPU"
-function FConvolution(handle,value::CudaArray,auxvalue,t::CudaArray,f::CudaArray,filterings::NTuple{2,Int})
+function FConvolution(handle,filterings::NTuple{2,Int},value::CudaArray,auxvalue,t::CudaArray,f::CudaArray)
 # Creation 
 free(value)
 (n,c,h,w) = size(t)
@@ -25,7 +26,7 @@ dataType = cudnnDataTypeCheck(dtype)
 srcDataDesc = cudnnCreateTensorDescriptor()
 cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
 
-(i,o) = size(filterings)
+(i,o) = filterings
 filterDesc = cudnnCreateFilterDescriptor()
 (h,w) = size(f)
 cudnnSetFilter4dDescriptor(filterDesc,dataType,i,o,h,w)
@@ -33,7 +34,8 @@ cudnnSetFilter4dDescriptor(filterDesc,dataType,i,o,h,w)
 convDesc = cudnnCreateConvolutionDescriptor()
 cudnnSetConvolution2dDescriptor(convDesc,0,0,1,1,1,1,0)
 (n,c,h,w)= cudnnGetConvolution2dForwardOutputDim(convDesc,srcDataDesc,filterDesc)
-
+println("CUDNN forward output size:")
+println((n,c,h,w))
 value = CudaArray(dtype,n,c,h,w)
 println(size(value))
 dstDataDesc = cudnnCreateTensorDescriptor()
@@ -60,7 +62,7 @@ free(workspace)
 return value
 end
 
-function DConvolution(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,t::CudaArray,f::CudaArray,filterings::NTuple{2,Int})
+function DConvolution(handle,filterings::NTuple{2,Int},derivativeIDX,f_c,faux_c,grad_c,grad_n,t::CudaArray,f::CudaArray)
 # grad_n child
 # grad_c current 
 alpha = 1.0
@@ -78,7 +80,7 @@ srcDataDesc = cudnnCreateTensorDescriptor()
 (n,c,h,w) = size(t)
 cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
 
-(i,o) = size(filterings)
+(i,o) = filterings
 filterDesc = cudnnCreateFilterDescriptor()
 (h,w) = size(f)
 cudnnSetFilter4dDescriptor(filterDesc,dataType,i,o,h,w)
@@ -91,13 +93,13 @@ CUBLAS.axpy!(1.0,temp,grad_n)
 free(temp)
 
 elseif derivativeIDX ==2
-dtype = eltype(t)
-temp = CudaArray(dtype,size(t))
+dtype = eltype(f)
+temp = CudaArray(dtype,size(f))
 cudnnConvolutionBackwardFilter(handle,alpha,srcDataDesc,t.ptr,diffDataDesc,grad_c.ptr,convDesc,0,workspace,0,beta,filterDesc,temp.ptr)
-
+println(size(temp))
+println(size(grad_n))
 CUBLAS.axpy!(1.0,temp,grad_n)
 free(temp)
-
 end
 
 cudnnDestroyTensorDescriptor(srcDataDesc)

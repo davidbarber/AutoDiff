@@ -35,19 +35,18 @@ function compile(net,backend;debug=false,eltype=Float64)
         end
         
     elseif backend =="GPU"
-
+        println("GPU")
         net.handle = cudnnCreate() 
         # GPU size allocation still need to be optimised
         # GPU memory allocation can still be save by sharing pointer
         # and reduce memory transaction
         while(!isa(net.forwardNodes[1],ADFunctionNode))
                 node = shift!(net.forwardNodes)
-    
             if(isa(node,ADconst))
-                net.value[node.index] = cArray(true,node.value)
+                net.value[node.index] = cArray(backend,node.value)
             elseif(isa(node,ADVariable))
-                net.value[node] = cArray(true,net.value[node])
-                net.gradient[node] = cArray(true,zeros(size(net.value[node])))
+                net.value[node] = cArray(backend,net.value[node])
+                net.gradient[node] = cArray(backend,zeros(size(net.value[node])))
             else
                 continue
             end
@@ -55,10 +54,12 @@ function compile(net,backend;debug=false,eltype=Float64)
          end
 
         for node in net.forwardNodes
+            println(node.parents)
             s =node.f(node.malloc,net.value[node.parents]...)
-            net.value[node] = cArray(true,zeros(s))
-            net.auxvalue[node] = cArray(true,zeros(s))
-            net.gradient[node] = cArray(true,zeros(s))
+            println(s)
+            net.value[node] = cArray(backend,zeros(s))
+            net.auxvalue[node] = cArray(backend,zeros(s))
+            net.gradient[node] = cArray(backend,zeros(s))
         end
 
     end

@@ -1,5 +1,5 @@
 #TODO CPU Version
-function FActivation(inputs::Array)
+function FActivation(inputs)
 
 println("CPU version under development")
 return inputs,inputs

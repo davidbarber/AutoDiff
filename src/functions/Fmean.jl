@@ -1,6 +1,6 @@
 # f(x)=mean(x)
 function Fmean(malloc::Bool,x...)
-if length(x[1]==1)
+if length(x[1]) == 1
 return (1,1)
 end
 return size(x[1])

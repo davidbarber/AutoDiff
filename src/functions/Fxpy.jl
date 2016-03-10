@@ -1,4 +1,15 @@
 # f(x,y)=x+y
+function Fxpy(malloc::Bool,x,y)
+ if length(x) == 1
+    if length(y) == 1
+        return 1
+    else 
+        return size(y)
+    end
+ else 
+        return size(x)
+    end
+end
 
 function Fxpy(x::Float64,y::Float64)
     return ((x+y)*ones(1,1),nothing)
@@ -9,7 +20,7 @@ function Fxpy(x::Float64,y)
 end
 
 function Fxpy(x,y::Float64)
-    return (y*ones(size(y))+x,nothing)
+    return (y*ones(size(x))+x,nothing)
 end
 
 function Fxpy(x,y)

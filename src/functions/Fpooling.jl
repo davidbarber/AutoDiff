@@ -1,10 +1,10 @@
 #TODO CPU version 
-function FPooling(malloc::Bool,inputs::Array)
+function FPooling(malloc::Bool,inputs)
 
 # now assume 2*2 pooling and stride 2
 (n,c,h,w) = size(inputs)
 
-return (n,c,(h-2)/2+1,(w-2)/2+1)
+return (n,c,Int(ceil((h-2)/2)+1),Int(ceil((w-2)/2)+1))
 end
 #TODO this is the CPU version
 function DPooling()
@@ -51,9 +51,6 @@ srcDataDesc = cudnnCreateTensorDescriptor()
 cudnnSetTensor4dDescriptor(srcDataDesc,dataType,n,c,h,w)
 
 diffDataDesc = cudnnCreateTensorDescriptor()
-(n,c,h,w) = size(grad_c)
-println("dimension of diffDataDesc is")
-println((n,c,h,w))
 cudnnSetTensor4dDescriptor(diffDataDesc,dataType,n,c,h,w)
 
 
@@ -61,7 +58,9 @@ cudnnSetTensor4dDescriptor(diffDataDesc,dataType,n,c,h,w)
 dstDataDesc = cudnnCreateTensorDescriptor()
 cudnnSetTensor4dDescriptor(dstDataDesc,dataType,n,c,h,w)
 temp = CudaArray(dtype,n,c,h,w)
-
+println(size(temp))
+println(size(grad_n))
+println(size(grad_c))
 cudnnPoolingBackward(handle,poolingDesc,alpha,srcDataDesc,f_c.ptr,diffDataDesc,grad_c.ptr,dstDataDesc,X.ptr,beta,dstDataDesc,temp.ptr)
 CUBLAS.axpy!(1.0,temp,grad_n)
 free(temp)
