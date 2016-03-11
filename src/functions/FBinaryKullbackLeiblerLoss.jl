@@ -3,6 +3,9 @@
 # BinaryKullbackLeiblerLossXsigmaY is usually better.
 
 #FBinaryEntropyLoss(x::Array,y::Array)=([sum(x.*log(x./y)+(1.-x).*log((1.-x)./(1.-y)))/length(x)],[])
+function FBinaryEntropyLoss(malloc::Bool,x::Array,y::Array)
+return (1,1)
+end
 
 FBinaryEntropyLoss(x::Array,y::Array)=([sum(x.*log(x./y)+(1.-x).*log((1.-x)./(1.-y)))/length(x)],((y-x)./(y.*(1.-y))/length(x)))
 
@@ -12,7 +15,7 @@ function FBinaryEntropyLoss_inplace(value,aux,x::Array,y::Array)
     copy!(aux,((y-x)./(y.*(1.-y)))/length(x))
 end
 
-function DBinaryEntropyLoss(derivativeIDX,f_c,faux_c,grad_c,grad_n,x,y)
+function DBinaryEntropyLoss(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x,y)
     if derivativeIDX==1
         axpy!(grad_c[1],log(x.*(1.-y)./(y.*(1.-x)))/length(x),grad_n)
     elseif derivativeIDX==2
@@ -24,9 +27,9 @@ end
 
 if PROC=="GPU"
     FBinaryEntropyLoss(x::CudaArray,y::CudaArray)=(binaryentropy(x,y),nothing)
-    FBinaryEntropyLoss_inplace(value,aux,x::CudaArray,y::CudaArray)=copy!(value,binaryentropy(x,y))
+    FBinaryEntropyLoss_inplace(handle,value,aux,x::CudaArray,y::CudaArray)=copy!(value,binaryentropy(x,y))
 
-    function DBinaryEntropyLoss(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
+    function DBinaryEntropyLoss(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
         if derivativeIDX==1
             DXbinaryentropy!(x,y,grad_c,grad_n)
         elseif derivativeIDX==2
@@ -38,6 +41,6 @@ end
 Derivative[FBinaryEntropyLoss]=DBinaryEntropyLoss
 Inplace[FBinaryEntropyLoss]=FBinaryEntropyLoss_inplace
 
-BinaryKullbackLeiblerLoss(nx,ny)=ADnode(FBinaryEntropyLoss,[nx ny])
+BinaryKullbackLeiblerLoss(nx,ny)=ADFunction(FBinaryEntropyLoss,nx,ny)
 export BinaryKullbackLeiblerLoss
 

@@ -1,4 +1,18 @@
 # f(x)=A*X'
+function FAXtranspose(malloc::Bool,A,X)
+    if length(A) == 1
+        (r,c) = size(X)
+        return (c,r)
+    end 
+
+    if length(X) == 1
+        (r,c) = size(A)
+        return (c,r)
+    end
+
+    return (size(A,1),size(X,1))
+end
+
 function FAXtranspose(A,X)
     if size(A)==(1,1)
         return (A[1].*X',nothing)
@@ -9,7 +23,7 @@ function FAXtranspose(A,X)
     end
 end
 
-function FAXtranspose_inplace(value,auxvalue,A,X)
+function FAXtranspose_inplace(handle,value,auxvalue,A,X)
     if size(A)==(1,1)
         copy!(value,A[1]*X')
     elseif size(X)==(1,1)
@@ -20,7 +34,7 @@ function FAXtranspose_inplace(value,auxvalue,A,X)
 end
 
 
-function DAXtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
+function DAXtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
     if derivativeIDX==1
         if size(A)==(1,1)
             axpy!(1.0,[sum(X'.*grad_c)],grad_n)
@@ -53,7 +67,7 @@ if PROC=="GPU"
 #        end
 #    end
 
-    function FAXtranspose_inplace(value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
+    function FAXtranspose_inplace(handle,value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
         if size(A)==(1,1)            
             CUBLAS.geam!('T','N',1.0,X,0.0,value,value) # nb argument converse of Base.scale!
             scale!(A,value) # nb argument converse of Base.scale!
@@ -64,7 +78,7 @@ if PROC=="GPU"
         end
     end
 
-    function DAXtranspose(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
+    function DAXtranspose(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
         if derivativeIDX==1
             if size(A)==(1,1)
                 tmp=CudaArray(Float64,size(X))

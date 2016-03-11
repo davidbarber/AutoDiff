@@ -1,5 +1,11 @@
 # f(x,y)=x-y
 
+function Fxmy(malloc::Bool,x,y)
+if(length(x)>length(y))
+return size(x)
+end
+return size(y)
+end
 
 function Fxmy(x::Float64,y::Float64)
     return ((x-y)*ones(1,1),nothing)
@@ -24,7 +30,7 @@ function Fxmy(x,y)
     end
 end
 
-function Fxmy_inplace(value,auxvalue,x,y)
+function Fxmy_inplace(handle,value,auxvalue,x,y)
     if size(x)==(1,1)
         copy!(value,x[1]*ones(size(y))); axpy!(-1.0,y,value)
     elseif size(y)==(1,1)
@@ -34,7 +40,7 @@ function Fxmy_inplace(value,auxvalue,x,y)
     end
 end
 
-function Dxmy(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
+function Dxmy(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
     if derivativeIDX==1
         if size(x)==(1,1)
             axpy!(1.0,[sum(grad_c)],grad_n)
@@ -66,7 +72,7 @@ function Fxmy(x::CudaArray,y::CudaArray)
         return (tmp,nothing)
     end
 
-    function Fxmy_inplace(value::CudaArray,auxvalue,x::CudaArray,y::CudaArray)
+    function Fxmy_inplace(handle,value::CudaArray,auxvalue,x::CudaArray,y::CudaArray)
         if size(x)==(1,1)
             gfill!(value,x); axpy!(-1.0,y,value)
         elseif size(y)==(1,1)
@@ -76,7 +82,7 @@ function Fxmy(x::CudaArray,y::CudaArray)
         end
     end
 
-    function Dxmy(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
+    function Dxmy(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
 
         if derivativeIDX==1
             if size(x)==(1,1)
@@ -99,9 +105,14 @@ Derivative[Fxmy]=Dxmy
 Inplace[Fxmy]=Fxmy_inplace
 
 import Base.-
--(A::ADnode,B::ADnode)=ADnode(Fxmy,[A B])
--(A::Real,B::ADnode)=ADnode(Fxmy,[ADconst(A) B])
--(A::ADnode,B::Real)=ADnode(Fxmy,[A ADconst(B)])
+#=
+-(A::ADnode,B::ADnode)=ADFunction(Fxmy,[A B])
+-(A::Real,B::ADnode)=ADFunction(Fxmy,[ADconst(A) B])
+-(A::ADnode,B::Real)=ADFunction(Fxmy,[A ADconst(B)])
+=#
+-(A::ADnode,B::ADnode)=ADFunction(Fxmy,A,B)
+-(A::Real,B::ADnode)=ADFunction(Fxmy,ADconst(Float64(A)),B)
+-(A::ADnode,B::Real)=ADFunction(Fxmy,A,ADconst(Float64(B)))
 
 
 export Fxmy, -

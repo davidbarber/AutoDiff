@@ -113,7 +113,12 @@ f=[
    "Fabs",
    "Fkinklin",
    "FkinklinAXplusBias",
-   "Falex",
+    "Falex",
+   "Fconvolution",
+   "FCUrectlin",
+   "FCUsoftmax",
+   "Fpooling",
+   "FActivation",
    "Fgetcol",
    "Fgetrow"
    ]

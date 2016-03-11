@@ -3,6 +3,7 @@
 
 c=0.5
 
+
 FalexAXplusBias(A,X,b)=begin; a=A*X+b*ones(1,size(X,2)); return (alex(a),a); end
 
 function FkinklinAXplusBias_inplace(value,aux,A,X,b)

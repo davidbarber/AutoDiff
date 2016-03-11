@@ -5,13 +5,19 @@ gamma=0.25
 
 FkinklinAXplusBias(A,X,b)=begin; a=A*X+b*ones(1,size(X,2)); return (max(a,gamma*a),gamma+(1-gamma)*(a.>0)); end
 
-function FkinklinAXplusBias_inplace(value,aux,A,X,b)
+function FkinklinAXplusBias(malloc::Bool,A,X,b)
+
+return (size(A,1),size(X,2))
+
+end
+
+function FkinklinAXplusBias_inplace(handle,value,aux,A,X,b)
     a=A*X+b*ones(1,size(X,2))
     copy!(value,max(a,gamma*a))
     copy!(aux,gamma+(1-gamma)*(a.>0))
 end
 
-function DkinklinAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
+function DkinklinAXplusBias(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X,b)
     if derivativeIDX==1
         axpy!(1.0,(grad_c.*faux_c)*X',grad_n)
     elseif derivativeIDX==2
@@ -23,13 +29,13 @@ end
 
 if PROC=="GPU" 
 
-    function FkinklinAXplusBias_inplace(value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
+    function FkinklinAXplusBias_inplace(handle,value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
         FAXplusBias_inplace(value,[],A,X,b)
         copy!(aux,value)               
         kinklin!(value,value)
     end
     
-    function DkinklinAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray,b::CudaArray)
+    function DkinklinAXplusBias(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray,b::CudaArray)
         tmp=CudaArray(Float64,size(grad_c)); fill!(tmp,0.0)
         A_emult_Bg0!(grad_c,faux_c,tmp)        
         scale!((1-gamma),tmp)
@@ -75,7 +81,7 @@ end
 Derivative[FkinklinAXplusBias]=DkinklinAXplusBias
 Inplace[FkinklinAXplusBias]=FkinklinAXplusBias_inplace
 
-kinklinAXplusBias(A,X,b)=ADnode(FkinklinAXplusBias,[A X b])
+kinklinAXplusBias(A,X,b)=ADFunction(FkinklinAXplusBias,A,X,b)
 export kinklinAXplusBias
 
 

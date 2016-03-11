@@ -1,20 +1,22 @@
 #f(p,x)=KL(p,softmax(x))
 
 #TODO: implement KL(q,p)
-
+function FKLsoftmax(malloc::Bool,p::Array{Float64,2},x::Array{Float64,2})
+return (1,1)
+end
 function FKLsoftmax(p::Array{Float64,2},x::Array{Float64,2})
     logZ=log(sum(exp(x),1))
     return ([(sum(p.*(log(p)-x))+sum(logZ))/length(x)],logZ)
 end
 
-function FKLsoftmax_inplace(value,auxvalue,p::Array{Float64,2},x::Array{Float64,2})
+function FKLsoftmax_inplace(handle,value,auxvalue,p::Array{Float64,2},x::Array{Float64,2})
     logZ=log(sum(exp(x),1))
     fill!(value,(sum(p.*(log(p)-x))+sum(logZ))/length(x))
     copy!(auxvalue,logZ)
 end
 
 
-function DKLsoftmax(derivativeIDX,f_c,faux_c,grad_c,grad_n,p::Array{Float64,2},x::Array{Float64,2})
+function DKLsoftmax(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,p::Array{Float64,2},x::Array{Float64,2})
     if derivativeIDX==1
         axpy!(1.0/length(x),grad_c.*(1+log(p)-x+repmat(faux_c,size(x,1),1)),grad_n) 
     elseif derivativeIDX==2
@@ -40,7 +42,7 @@ if PROC=="GPU"
         #return ([(sum(p.*(log(p)-x))+sum(log(Z)))/length(x)],aux)
     end
  
-    function FKLsoftmax_inplace(value,auxvalue,p::CudaArray,x::CudaArray)
+    function FKLsoftmax_inplace(handle,value,auxvalue,p::CudaArray,x::CudaArray)
         tmp=CudaArray(Float64,size(x))
         exp!(x,tmp)
         onr=CudaArray(Float64,(1,size(x,1))); fill!(onr,1.0);
@@ -58,7 +60,7 @@ if PROC=="GPU"
     end
     
     
-    function DKLsoftmax(derivativeIDX,f_c,faux_c,grad_c,grad_n,p::CudaArray,x::CudaArray)
+    function DKLsoftmax(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,p::CudaArray,x::CudaArray)
         if derivativeIDX==1
             #axpy!(1.0/length(x),grad_c.*(1+log(p)-x+repmat(faux_c,size(x,1),1)),grad_n) 
             tmp=CudaArray(Float64,size(x)); fill!(tmp,1.0)
@@ -88,6 +90,6 @@ end
 Derivative[FKLsoftmax]=DKLsoftmax
 Inplace[FKLsoftmax]=FKLsoftmax_inplace
 
-KLsoftmax(p::ADnode,x::ADnode)=ADnode(FKLsoftmax,[p x])
+KLsoftmax(p::ADnode,x::ADnode)=ADFunction(FKLsoftmax,p,x)
 
 export KLsoftmax

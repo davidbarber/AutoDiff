@@ -1,61 +1,74 @@
-function compile(net;debug=false,gpu=false,eltype=Float64)
+
+function compile(net,backend;debug=false,eltype=Float64)
     # (c) David Barber, University College London 2015
+# (c) David Barber, University College London 2015
+#From the README the main perporse of compile is to allocate memory
+# For GPU or CPU operation  
+# Memory allocation can still be save
+# As if user choose to run on GPU
+# it is not nessaccary to allcate memory on CPU first
 
-    # It's good to ensure that we only compuile on the CPU since then we don't need to write inplace versions of the GPU functions (we only need the inplace versions of the GPU derivatives. This makes coding a bit easier)
+    # put constants into net.value
+    # allocate memory for ADVariable 
+    # After this while loop nodes in forwardNodes should only be ADFunctionNode
+    
 
-    if debug
-        println("Compiling into a tree and storing messages:")
-    end
-    node=net.node
-    N=length(node)
-#    NN=net.node[end].index
-    if isempty(net.FunctionNode)
-        net.FunctionNode=N
-    end
-
-    # get the computation tree:
-    G=zeros(Bool,N,N)
-    returnderivative=zeros(Bool,N)
-        for i in net.validnodes
-            G[node[i].index,node[i].parents]=1
-            if !(node[i].input)
-#                node[i].takederivative=any(map( (x)-> any(x.takederivative), node[node[i].parents]) ) # set to true for those parents that require derivative
-                node[i].takederivative=any( (x)-> any(x.takederivative), node[node[i].parents] ) # set to true for those parents that require derivative
-            end
-    end
-    for i in net.validnodes
-        if !(node[i]==nothing)
-            node[i].children=setdiff(find(G[:,i]),node[i].index)
-        end
-    end
-
-    # forward pass: assume the nodes are defined in ancestral order
-    if debug;  println("Forward Pass compilation:");  end
-
-    #TODO: need to fix this for conversion.....
-    for n in net.validnodes
-        if node[n].isconst==true
-            #if typeof(node[n].constval)==Float32
-            if isaScalar(node[n].constval)
-                net.value[n]=cArray(gpu,node[n].constval*ones(1,1))
+    if backend =="CPU"
+           # Allocate memory for inputs includes:
+           #   i) Input variables
+           #  ii) Parameters 
+           # iii) Constant 
+           # similar for GPU version
+         while(!isa(net.forwardNodes[1],ADFunctionNode))
+                node = shift!(net.forwardNodes)
+    
+            if(isa(node,ADconst))
+                net.value[node.index] = node.value
+                elseif(isa(node,ADVariable))
+                net.gradient[node] = fill(0,size(net.value[node]))
             else
-                net.value[n]=cArray(gpu,node[n].constval)
+                continue
             end
+
+         end
+
+        for node in net.forwardNodes
+            s =node.f(node.malloc,net.value[node.parents]...)
+            net.value[node] = fill(0,s)
+            net.auxvalue[node] = fill(0,s)
+            net.gradient[node] = fill(0,s)
         end
+        
+    elseif backend =="GPU"
+        net.handle = cudnnCreate() 
+        # GPU size allocation still need to be optimised
+        # GPU memory allocation can still be save by sharing pointer
+        # and reduce memory transaction
+        while(!isa(net.forwardNodes[1],ADFunctionNode))
+                node = shift!(net.forwardNodes)
+            if(isa(node,ADconst))
+                net.value[node.index] = cArray(backend,node.value)
+            elseif(isa(node,ADVariable))
+                net.value[node] = cArray(backend,net.value[node])
+                net.gradient[node] = cArray(backend,zeros(size(net.value[node])))
+            else
+                continue
+            end
+
+         end
+
+        for node in net.forwardNodes
+            s =node.f(node.malloc,net.value[node.parents]...)
+            println(s)
+            net.value[node] = cArray(backend,zeros(s))
+            net.auxvalue[node] = cArray(backend,zeros(s))
+            net.gradient[node] = cArray(backend,zeros(s))
+        end
+
     end
-
-    ForwardPassList!(net) # call this as ForwardPassList(net;ExcludeNodes=[1 2 3 ....]) if there are nodes 1 2 3 ... that are not needed to be calculated in the forward pass
-
-    value=net.value
-    gradient=net.gradient
-    auxvalue=similar(value)
-    net.auxvalue=auxvalue
-    net.value=value
-    net.gradient=gradient
-    net.gpu=gpu
-
-
-    ADforward!(net;debug=debug,AllocateMemory=true)
+    
+    
+#=
     if debug;  println("Done forward pass compilation:");  end
 
     # backward compilation:
@@ -71,14 +84,9 @@ function compile(net;debug=false,gpu=false,eltype=Float64)
     Nend=net.FunctionNode
     if Nend!=N
         anc=ancestors(node,Nend)
-    else
-        anc=flipdim(net.validnodes,1); anc=anc[2:end]
-    end
 
-    relevantchildren=Array(Any,N)
-    ancUnionNend=union(anc,Nend)
-    for n in anc
-       relevantchildren[n]=intersect(node[n].children,ancUnionNend)
+    else
+        throw("backend type must be GPU or CPU")
     end
 
     parentIDX=Dict()
@@ -97,6 +105,7 @@ function compile(net;debug=false,gpu=false,eltype=Float64)
     if debug
         println("Compiled into a DAG with $(length(node)) nodes")
     end
+=#
 
     return net
 

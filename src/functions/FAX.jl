@@ -1,15 +1,21 @@
 # f(x)=A*X
+function FAX(malloc::Bool,A::Array,X::Array)
+return (size(A,1),size(X,2))
+end
+
 function FAX(A::Array,X::Array)
     if size(A)==(1,1)
         return (A[1].*X,nothing)
     elseif size(X)==(1,1)
         return (A.*X[1],nothing)
     else
+        println(A)
+        println(X)
         return (A*X,nothing)
     end
 end
 
-function FAX_inplace(value,auxvalue,A::Array,X::Array)
+function FAX_inplace(handle,value,auxvalue,A::Array,X::Array)
     if size(A)==(1,1)
         copy!(value,A[1]*X)
     elseif size(X)==(1,1)
@@ -20,7 +26,7 @@ function FAX_inplace(value,auxvalue,A::Array,X::Array)
 end
 
 
-function DAX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
+function DAX(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
     if derivativeIDX==1
         if size(A)==(1,1)
             axpy!(1.0,[sum(X.*grad_c)],grad_n)
@@ -46,7 +52,7 @@ if PROC=="GPU"
     gemm!(T1::Char,T2::Char,alpha,A::CudaArray{Float32},B::CudaArray{Float32},beta,C::CudaArray{Float32})=CUBLAS.gemm!(T1,T2,Float32(alpha),A,B,Float32(beta),C)
     export gemm!
 
-    function FAX_inplace(value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
+    function FAX_inplace(handle,value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
         if size(A)==(1,1)
             copy!(value,X); scale!(A,value) # nb argument converse of Base.scale!
         elseif size(X)==(1,1)
@@ -57,7 +63,7 @@ if PROC=="GPU"
         end
     end
 
-    function DAX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
+    function DAX(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
         if derivativeIDX==1
             if size(A)==(1,1)
                 tmp=CudaArray(Float64,size(X))
@@ -124,11 +130,13 @@ Inplace[FAX]=FAX_inplace
 
 Derivative[FAX]=DAX
 import Base.*
-*(A::ADnode,B::ADnode)=ADnode(FAX,[A B])
+*(A::ADnode,B::ADnode)=ADFunction(FAX,A,B)
 
 
-*(A::Real,B::ADnode)=ADnode(FAX,[ADconst(A) B])
-*(A::ADnode,B::Real)=ADnode(FAX,[A ADconst(B)])
+
+*(A::AbstractFloat,B::ADnode)=ADFunction(FAX,ADconst(A),B)
+*(A::ADnode,B::AbstractFloat)=ADFunction(FAX,A,ADconst(B))
+
 
 
 @gpu *(A::CudaArray,B::CudaArray)=CUBLAS.gemm('N','N',A,B)

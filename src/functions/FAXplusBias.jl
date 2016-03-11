@@ -1,6 +1,10 @@
 # f(A,x,b)=A*x+b
 # Note that the bias (a column vector) gets expanded here to match the dimension of A*x
 
+function FAXplusBias(malloc::Bool,A,X,b)
+ return (size(A,1),size(X,2))
+end
+
 FAXplusBias(A,X,b)=(A*X+b*ones(1,size(X,2)),nothing)
 
 function FAXplusBias_inplace(value,aux,A,X,b)
@@ -74,5 +78,5 @@ end
 Derivative[FAXplusBias]=DAXplusBias
 Inplace[FAXplusBias]=FAXplusBias_inplace
 
-AXplusBias(A,X,b)=ADnode(FAXplusBias,[A X b])
+AXplusBias(A,X,b)=ADnode(FAXplusBias,A,X,b)
 export AXplusBias

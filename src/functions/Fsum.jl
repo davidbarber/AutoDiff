@@ -1,8 +1,8 @@
 # Sum function: f(x)=sum(x)
 Fsum(x)=([sum(x)],nothing)
-Fsum_inplace(value,auxvalue,x)=fill!(value,sum(x))
+Fsum_inplace(handle,value,auxvalue,x)=fill!(value,sum(x))
 
-function Dsum(derivativeIDX,f_c,faux_c,grad_c,grad_n,x_n...)
+function Dsum(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x_n...)
     axpy!(grad_c[1],ones(size(grad_n)),grad_n)
 end
 
@@ -14,7 +14,7 @@ function Fsum(x...)
     return ([tmp],nothing)
 end
 
-function Fsum_inplace(value::Array,auxvalue,x...) # inplace
+function Fsum_inplace(handle,value::Array,auxvalue,x...) # inplace
     tmp=0.0
     for i in 1:length(x)
         tmp+=sum(x[i])
@@ -46,7 +46,7 @@ if PROC=="GPU"
     export sum_update!
 
 
-    function Dsum(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
+    function Dsum(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
         tmp=CudaArray(Float64,size(grad_n))
         fill!(tmp,1.0)
         axpy!(grad_c,tmp,grad_n)
@@ -63,7 +63,7 @@ if PROC=="GPU"
     end
 
 
-    function Fsum_inplace(value::CudaArray,auxvalue,x::CudaArray...) # inplace
+    function Fsum_inplace(handle,value::CudaArray,auxvalue,x::CudaArray...) # inplace
         fill!(value,0.0)
         for i in 1:length(x)
             axpy!(1.0,sum(x[i]),value)
@@ -77,7 +77,7 @@ Derivative[Fsum]=Dsum # Define dictionary lookup
 Inplace[Fsum]=Fsum_inplace
 
 import Base.sum
-sum(n::ADnode)=ADnode(Fsum,n)
+sum(n::ADnode)=ADFunction(Fsum,n)
 
 
 function sum(n::ArrayADnode)
@@ -85,8 +85,8 @@ function sum(n::ArrayADnode)
 end
 
 # TODO: add similar as below for each unary function that can take a transposed argument
-#sum(A::ADtrans)=ADnode(Fsum, ftranspose(node[A.parent]))
-sum(A::ADtrans)=ADnode(Fsum, node[A.parent]) # sum(A')=sum(A)
+#sum(A::ADtrans)=ADFunction(Fsum, ftranspose(node[A.parent]))
+sum(A::ADtrans)=ADFunction(Fsum, node[A.parent]) # sum(A')=sum(A)
 
 sum(A::ADdiag)=sum(node[A.parent])
 

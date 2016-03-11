@@ -1,8 +1,9 @@
 # f(x)=hcat(x...)
+# need to think a little bit
 Fhcat(x...)=(hcat(x...),nothing)
-Fhcat_inplace(value,auxvalue,x...)=copy!(value,hcat(x...))
+Fhcat_inplace(handle,value,auxvalue,x...)=copy!(value,hcat(x...))
 
-function Dhcat(derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)
+function Dhcat(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x...)
     startind=1
     for i=1:length(x)
         endind=startind+length(x[i])-1
@@ -16,7 +17,7 @@ end
 
 if PROC=="GPU"
 
-    function Fhcat_inplace(value::CudaArray,auxvalue,x::CudaArray...) # inplace
+    function Fhcat_inplace(handle,value::CudaArray,auxvalue,x::CudaArray...) # inplace
         totallength=1
         for i in 1:length(x)
             copyinto!(value,x[i],totallength)
@@ -24,7 +25,7 @@ if PROC=="GPU"
         end
     end
 
-    function Dhcat(derivativeIDX,f_c,faux_c,grad_c,grad_n::CudaArray,x...)
+    function Dhcat(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n::CudaArray,x...)
         startind=1
         for i=1:length(x)
             endind=startind+length(x[i])-1
@@ -41,9 +42,9 @@ Derivative[Fhcat]=Dhcat # Define dictionary lookup
 Inplace[Fhcat]=Fhcat_inplace
 
 import Base.hcat
-hcat(n::ADnode)=ADnode(Fhcat,n)
+hcat(n::ADnode)=ADFunction(Fhcat,n)
 
 hcat(n::Array{ADnode,1})=n
-hcat(n::ArrayADnode)=ADnode(Fhcat,n)
+hcat(n::ArrayADnode)=ADFunction(Fhcat,n)
 
 export hcat

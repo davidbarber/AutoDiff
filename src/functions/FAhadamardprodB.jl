@@ -1,12 +1,15 @@
 # A.*B
+function FAhadamardprodB(malloc::Bool,A,B)
+return size(A)
+end
 
 FAhadamardprodB(A,B)=(A.*B,nothing)
 
-function FAhadamardprodB_inplace(value,aux,A,B)
+function FAhadamardprodB_inplace(handle,value,aux,A,B)
     copy!(value,A.*B)
 end
 
-function DAhadamardprodB(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,B)
+function DAhadamardprodB(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,B)
     if derivativeIDX==1
         axpy!(1.0,grad_c.*B,grad_n) 
     elseif derivativeIDX==2
@@ -22,12 +25,12 @@ if (PROC=="GPU") || (PROC=="GPU32")
         return (tmp,nothing)
     end    
     
-    function FAhadamardprodB_inplace(value::CudaArray,aux,A::CudaArray,B::CudaArray)
+    function FAhadamardprodB_inplace(handle,value::CudaArray,aux,A::CudaArray,B::CudaArray)
         vmult!(1.0,A,B,value)
     end
 
 
-    function DAhadamardprodB(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,B::CudaArray)
+    function DAhadamardprodB(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,B::CudaArray)
     if derivativeIDX==1
         vmultupdate!(1.0,grad_c,B,grad_n)
     elseif derivativeIDX==2
@@ -42,7 +45,9 @@ Derivative[FAhadamardprodB]=DAhadamardprodB
 Inplace[FAhadamardprodB]=FAhadamardprodB_inplace
 
 import Base. .*
-.*(A::ADnode,B::ADnode)=ADnode(FAhadamardprodB,[A B])
+.*(A::ADnode,B::ADnode)=ADFunction(FAhadamardprodB,A,B)
+
+
 
 export .*
 

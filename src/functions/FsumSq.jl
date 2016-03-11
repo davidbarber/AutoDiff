@@ -9,7 +9,7 @@ function FsumSq(x...)
     return ([tmp],nothing) # must always return an array for the value
 end
 
-function FsumSq_inplace(value,auxvalue,x...) # inplace
+function FsumSq_inplace(handle,value,auxvalue,x...) # inplace
     tmp=0.0
     for i in 1:length(x)
         tmp+=sum(x[i].*x[i])
@@ -18,7 +18,7 @@ function FsumSq_inplace(value,auxvalue,x...) # inplace
 end
 
 
-DsumSq(derivativeIDX,f_c,faux_c,grad_c,grad_n,x_n...)=axpy!(2.0,grad_c.*x_n[derivativeIDX],grad_n)
+DsumSq(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x_n...)=axpy!(2.0,grad_c.*x_n[derivativeIDX],grad_n)
 
 
 if PROC=="GPU"
@@ -30,14 +30,14 @@ if PROC=="GPU"
     return (tmp,nothing) # must always return an array for the value
     end
     
-    function FsumSq_inplace(value,auxvalue,x::CudaArray...) # inplace
+    function FsumSq_inplace(handle,value,auxvalue,x::CudaArray...) # inplace
         fill!(value,0.0)
         for i in 1:length(x)
             CUBLAS.gemv!('T',1.0,flatten(Float64,x[i]),vec(x[i]),1.0,value);
         end
     end
 
-    function DsumSq(derivativeIDX,f_c,faux_c,grad_c,grad_n,x_n::CudaArray...)
+    function DsumSq(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x_n::CudaArray...)
         alphaaxpy!(2.0,grad_c,x_n[derivativeIDX],grad_n)
     end
 
@@ -46,7 +46,7 @@ end
 Inplace[FsumSq]=FsumSq_inplace
 Derivative[FsumSq]=DsumSq
 
-sumSq(n::ADnode)=ADnode(FsumSq,n)
+sumSq(n::ADnode)=ADFunction(FsumSq,n)
 
 function sumSq(n::ArrayADnode)
     return ADnode(FsumSq,n)

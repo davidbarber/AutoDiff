@@ -1,4 +1,15 @@
 # f(x,y)=x+y
+function Fxpy(malloc::Bool,x,y)
+ if length(x) == 1
+    if length(y) == 1
+        return 1
+    else 
+        return size(y)
+    end
+ else 
+        return size(x)
+    end
+end
 
 function Fxpy(x::Float64,y::Float64)
     return ((x+y)*ones(1,1),nothing)
@@ -9,7 +20,7 @@ function Fxpy(x::Float64,y)
 end
 
 function Fxpy(x,y::Float64)
-    return (y*ones(size(y))+x,nothing)
+    return (y*ones(size(x))+x,nothing)
 end
 
 function Fxpy(x,y)
@@ -22,7 +33,7 @@ function Fxpy(x,y)
     end
 end
 
-function Fxpy_inplace(value,auxvalue,x,y)
+function Fxpy_inplace(handle,value,auxvalue,x,y)
     if size(x)==(1,1)
         copy!(value,x[1]*ones(size(y))); axpy!(1.0,y,value)
     elseif size(y)==(1,1)
@@ -32,7 +43,7 @@ function Fxpy_inplace(value,auxvalue,x,y)
     end
 end
 
-function Dxpy(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
+function Dxpy(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::Array,y::Array)
     if size(x)==(1,1) && derivativeIDX==1
         axpy!(1.0,[sum(grad_c)],grad_n)
     elseif size(y)==(1,1) && derivativeIDX==2
@@ -59,7 +70,7 @@ if PROC=="GPU"
         return (tmp,nothing)
     end
 
-    function Fxpy_inplace(value::CudaArray,auxvalue,x::CudaArray,y::CudaArray)
+    function Fxpy_inplace(handle,value::CudaArray,auxvalue,x::CudaArray,y::CudaArray)
         if size(x)==(1,1)
             gfill!(value,x); axpy!(1.0,y,value)
         elseif size(y)==(1,1)
@@ -69,7 +80,7 @@ if PROC=="GPU"
         end
     end
 
-    function Dxpy(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
+    function Dxpy(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray,y::CudaArray)
 
         if size(x)==(1,1) && derivativeIDX==1
             axpy!(1.0,sum(grad_c),grad_n)
@@ -85,10 +96,14 @@ Derivative[Fxpy]=Dxpy
 Inplace[Fxpy]=Fxpy_inplace
 
 import Base.+
-+(A::ADnode,B::ADnode)=ADnode(Fxpy,[A B])
-+(A::Real,B::ADnode)=ADnode(Fxpy,[ADconst(A) B])
-+(A::ADnode,B::Real)=ADnode(Fxpy,[A ADconst(B)])
-
+#=
++(A::ADnode,B::ADnode)=ADFunction(Fxpy,[A B])
++(A::Real,B::ADnode)=ADFunction(Fxpy,[ADconst(A) B])
++(A::ADnode,B::Real)=ADFunction(Fxpy,[A ADconst(B)])
+=#
++(A::ADnode,B::ADnode)=ADFunction(Fxpy,A,B)
++(A::AbstractFloat,B::ADnode)=ADFunction(Fxpy,ADconst(A),B)
++(A::ADnode,B::AbstractFloat)=ADFunction(Fxpy,A,ADconst(B))
 
 
 if PROC=="GPU"

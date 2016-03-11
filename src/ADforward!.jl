@@ -1,15 +1,16 @@
-function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
+function ADforward!(net;returnf=false,debug=false)
 #=   calculate the value and auxiliary values of a net function
-=#
+=# 
     # (c) David Barber, University College London 2015
-
+    #=
     if AllocateMemory & net.gpu
         TransformToGPU=true
         net=convert(net,"CPU")
     else
         TransformToGPU=false
     end
-    
+    =#
+
     if debug; println("Get value:"); end
 
     if isempty(net.auxvalue)
@@ -17,27 +18,42 @@ function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
     end
 
     # forward pass:
-    for i in net.ForwardPassList
-        thisnode=net.node[i]
+    for node in net.forwardNodes
         if debug
-            println("node $i: $(thisnode.f)($(thisnode.parents))");
+            println("node $(node.index): $(node.f)($(node.parents))");
         end
-        if AllocateMemory
-            if debug
-                @time net.value[i],net.auxvalue[i]=thisnode.f(net.value[thisnode.parents]...) ## not in place
-            else
-                net.value[i],net.auxvalue[i]=thisnode.f(net.value[thisnode.parents]...) ## not in place
-            end
-        else
+        
             if debug
                 println("in place")
-                @time thisnode.f_inplace(net.value[i],net.auxvalue[i],net.value[thisnode.parents]...) ## in place
+                if(isa(node.malloc,Bool))
+                @time net.value[node] = node.f_inplace(net.handle,net.value[node],net.auxvalue[node],net.value[node.parents]...)
+                else
+                net.value[node] = node.f_inplace(net.handle,node.malloc,net.value[node],net.auxvalue[node],net.value[node.parents]...)
+                end
             else
-                thisnode.f_inplace(net.value[i],net.auxvalue[i],net.value[thisnode.parents]...) ## in place
+                if(isa(node.malloc,Bool))
+                net.value[node] = node.f_inplace(net.handle,net.value[node],net.auxvalue[node],net.value[node.parents]...)
+                else
+                net.value[node] = node.f_inplace(net.handle,node.malloc,net.value[node],net.auxvalue[node],net.value[node.parents]...)
+                end
             end
-        end
     end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    #=
     if TransformToGPU
         net=convert(net,"GPU")
     end
@@ -53,5 +69,6 @@ function ADforward!(net;returnf=false,debug=false,AllocateMemory=false)
     end
 
     if debug; println("done"); end
+    =#
 end
 

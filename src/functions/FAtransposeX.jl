@@ -1,4 +1,17 @@
 # f(x)=A'*X
+function FAtransposeX(malloc::Bool,A,X)
+if length(A) == 1
+    return size(X)
+end
+
+if length(X) == 1
+    (r,c) = size(A)
+    return (c,r)
+end
+
+    return (size(A,2),size(X,2))
+end
+
 function FAtransposeX(A,X)
     if size(A)==(1,1)
         return (A[1].*X,nothing)
@@ -9,7 +22,7 @@ function FAtransposeX(A,X)
     end
 end
 
-function FAtransposeX_inplace(value,auxvalue,A,X)
+function FAtransposeX_inplace(handle,value,auxvalue,A,X)
     if size(A)==(1,1)
         copy!(value,A[1]*X)
     elseif size(X)==(1,1)
@@ -20,7 +33,7 @@ function FAtransposeX_inplace(value,auxvalue,A,X)
 end
 
 
-function DAtransposeX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
+function DAtransposeX(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
     if derivativeIDX==1
         if size(A)==(1,1)
             axpy!(1.0,[sum(X.*grad_c)],grad_n)
@@ -55,7 +68,7 @@ if PROC=="GPU"
 #        end
 #    end
 
-    function FAtransposeX_inplace(value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
+    function FAtransposeX_inplace(handle,value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
         if size(A)==(1,1)
             copy!(value,X); scale!(A,value) # nb argument converse of Base.scale!
         elseif size(X)==(1,1)
@@ -66,7 +79,7 @@ if PROC=="GPU"
         end
     end
 
-    function DAtransposeX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
+    function DAtransposeX(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
         if derivativeIDX==1
             if size(A)==(1,1)
                 tmp=CudaArray(Float64,size(X))
@@ -97,10 +110,10 @@ export FAtransposeX
 Inplace[FAtransposeX]=FAtransposeX_inplace
 
 #import Base.*
-#*(A::ADnode,B::ADnode)=ADnode(FAX,[A B])
+#*(A::ADnode,B::ADnode)=ADFunction(FAX,A,B)
 
-#*(A::Real,B::ADnode)=ADnode(FAX,[ADconst(A) B])
-#*(A::ADnode,B::Real)=ADnode(FAX,[A ADconst(B)])
+#*(A::Real,B::ADnode)=ADFunction(FAX,ADconst(A),B)
+#*(A::ADnode,B::Real)=ADFunction(FAX,A,ADconst(B))
 
 #@gpu *(A::CudaArray,B::CudaArray)=CUBLAS.gemm('N','N',A,B)
 #export *

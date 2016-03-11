@@ -1,4 +1,7 @@
 Flog(x)=(log(x),nothing)
+function Flog(malloc::Bool,x)
+return size(x)
+end
 
 function Flog_inplace(value,auxvalue,x)
     copy!(value,log(x))
@@ -17,11 +20,11 @@ if PROC=="GPU"
         return (tmp,nothing) # memory leak here
     end
     
-    function Flog_inplace(value,auxvalue,x::CudaArray)
+    function Flog_inplace(handle,value,auxvalue,x::CudaArray)
         log!(x,value)
     end
     
-    function Dlog(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray)
+    function Dlog(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray)
         vdivupdate!(1.0,grad_c,f_c,grad_n)
     end
 
@@ -33,6 +36,6 @@ Inplace[Flog]=Flog_inplace
 
 import Base.log
 
-log(n::ADnode)=ADnode(Flog,n)
+log(n::ADnode)=ADFunction(Flog,n)
 
 export log

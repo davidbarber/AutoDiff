@@ -1,0 +1,12 @@
+workspace()
+include("GPUStart.jl")
+StartCode()
+
+t = Tensor((1,1,100,100))
+c = Pooling(t)
+net = EndCode()
+net.value[t] = rand(1,1,100,100)
+net = compile(net,"GPU")
+#CUDArt.init([0])
+ADforward!(net)
+ADbackward!(net)

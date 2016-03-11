@@ -1,4 +1,17 @@
 # f(x)=diagA*X
+function FdiagAX(malloc::Bool,A::Array,X::Array)
+if length(A) == 1
+    return size(X)
+end
+if length(X) == 1
+    return size(A)
+end
+    (r,c) = size(A)
+
+return (r<c) ? (r,size(X,2)):(c,size(X,2))
+end
+
+
 function FdiagAX(A::Array,X::Array)
     if size(A)==(1,1)
         return (A[1].*X,nothing)
@@ -9,7 +22,7 @@ function FdiagAX(A::Array,X::Array)
     end
 end
 
-function FdiagAX_inplace(value,auxvalue,A::Array,X::Array)
+function FdiagAX_inplace(handle,value,auxvalue,A::Array,X::Array)
     if size(A)==(1,1)
         copy!(value,A[1]*X)
     elseif size(X)==(1,1)
@@ -21,7 +34,7 @@ function FdiagAX_inplace(value,auxvalue,A::Array,X::Array)
 end
 
 
-function DdiagAX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
+function DdiagAX(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
     if derivativeIDX==1
         if size(A)==(1,1)
             axpy!(1.0,[sum(X.*grad_c)],grad_n)
@@ -64,7 +77,7 @@ if 1==0 # TODO GPU
         end
     end
 
-    function FAX_inplace(value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
+    function FAX_inplace(handle,value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
         if size(A)==(1,1)
         elseif size(X)==(1,1)
             copy!(value,X); scale!(A,value) # nb argument converse of Base.scale!
@@ -74,7 +87,7 @@ if 1==0 # TODO GPU
         end
     end
 
-    function DAX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
+    function DAX(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
         if derivativeIDX==1
             if size(A)==(1,1)
                 tmp=CudaArray(Float64,size(X))
@@ -108,11 +121,11 @@ Inplace[FAX]=FAX_inplace
 
 Derivative[FAX]=DAX
 import Base.*
-*(A::ADnode,B::ADnode)=ADnode(FAX,[A B])
+*(A::ADnode,B::ADnode)=ADFunction(FAX,A,B)
 
 
-*(A::Real,B::ADnode)=ADnode(FAX,[ADconst(A) B])
-*(A::ADnode,B::Real)=ADnode(FAX,[A ADconst(B)])
+*(A::Real,B::ADnode)=ADFunction(FAX,ADconst(A),B)
+*(A::ADnode,B::Real)=ADFunction(FAX,A,ADconst(B))
 
 
 @gpu *(A::CudaArray,B::CudaArray)=CUBLAS.gemm('N','N',A,B)

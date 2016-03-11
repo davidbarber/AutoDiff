@@ -1,4 +1,16 @@
 # f(x)=A*diagX
+function FAmultdiagX(malloc::Bool,A::Array,X::Array)
+    if length(A) == 1
+        s = length(X)
+        return (s,s)
+    end
+    if length(X) == 1
+        return size(A)
+    end
+
+    return (size(A,1),length(X))
+end
+
 function FAmultdiagX(A::Array,X::Array)
     if size(A)==(1,1)
         return (A[1].*diagm(vec(X)),nothing)
@@ -9,7 +21,7 @@ function FAmultdiagX(A::Array,X::Array)
     end
 end
 
-function FAmultdiagX_inplace(value,auxvalue,A::Array,X::Array)
+function FAmultdiagX_inplace(handle,value,auxvalue,A::Array,X::Array)
     if size(A)==(1,1)
         copy!(value,A[1].*diagm(vec(X)))
     elseif size(X)==(1,1)
@@ -20,7 +32,7 @@ function FAmultdiagX_inplace(value,auxvalue,A::Array,X::Array)
 end
 
 
-function DAmultdiagX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
+function DAmultdiagX(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
     if derivativeIDX==1
         if size(A)==(1,1)
             axpy!(1.0,[sum(X.*diag(grad_c))],grad_n) # sum_i x_i gradc_ii
@@ -41,7 +53,7 @@ function DAmultdiagX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
 end
 
 if PROC=="GPU"
-    function FAmultdiagX_inplace(value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
+    function FAmultdiagX_inplace(handle,value::CudaArray,auxvalue,A::CudaArray,X::CudaArray)
         if size(A)==(1,1)
             diagm!(X,value)
             scale!(A,value)
@@ -53,7 +65,7 @@ if PROC=="GPU"
         end
     end
 
-    function DAmultdiagX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
+    function DAmultdiagX(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
         if derivativeIDX==1
             if size(A)==(1,1)
                 tmp=CudaArray(Float64,(size(X,1),1))

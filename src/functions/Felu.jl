@@ -1,4 +1,8 @@
 # f(x)=elu(x)=x*[x>0] + (exp(x)-1)*[x<0]
+function Felu(malloc::Bool,x)
+return size(x)
+end
+
 
 alpha=1.0
 function Felu(x)
@@ -13,7 +17,7 @@ function Felu(x)
     return (y,nothing)
 end
 
-function Felu_inplace(value::Array,auxvalue,x) # inplace
+function Felu_inplace(handle,value::Array,auxvalue,x) # inplace
     for i=1:length(x)
         if x[i]>0
             value[i]=x[i]
@@ -24,7 +28,7 @@ function Felu_inplace(value::Array,auxvalue,x) # inplace
 end
 
 
-function Delu(derivativeIDX,f_c,faux_c,grad_c,grad_n,x)
+function Delu(handle,derivativeIDX,f_c,faux_c,grad_c,grad_n,x)
     tmp=ones(size(x))
     for i=1:length(x)
         if x[i]<0
@@ -36,7 +40,7 @@ end
 
 if 1==0 # TODO GPU version
 
-    function Felu_inplace(value::CudaArray,auxvalue,x::CudaArray...) # inplace
+    function Felu_inplace(handle,value::CudaArray,auxvalue,x::CudaArray...) # inplace
     end
 
     function Delu(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
@@ -47,7 +51,7 @@ end
 Derivative[Felu]=Delu # Define dictionary lookup
 Inplace[Felu]=Felu_inplace
 
-elu(n::ADnode)=ADnode(Felu,n)
+elu(n::ADnode)=ADFunction(Felu,n)
 
 ###elu(A::ADtrans)=transpose(elu(node[A.parent])) # elu(A')=(elu(A))' TODO:check
 
