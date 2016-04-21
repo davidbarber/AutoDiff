@@ -27,9 +27,9 @@ function ancestors(node::Array{Any,1},nd::Int)
     parents=node[nd].parents
     append!(anc,parents)
     done=false
-    counter=0
+#    counter=0
     while !done
-        counter+=1
+#        counter+=1
         newparents=Array(Int,0)
         for i in parents
             append!(newparents,node[i].parents)
