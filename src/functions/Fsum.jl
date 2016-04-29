@@ -29,8 +29,10 @@ import Base.sum
 if PROC=="GPU"
 
     function sum(A::CudaArray)
-        return flatten(Float64,CUBLAS.gemv('T',1.,flatten(Float64,A),CudaArray(ones(length(A)))))
+  #      return flatten(Float64,CUBLAS.gemv('T',1.,flatten(Float64,A),CudaArray(ones(length(A)))))
+        return flatten(CUBLAS.gemv('T',convert(eltype(A),1),flatten(A),CudaArray(eltype(A),ones(length(A)))))
     end
+    
     export sum
 
     import Base.sum!
@@ -47,8 +49,8 @@ if PROC=="GPU"
 
 
     function Dsum(derivativeIDX,f_c,faux_c,grad_c,grad_n,x::CudaArray...)
-        tmp=CudaArray(Float64,size(grad_n))
-        fill!(tmp,1.0)
+        tmp=CudaArray(eltype(grad_n),size(grad_n))
+        fill!(tmp,convert(eltype(grad_n),1.0))
         axpy!(grad_c,tmp,grad_n)
         free(tmp)
     end

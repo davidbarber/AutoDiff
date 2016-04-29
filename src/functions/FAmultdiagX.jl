@@ -27,7 +27,8 @@ function DAmultdiagX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A,X)
         elseif size(X)==(1,1)
             axpy!(X[1],grad_c,grad_n) # x gradc_ii
         else
-            axpy!(1.0,grad_c.*repmat(X',size(grad_c,1),1),grad_n)
+            axpy!(1.0,grad_c.*repmat(vec(X)',size(grad_c,1),1),grad_n)
+#            axpy!(1.0,grad_c.*repmat(X,size(grad_c,1),1),grad_n) ## CHECK!
         end
     elseif derivativeIDX==2
         if size(A)==(1,1)
@@ -54,6 +55,12 @@ if PROC=="GPU"
     end
 
     function DAmultdiagX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray)
+        switched=false
+        if size(X,2)>1
+            switched=true
+            X.dims=(size(X,2),1)
+        end
+        
         if derivativeIDX==1
             if size(A)==(1,1)
                 tmp=CudaArray(Float64,(size(X,1),1))
@@ -69,7 +76,7 @@ if PROC=="GPU"
                 gemm!('N','T',1.0,onc,X,0.0,tmp)
                 vmultupdate!(1.0,grad_c,tmp,grad_n)
                 free(tmp); free(onc)
-                #                axpy!(1.0,grad_c.*repmat(X',size(grad_c,1),1),grad_n)           
+                #                axpy!(1.0,grad_c.*repmat(X',size(grad_c,1),1),grad_n)
             end
         elseif derivativeIDX==2
             if size(A)==(1,1)
@@ -94,8 +101,75 @@ if PROC=="GPU"
                 free(tmp); free(tmp2)
             end
         end
+
+        if switched
+            X.dims=(1,size(X,1))
+        end
     end
+
+
+    
+    function DAmultdiagX(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray{Float32},X::CudaArray{Float32})
+        switched=false
+        if size(X,2)>1
+            switched=true
+            X.dims=(size(X,2),1)
+        end
+        if derivativeIDX==1
+            if size(A)==(1,1)
+                tmp=CudaArray(Float32,(size(X,1),1))
+                diag!(grad_c,tmp)
+                vmult!(1.0,X,tmp,tmp)
+                sum_update!(1.0,tmp,1.0,grad_n)
+            elseif size(X)==(1,1)
+                alphaaxpy!(1.0,X,grad_c,grad_n) # x gradc_ii
+            else
+                onc=CudaArray(Float32,(size(grad_c,1),1))
+                fill!(onc,1.0);
+                tmp=CudaArray(Float32,size(grad_c))                
+                gemm!('N','T',1.0,vec(onc),X,0.0,tmp)
+                vmultupdate!(1.0,grad_c,tmp,grad_n)
+                free(tmp); free(onc)
+                #                axpy!(1.0,grad_c.*repmat(X',size(grad_c,1),1),grad_n)
+            end
+        elseif derivativeIDX==2
+            if size(A)==(1,1)
+#                axpy!(A[1],diag(grad_c),grad_n)
+                tmp=CudaArray(Float32,size(grad_n))
+                diag!(grad_c,tmp)
+                alphaaxpy!(1.0,A,tmp,grad_n)
+                free(tmp)
+            elseif size(X)==(1,1)
+#                axpy!(1.0,[sum(A.*grad_c)],grad_n)
+                tmp=CudaArray(Float32,size(A))
+                vmult!(1.0,A,grad_c,tmp)
+                sum_update!(1.0,tmp,1.0,grad_n)
+                free(tmp)
+            else
+#                axpy!(1.0,sum(A.*grad_c,1),grad_n)
+                tmp=CudaArray(Float32,size(A))
+                vmult!(1.0,A,grad_c,tmp)
+                tmp2=CudaArray(Float32,(1,size(tmp,2)))
+                sum!(tmp,1,0.0,tmp2)
+                axpy!(1.0,vec(tmp2),grad_n)
+                free(tmp); free(tmp2)
+            end
+        end
+
+        if switched
+            X.dims=(1,size(X,1))
+        end
+        
+    end
+
+
+    
 end
+
+
+
+
+
 
 Derivative[FAmultdiagX]=DAmultdiagX
 export FAmultdiagX

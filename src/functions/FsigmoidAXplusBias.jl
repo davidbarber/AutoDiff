@@ -34,12 +34,15 @@ if PROC=="GPU"
     end
 
     function FsigmoidAXplusBias_inplace(value,aux,A::CudaArray,X::CudaArray,b::CudaArray)
+#        println(size(A))
+#        println(size(X))
+#        println(size(b))
         FAXplusBias_inplace(value,aux,A,X,b)
         sigmoid!(value,value)
     end
 
 
-    function DsigmoidAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray,X::CudaArray,b::CudaArray)
+    function DsigmoidAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray{Float64},X::CudaArray{Float64},b::CudaArray{Float64})
         tmp=CudaArray(Float64,size(grad_c)); fill!(tmp,0.0)
         tx1mx!(grad_c,f_c,tmp)
         if derivativeIDX==1
@@ -54,6 +57,23 @@ if PROC=="GPU"
         free(tmp)
     end
 
+    function DsigmoidAXplusBias(derivativeIDX,f_c,faux_c,grad_c,grad_n,A::CudaArray{Float32},X::CudaArray{Float32},b::CudaArray{Float32})
+        tmp=CudaArray(Float32,size(grad_c)); fill!(tmp,0.0)
+        tx1mx!(grad_c,f_c,tmp)
+        if derivativeIDX==1
+            gemm!('N','T',1.0,tmp,X,1.0,grad_n)
+        elseif derivativeIDX==2
+            gemm!('T','N',1.0,A,tmp,1.0,grad_n)
+        elseif derivativeIDX==3
+            ons=CudaArray(Float32,(size(X,2),1)); fill!(ons,1.0)
+            gemm!('N','N',1.0,tmp,ons,1.0,grad_n)
+            free(ons)
+        end
+        free(tmp)
+    end
+
+
+    
 end
 
 
