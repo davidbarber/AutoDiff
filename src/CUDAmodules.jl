@@ -697,12 +697,19 @@ function vdiv!(alpha::Real,A::CudaArray{Float32},B::CudaArray{Float32},C::CudaAr
 end
 export vdiv!
 
-#md=CuModule(DIR*"vmultbangupdate.ptx",false)
-#vmultbangupdate_kernel=CuFunction(md,"vmultbangupdate")
-#function vmultupdate!(alpha::Float64,A::CudaArray{Float64},B::CudaArray{Float64},C::CudaArray{Float64})
-#        nblocks=round(Int,ceil(length(B)/1024))
-#    launch(vmultbangupdate_kernel,nblocks,1024,(length(A),alpha,A,B,C))
-#end
+md=CuModule(DIR*"vmultbangupdate.ptx",false)
+vmultbangupdate_kernel=CuFunction(md,"vmultbangupdate")
+function vmultupdate!(alpha::Float64,A::CudaArray{Float64},B::CudaArray{Float64},C::CudaArray{Float64})
+        nblocks=round(Int,ceil(length(B)/1024))
+    launch(vmultbangupdate_kernel,nblocks,1024,(length(A),alpha,A,B,C))
+end
+
+md=CuModule(DIR*"vmultbangupdate_32.ptx",false)
+vmultbangupdate_kernel_32=CuFunction(md,"vmultbangupdate_32")
+function vmultupdate!(alpha::Real,A::CudaArray{Float32},B::CudaArray{Float32},C::CudaArray{Float32})
+        nblocks=round(Int,ceil(length(B)/1024))
+    launch(vmultbangupdate_kernel_32,nblocks,1024,(length(A),alpha,A,B,C))
+end
 
 
 #md=CuModule(DIR*"vdivbangupdate.ptx",false)
@@ -735,4 +742,9 @@ export axpy
 
 flatten(T::Type,g::CudaArray)=reinterpret(T,g,(length(g),1)) # make a (prod(dims),1) CudaArray from a CudaArray
 # This is useful since we can then call CUBLAS routines that operate on vectors
+
+flatten(g::CudaArray)=reinterpret(eltype(g),g,(length(g),1)) # make a (prod(dims),1) CudaArray from a CudaArray
+# This is useful since we can then call CUBLAS routines that operate on vectors
+export flatten
+
 export flatten

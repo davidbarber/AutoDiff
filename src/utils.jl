@@ -4,14 +4,14 @@ void(x)=()
 import Base.convert
 #function convert(net::network,gpucpu::ASCIIString)
 function convert(net::network,gpucpu::ASCIIString,eltype=Float64)
-    
+
     #if (net.gpu & (gpucpu=="GPU")) | (!net.gpu & (gpucpu=="CPU"))
     #    return net
     #else
     #netout=deepcopy(net)
     netout=deepcopy(net)
     nds=net.validnodes
-    netout.eltype=eltype        
+    netout.eltype=eltype
     #if gpucpu=="GPU" || gpucpu=="GPU32"
     if gpucpu=="GPU"
         netout.gpu=true
@@ -120,7 +120,6 @@ extract(A)=A
 export extract
 
 
-
 function ensurearray(x)
     if isa(x,Vector)
         y=Array(typeof(x[1]),length(x),1)
@@ -140,7 +139,7 @@ function converttype!(x,intype,outtype)
     end
 end
 
-function convert!(outtype,x::Array)    
+function convert!(outtype,x::Array)
     for i=1:length(x)
         if isdefined(x,i)
             x[i]=convert(outtype,x[i])
@@ -250,5 +249,12 @@ end
 export mydeepcopy
 
 
-
+function IsScalarArray(A::ArrayOrCudaArray)
+    if prod(size(A))==1
+        return true
+    else
+        return false
+    end
+end
+export IsScalarArray
 

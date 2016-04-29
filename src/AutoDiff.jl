@@ -23,6 +23,9 @@ include("initfile.jl")
 @gpu (using CUDArt; println("using CUDArt"))
 @gpu (using CUBLAS; println("using CUBLAS"))
 
+@gpu (import CUDArt.to_host; to_host(A::Array)=A; export to_host;) # CHECKTHIS
+@cpu (to_host(A::Array)=A; export to_host;) # CHECKTHIS
+
 using Reexport
 @gpu (@reexport using CUDArt;println("reexport using CUDArt"))
 
@@ -31,8 +34,8 @@ export nodecounter
 
 global GPU
 
-#@gpu ArrayOrCudaArray = Union{Array,CudaArray}
-#ArrayOrCudaArray = Array
+@gpu ArrayOrCudaArray = Union{Array,CudaArray}
+@cpu ArrayOrCudaArray = Array
 
 
 function StartCode()
@@ -68,30 +71,31 @@ type ADnode
     children::Array{Int,1} # node child indices
     takederivative # whether to take the derivative
     returnderivative::Bool # whether to return the derivative
-    input::Bool # whether this is an input variable
+#    input::Bool # whether this is an input variable
     isconst::Bool
     constval
-   ADnode(f=nx,parents=[];returnderivative=false,isconst=false,constval=nothing)=
+   #ADnode(f=nx,parents=[];returnderivative=false,isconst=false,constval=nothing)=
+       ADnode(f=nx,parents=[];returnderivative=false,isconst=false,constval=nothing)=
         begin
             global nodecounter+=1
             global node
-            if f==nx
-                input=true
-            else
-                input=false
-            end
+            #if f==nx
+            #    input=true
+            #else
+            #    input=false
+            #end
             returnderivative=returnderivative==true
             takederivative=returnderivative
-            if returnderivative & !input
-                error("cannot return derivative for a node that has parents")
-            end
+#            if returnderivative & !input
+#                error("cannot return derivative for a node that has parents")
+#            end
             if isa(parents,Array{ADnode})
                 parents=map(n->n.index,parents)
             end
             if isa(parents,ADnode)
                 parents=parents.index
             end
-            thisnode=new(nodecounter,collect(parents),f,Inplace[f],Derivative[f],[0],takederivative,returnderivative,input,isconst,constval)
+            thisnode=new(nodecounter,collect(parents),f,Inplace[f],Derivative[f],[0],takederivative,returnderivative,isconst,constval)
             if isempty(node)
                 node=Array(Any,0)
             end
@@ -106,7 +110,7 @@ abstract ADdummy
 type ADtrans<: ADdummy # transpose node. Dummy node that can be used for code optimisation
     index # node index
     parent # node parent index
-    input::Bool # we set this to true since this prevents dummy nodes being differentiated
+#    input::Bool # we set this to true since this prevents dummy nodes being differentiated
     ADtrans(parentnode)=
         begin
             global nodecounter+=1
@@ -114,7 +118,8 @@ type ADtrans<: ADdummy # transpose node. Dummy node that can be used for code op
             if isa(parentnode,ADnode)
                 parent=parentnode.index
             end
-            thisnode=new(nodecounter,parent,true)
+            #thisnode=new(nodecounter,parent,true)
+            thisnode=new(nodecounter,parent)
             if isempty(node)
                 node=Array(Any,0)
             end
@@ -129,7 +134,7 @@ export ADtrans
 type ADdiag<:ADdummy# Dummy diag node that can be used for code optimisation
     index # node index
     parent # node parent index
-    input::Bool # we set this to true since this prevents dummy nodes being differentiated
+#    input::Bool # we set this to true since this prevents dummy nodes being differentiated
     ADdiag(parentnode)=
         begin
             global nodecounter+=1
@@ -137,7 +142,8 @@ type ADdiag<:ADdummy# Dummy diag node that can be used for code optimisation
             if isa(parentnode,ADnode)
                 parent=parentnode.index
             end
-            thisnode=new(nodecounter,parent,true)
+            #thisnode=new(nodecounter,parent,true)
+            thisnode=new(nodecounter,parent)
             if isempty(node)
                 node=Array(Any,0)
             end
@@ -233,6 +239,7 @@ export gradcheck
 export ArrayOrCudaArray
 
 
+#ADvariable(;returnderivative=true)=ADnode(;returnderivative=returnderivative)
 ADvariable(;returnderivative=true)=ADnode(;returnderivative=returnderivative)
 export ADvariable
 
