@@ -73,5 +73,6 @@ Inplace[Fsoftmax]=Fsoftmax_inplace
 ADsoftmax(n)=ADnode(Fsoftmax,n)
 
 softmax(n::ADnode)=ADnode(Fsoftmax,n)
+softmax(x::Array)=exp(x)./sum(exp(x),1) # TODO: better to subtract the max of x to make it numerically more stableFsoftmax(x)
 
 export softmax

@@ -1,7 +1,7 @@
 if PROC=="GPU"
     
     import Base.sum!
-    function sum!(A::CudaArray,ind::Int,beta::Float64,out::CudaArray)
+    function sum!(A::CudaArray{Float64},ind::Int,beta::Float64,out::CudaArray{Float64})
         if ind==1
             tmp=CudaArray(Float64,(1,size(A,1))); fill!(tmp,1.0)
             CUBLAS.gemm!('N','N',1.0,tmp,A,beta,out)
@@ -14,6 +14,22 @@ if PROC=="GPU"
             error("sum!(A::CudaArray,ind,beta,out) only defined for ind=1 or 2")
         end
     end
+
+    function sum!(A::CudaArray{Float32},ind::Int,beta::Real,out::CudaArray{Float32})
+        if ind==1
+            tmp=CudaArray(Float32,(1,size(A,1))); fill!(tmp,1.0)
+            CUBLAS.gemm!('N','N',Float32(1.0),tmp,A,Float32(beta),out)
+            free(tmp)
+        elseif ind==2
+            tmp=CudaArray(Float32,(size(A,2),1)); fill!(tmp,1.0)
+            CUBLAS.gemm!('N','N',Float32(1.0),A,tmp,Float32(beta),out)
+            free(tmp)
+        else
+            error("sum!(A::CudaArray,ind,beta,out) only defined for ind=1 or 2")
+        end
+    end
+
+    
     export sum!
 
     

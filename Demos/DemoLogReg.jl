@@ -1,11 +1,13 @@
 using MAT
 
-useproc("CPU")
+#useproc("CPU")
+useproc("GPU")
 
 Ntrain=60000
 Ntest=10000
-BatchSize=Ntrain
-TrainingIts=10 # number of Nesterov updates
+#BatchSize=Ntrain
+BatchSize=100
+TrainingIts=1000 # number of Nesterov updates
 include("loadmnist.jl")
 images,label=loadmnist()
 label=convert(Array{Int,2},label)
@@ -51,6 +53,7 @@ for i=2:L
 end
 
 net=compile(net) # compile the DAG and preallocate memory
+gradcheck(net)
 @gpu CUDArt.init([0]) # let the user do device management
 @gpu net=convert(net,"GPU")
 

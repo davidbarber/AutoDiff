@@ -18,7 +18,8 @@ function compile(net;debug=false,gpu=false,eltype=Float64)
     returnderivative=zeros(Bool,N)
         for i in net.validnodes
             G[node[i].index,node[i].parents]=1
-            if !(node[i].input)
+#            if !(node[i].input)
+                if HasParents(node[i])
 #                node[i].takederivative=any(map( (x)-> any(x.takederivative), node[node[i].parents]) ) # set to true for those parents that require derivative
                 node[i].takederivative=any( (x)-> any(x.takederivative), node[node[i].parents] ) # set to true for those parents that require derivative
             end

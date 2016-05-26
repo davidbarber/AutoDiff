@@ -27,9 +27,7 @@ function ancestors(node::Array{Any,1},nd::Int)
     parents=node[nd].parents
     append!(anc,parents)
     done=false
-    counter=0
     while !done
-        counter+=1
         newparents=Array(Int,0)
         for i in parents
             append!(newparents,node[i].parents)
@@ -49,12 +47,30 @@ export ancestors
 
 
 
-
 function Parameters(net)
 #    intersect(ancestors(net.node,net.FunctionNode),find(map(x->x.returnderivative,net.node))) # node indices that are parameters
-    intersect(ancestors(net.node,net.FunctionNode),find(map(x->x.returnderivative,net.node[net.validnodes]))) # node indices that are parameters
+#    intersect(ancestors(net.node,net.FunctionNode),find(map(x->x.returnderivative,net.node[net.validnodes]))) # node indices that are parameters
+
+    good=[]
+    for i in net.validnodes
+        if net.node[i].returnderivative
+            push!(good,i)
+        end
+    end
+    intersect(ancestors(net.node,net.FunctionNode),good) # node indices that are parameters
 end
-export Parameters
+
+
+    export Parameters
+
+    function HasParents(node::ADnode)
+        if length(node.parents)>0
+            return true
+        else
+            return false
+        end
+    end
+    export HasParents
 
 
 function ForwardPassList!(net;ExcludeNodes=[])
@@ -75,7 +91,8 @@ function ForwardPassList!(net;ExcludeNodes=[])
         if length(findin(thisnode.parents,exclude))>0 # can be precomputed
             push!(exclude,i)# check
         else
-            if !(thisnode.input)
+#            if !(thisnode.input)
+            if HasParents(thisnode)
                 push!(forwardlist,i)
             end
         end
