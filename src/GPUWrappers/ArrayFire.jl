@@ -4,7 +4,15 @@
 # This list can be found in http://arrayfire.org/docs/group__unified__func__getavailbackends.htm#ga92a9ce85385763bfa83911cda905afe8
 using Compat
 
-const ArrayFire = Libdl.find_library(["libaf"],["/usr/lib/", "/usr/local/lib"])
+# MAC OS and Linux system check 
+@unix? (
+begin
+    const ArrayFire = Libdl.find_library(["libaf"],["/usr/lib/", "/usr/local/lib"])
+end :
+begin
+	throw("Windows version under development")
+end
+)
 
 # Available Backend
 const DEFAULT=0
@@ -18,12 +26,9 @@ macro afcheck(fv, argtypes, args...)
   f = eval(fv)
   quote
     _curet = ccall( ($(Meta.quot(f)), $ArrayFire), Cint, $argtypes, $(args...))
-    if round(Int, _curet) != AF_SUCCESS
-    	err_str = UInt8[0]
-    	err_len = Cint[0]
-    	ccall((:af_get_last_error, $ArrayFire),Ptr{UInt32},(Int,Ptr{Cint}),err_str,err_len)
-      	error = bytestring(err_str[1])
-      	throw(error)
+    status = round(Int, _curet) 
+    if status!= AF_SUCCESS
+      	throw(errorMassage[string(status)])
     end
   end
 end
@@ -37,6 +42,10 @@ function afVersion()
 	info("ArrayFire version : $(major[1]).$(minor[1]).$(patch[1])")
 end 
 
+function afInfo()
+ccall((:af_info,ArrayFire),Ptr{UInt8},())
+end
+
 function availableBackends()
 	backend = Cint[0]
 	count = Cuint[0]
@@ -46,30 +55,42 @@ function availableBackends()
 		info("No ArrayFire Backend Available")
 	elseif backend[1] == 1
 		info("$(count[1]) backends avialable: CPU")
-		return Dict("CPU"=>CPU)
+		return Dict("cpu"=>CPU)
 	elseif backend[1] == 2
 		info("$(count[1]) backends avialable: CUDA")
-		return Dict("CUDA"=>CUDA)
+		return Dict("cuda"=>CUDA)
 	elseif backend[1] == 3
 		info("$(count[1]) backends avialable: CUDA,CPU")
-		return Dict("CPU"=>CPU,"CUDA"=>CUDA)
+		return Dict("cpu"=>CPU,"cuda"=>CUDA)
 	elseif backend[1] == 4
 		info("$(count[1]) backends avialable: OpenCL")
-		return Dict("OpenCL"=>OPENCL)
+		return Dict("opencl"=>OPENCL)
 	elseif backend[1] == 5
 		info("$(count[1]) backends avialable: CPU,OpenCL")
-		return Dict("CPU"=>CPU,"OpenCL"=>OPENCL)
+		return Dict("cpu"=>CPU,"opencl"=>OPENCL)
 	elseif backend[1] == 6
 		info("$(count[1]) backends avialable: CUDA,OpenCL")
-		return Dict("CUDA"=>CUDA,"OpenCL"=>OPENCL)
+		return Dict("cuda"=>CUDA,"opencl"=>OPENCL)
 	elseif backend[1] == 7
 		info("$(count[1]) backends avialable: CUDA,CPU,OpenCL")
-		return Dict("CPU"=>CPU."CUDA"=>CUDA,"OpenCL"=>OPENCL)
+		return Dict("cpu"=>CPU,"cuda"=>CUDA,"opencl"=>OPENCL)
 	end
 end
 
+function activeBackends()
+backends = UInt[0]
+@afcheck(:af_get_active_backend,(Ptr{UInt}, ),backends)
+println(backends)
+end
+
+
 function setBackend(backendId::Int)
 @afcheck(:af_set_backend,(Cint, ),backendId)
+end
+
+function getDevice()
+device = Cint[0]
+@afcheck(:af_get_device,(Ptr{Cint}, ),device)
 end
 
 
@@ -81,32 +102,27 @@ end
 
 # Error Type For ArrayFire internal use 
 const AF_SUCCESS=0
-# ERROR 100-199 enviroment error
-const AF_NO_MEMORY_ERR=101
-const AF_DRIVER_ERR=102
-const AF_RUNTIME_ERR=103
-# ERROR 200-299 input parameters error
-const AF_INVALID_ARRAY_ERR=201
-const AF_ARG_ERR=202
-const AF_SIZE_ERR=203
-const AF_TYPE_ERR=204
-const AF_DIFF_TYPE_ERR=205
-const AF_BATCH_ERR=207
-const AF_DEVICE_ERR=208
-# ERROR 300-399 missing software features
-const AF_NOT_SUPPORTED_ERR=301
-const AF_NOT_CONFIGURED_ERR=302
-const AF_NONFREE_ERR=303
-# ERROR 400-499 missing hardware features
-const AF_NO_DBL_ERR=401
-const AF_NO_GFX_ERR=402
-# ERROR 500-599 specific to the heterogeneous API	   
-const AF_LOAD_LIB_ERR=501
-const AF_LOAD_SYM_ERR =502
-const AF_ARR_BKND_MISMATCH_ERR=503
-# ERROR 900-999 upstream libraries and runtime 
-const AF_INTERNAL_ERR=998
-const AF_UNKNOWN_ERR=999
+const errorMassage = Dict(
+						"101"=>"ArrayFire error 101: The system or device ran out of memory.",
+						"102" => "ArrayFire error 102: There was an error in the device driver.",
+						"103" => "ArrayFire error 103: There was an error with the runtime environment.",
+						"201"=> "ArrayFire error 201: The input array is not a valid af_array object.",
+						"202" => "ArrayFire error 202: One of the function arguments is incorrect.",
+						"203" => "ArrayFire error 203: The size is incorrect.",
+						"204" => "ArrayFire error 204: The type is not suppported by this function.",
+						"205"=> "ArrayFire error 205: The type of the input arrays are not compatible.",
+						"207" => "ArrayFire error 207: Function does not support GFOR / batch mode.",
+						"208" => "ArrayFire error 208: Input does not belong to the current device.",
+						"301" => "ArrayFire error 301: The option is not supported.",
+						"302"=> "ArrayFire error 302: This build of ArrayFire does not support this feature.",
+						"303" => "ArrayFire error 303: This build of ArrayFire is not compiled with nonfree algorithms.",
+						"401" => "ArrayFire error 401: This device does not support double.",
+						"402" => "ArrayFire error 402: This build of ArrayFire was not built with graphics or this device does not support graphics.",
+						"501"=> "ArrayFire error 501: There was an error when loading the libraries.",
+						"502" => "ArrayFire error 502: There was an error when loading the symbols.",
+						"503" => "ArrayFire error 503: There was a mismatch between the input array and the active backend.",
+						"998" => "ArrayFire error 998: There was an internal error either in ArrayFire or in a project upstream.",
+						"999"=> "ArrayFire error 999: Unknown Error.")
 
 # Basic ArrayFire Types 
 const f32=0 
